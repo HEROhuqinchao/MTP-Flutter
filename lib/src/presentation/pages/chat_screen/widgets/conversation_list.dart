@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'conversation_list_item.dart';
@@ -37,7 +38,7 @@ class ConversationList extends ConsumerWidget {
                   child: SizedBox(
                     height: 32,
                     child: SearchBar(
-                      leading: const Icon(Icons.search, size: 16),
+                      leading: const Icon(Ionicons.search, size: 16),
                       hintText: "搜索对话",
                       hintStyle: WidgetStateProperty.all(
                         TextStyle(
@@ -77,7 +78,7 @@ class ConversationList extends ConsumerWidget {
                 const SizedBox(width: 8),
                 IconButton(
                   iconSize: 16,
-                  icon: const Icon(Icons.add_comment_rounded),
+                  icon: const Icon(Ionicons.chatbubbles),
                   onPressed: () {
                     // 创建新会话的逻辑，可以打开一个对话框
                     _showNewConversationDialog(context, ref);
@@ -241,7 +242,7 @@ Widget _buildNoConversations() {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
-          Icons.chat_bubble_outline,
+          Ionicons.chatbubble,
           size: 64,
           color: Colors.grey.withOpacity(0.5),
         ),

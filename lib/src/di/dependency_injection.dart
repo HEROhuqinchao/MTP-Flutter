@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:mtp/src/utils/logger.dart';
 import 'package:uuid/uuid.dart';
 
 // Data Sources
@@ -68,7 +69,7 @@ Future<void> ensureDefaultSessions() async {
 
     // 获取所有角色
     final roles = await roleRepository.getAllRoles();
-    print('获取到 ${roles.length} 个角色');
+    localLogger.config('获取到 ${roles.length} 个角色');
     final uuid = Uuid();
 
     // 为每个角色检查并创建默认会话
@@ -89,16 +90,16 @@ Future<void> ensureDefaultSessions() async {
           );
 
           await chatRepository.addSession(defaultSession);
-          print('为角色 ${role.name} 创建了默认会话');
+          localLogger.config('为角色 ${role.name} 创建了默认会话');
         }
       } catch (e) {
-        print('为角色 ${role.name} 创建会话失败: $e');
+        localLogger.shout('为角色 ${role.name} 创建会话失败: $e');
       }
     }
   } catch (e) {
-    print('确保默认会话时出错: $e');
+    localLogger.shout('确保默认会话时出错: $e');
   }
-  print('确保默认会话完成');
+  localLogger.config('确保默认会话完成');
 }
 
 void _registerExternalDependencies() {

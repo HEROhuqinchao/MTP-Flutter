@@ -64,16 +64,12 @@ class SettingsNotifier extends StateNotifier<SettingsEntity?> {
     }
   }
 
-  // 更新用户头像
+  // 更新用户头像方法中，确保处理文件路径
   Future<void> updateUserAvatar(String avatarPath) async {
     if (state == null) return;
 
-    try {
-      await _settingsRepository.updateUserAvatar(avatarPath);
-      state = state!.copyWith(userAvatar: avatarPath);
-    } catch (e) {
-      print('更新头像失败: $e');
-    }
+    state = state!.copyWith(userAvatar: avatarPath);
+    await _settingsRepository.updateUserAvatar(avatarPath);
   }
 
   // 更新主题

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mtp/src/presentation/pages/chat_screen/chat_screen.dart';
 import '../core/widgets/platform_aware/desktop_layout.dart';
 import '../core/widgets/platform_aware/mobile_layout.dart';
 import '../core/widgets/platform_aware/tablet_layout.dart';
@@ -45,13 +46,21 @@ class AppHome extends StatelessWidget {
         children: [
           // 内容区域
           ResponsiveLayout(
-            mobileLayout: MobileLayout(),
-            tabletLayout: isDesktopPlatform ? DesktopLayout() : TabletLayout(),
-            desktopLayout: DesktopLayout(),
+            mobileLayout: const MobileLayout(),
+            tabletLayout:
+                isDesktopPlatform
+                    ? const DesktopLayout(child: ChatScreen())
+                    : const TabletLayout(),
+            desktopLayout: const DesktopLayout(child: ChatScreen()),
           ),
           // 桌面平台使用自定义标题栏，放在Stack顶层
           if (isDesktopPlatform)
-            Positioned(top: 0, left: 0, right: 0, child: WindowTitleBar()),
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: WindowTitleBar(),
+            ),
         ],
       ),
     );

@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:window_manager_plus/window_manager_plus.dart';
 
 class WindowTitleBar extends StatelessWidget {
   final Color? backgroundColor;
   final double height;
+  final VoidCallback? onReset;
 
-  const WindowTitleBar({super.key, this.backgroundColor, this.height = 32.0});
+  const WindowTitleBar({
+    super.key,
+    this.backgroundColor,
+    this.height = 32.0,
+    this.onReset,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanStart: (details) {
-        windowManager.startDragging();
+        WindowManagerPlus.current.startDragging();
       },
       onDoubleTap: () async {
-        if (await windowManager.isMaximized()) {
-          windowManager.unmaximize();
+        if (await WindowManagerPlus.current.isMaximized()) {
+          WindowManagerPlus.current.unmaximize();
         } else {
-          windowManager.maximize();
+          WindowManagerPlus.current.maximize();
         }
       },
       child: Container(
@@ -27,23 +34,34 @@ class WindowTitleBar extends StatelessWidget {
         child: Row(
           children: [
             const Spacer(),
+            if (onReset != null)
+              IconButton(
+                icon: Icon(Ionicons.refresh, size: 16),
+                onPressed: onReset,
+                tooltip: '重置为默认设置',
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  ),
+                ),
+              ),
             _WindowButton(
-              icon: Icons.minimize,
-              onPressed: () => windowManager.minimize(),
+              icon: Ionicons.remove,
+              onPressed: () => WindowManagerPlus.current.minimize(),
             ),
             _WindowButton(
-              icon: Icons.crop_square,
+              icon: Ionicons.square_outline,
               onPressed: () async {
-                if (await windowManager.isMaximized()) {
-                  windowManager.unmaximize();
+                if (await WindowManagerPlus.current.isMaximized()) {
+                  WindowManagerPlus.current.unmaximize();
                 } else {
-                  windowManager.maximize();
+                  WindowManagerPlus.current.maximize();
                 }
               },
             ),
             _WindowButton(
-              icon: Icons.close,
-              onPressed: () => windowManager.close(),
+              icon: Ionicons.close,
+              onPressed: () => WindowManagerPlus.current.close(),
             ),
           ],
         ),
@@ -61,7 +79,8 @@ class _WindowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(icon, size: 16),
+      icon: Icon(icon),
+      iconSize: 16,
       onPressed: onPressed,
       style: ButtonStyle(
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(

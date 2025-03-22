@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/domain/entities/message_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
@@ -173,7 +174,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
           IconButton(
             iconSize: 16,
             constraints: BoxConstraints(maxHeight: 32, maxWidth: 32),
-            icon: const Icon(Icons.more_horiz),
+            icon: const Icon(Ionicons.ellipsis_horizontal),
             onPressed: () {
               // 显示更多操作菜单
             },
@@ -190,7 +191,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.chat_bubble_outline,
+            Ionicons.chatbubble,
             size: 80,
             color: Colors.grey.withOpacity(0.5),
           ),

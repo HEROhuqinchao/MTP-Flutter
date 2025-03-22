@@ -1,18 +1,28 @@
-import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
+import 'dart:io';
 
-class DesktopSidebar extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/core/constants/app_info.dart';
+import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:window_manager_plus/window_manager_plus.dart';
+import 'package:mtp/src/presentation/pages/settings_screen/settings_screen.dart';
+
+class DesktopSidebar extends ConsumerStatefulWidget {
   const DesktopSidebar({super.key});
 
   @override
-  State<DesktopSidebar> createState() => _DesktopSidebarState();
+  ConsumerState<DesktopSidebar> createState() => _DesktopSidebarState();
 }
 
-class _DesktopSidebarState extends State<DesktopSidebar> {
+class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
   final _overlayController = OverlayPortalController();
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(settingsProvider);
+
     return Container(
       width: 60, // 固定宽度
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -35,7 +45,12 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                     // 添加头像
                     InkWell(
                       onTap: () {
-                        // 点击头像的处理逻辑
+                        // 点击头像打开设置页面
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
+                        );
                       },
                       borderRadius: BorderRadius.circular(16),
                       child: Padding(
@@ -49,20 +64,64 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                                   Theme.of(
                                     context,
                                   ).colorScheme.primaryContainer,
-                              // TODO: 如果有图片，可以使用下面的方式
-                              // backgroundImage: NetworkImage('https://example.com/avatar.jpg'),
-                              child: Text(
-                                'U', // 用户名首字母，或者用Icon替代
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
 
+                              child:
+                                  settings?.userAvatar.isNotEmpty == true
+                                      ? ClipOval(
+                                        child:
+                                            settings!.userAvatar.startsWith(
+                                                  'assets/',
+                                                )
+                                                ? Image.asset(
+                                                  settings.userAvatar,
+                                                  width: 36,
+                                                  height: 36,
+                                                  fit: BoxFit.cover,
+                                                )
+                                                : Image.file(
+                                                  File(settings.userAvatar),
+                                                  width: 36,
+                                                  height: 36,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) {
+                                                    // 图片加载失败时显示用户名首字母
+                                                    return Text(
+                                                      settings
+                                                              .username
+                                                              .isNotEmpty
+                                                          ? settings.username[0]
+                                                              .toUpperCase()
+                                                          : 'U',
+                                                      style: TextStyle(
+                                                        color:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .onPrimaryContainer,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                      )
+                                      : Text(
+                                        settings?.username.isNotEmpty == true
+                                            ? settings!.username[0]
+                                                .toUpperCase()
+                                            : 'U',
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.onPrimaryContainer,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                            ),
                             // 在线状态指示器
                             Positioned(
                               right: 0,
@@ -87,11 +146,11 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                     ),
                     const SizedBox(height: 12),
                     IconButton(
-                      icon: Icon(
-                        Icons.comment_bank_outlined,
+                      icon: Icon(Ionicons.chatbubble, size: 18), // 减小图标大小
+                      selectedIcon: Icon(
+                        Ionicons.chatbubble_ellipses,
                         size: 18,
-                      ), // 减小图标大小
-                      selectedIcon: Icon(Icons.comment, size: 18), // 保持一致的大小
+                      ), // 保持一致的大小
                       isSelected: true,
                       onPressed: () => {},
                       style: ButtonStyle(
@@ -206,12 +265,18 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                                           children: [
                                             _buildMenuItem(
                                               context: context,
-                                              icon: Icons.settings_outlined,
+                                              icon: Ionicons.cog,
                                               title: '设置',
-                                              onTap: () {
+                                              onTap: () async {
                                                 _overlayController.hide();
-                                                // 实现设置功能
-                                                print('打开设置');
+                                                // 打开设置界面
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (context) =>
+                                                            const SettingsScreen(),
+                                                  ),
+                                                );
                                               },
                                             ),
                                             Divider(
@@ -222,12 +287,59 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                                             ),
                                             _buildMenuItem(
                                               context: context,
-                                              icon: Icons.help_outline,
+                                              icon: Ionicons.help_circle,
                                               title: '帮助与反馈',
-                                              onTap: () {
+                                              onTap: () async {
                                                 _overlayController.hide();
-                                                // 实现帮助功能
-                                                print('打开帮助');
+                                                // 实现帮助功能 - 打开帮助网页
+                                                final Uri helpUrl = Uri.parse(
+                                                  appHelpUrl,
+                                                );
+
+                                                try {
+                                                  // 根据平台选择不同的实现方式
+                                                  if (Platform.isWindows) {
+                                                    // Windows 平台使用系统命令打开
+                                                    await Process.run(
+                                                      'explorer.exe',
+                                                      [helpUrl.toString()],
+                                                    );
+                                                  } else {
+                                                    // 其他平台使用 url_launcher
+                                                    if (!await launchUrl(
+                                                      helpUrl,
+                                                      mode:
+                                                          LaunchMode
+                                                              .externalApplication,
+                                                    )) {
+                                                      // 如果打开失败，显示错误消息
+                                                      if (context.mounted) {
+                                                        ScaffoldMessenger.of(
+                                                          context,
+                                                        ).showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text(
+                                                              '无法打开帮助页面，请稍后再试',
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                    }
+                                                  }
+                                                } catch (e) {
+                                                  // 捕获可能的异常并提供反馈
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          '打开帮助页面时出错: $e',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
                                               },
                                             ),
                                             Divider(
@@ -238,12 +350,40 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                                             ),
                                             _buildMenuItem(
                                               context: context,
-                                              icon: Icons.info_outline,
+                                              icon: Ionicons.information_circle,
                                               title: '关于',
                                               onTap: () {
                                                 _overlayController.hide();
                                                 // 实现关于功能
-                                                print('打开关于');
+                                                showAboutDialog(
+                                                  context: context,
+                                                  applicationName: appName,
+                                                  applicationIcon: CircleAvatar(
+                                                    radius: 25,
+                                                    backgroundColor:
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .primaryContainer,
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            2.0,
+                                                          ),
+                                                      child: ClipOval(
+                                                        child: Image.asset(
+                                                          'assets/logo.png',
+                                                          width: 46,
+                                                          height: 46,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  applicationVersion:
+                                                      appVersion,
+                                                  applicationLegalese:
+                                                      ' © ${DateTime.now().year} MomoTalk Plus. 保留所有权利',
+                                                );
                                               },
                                             ),
                                             Divider(
@@ -254,11 +394,12 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                                             ),
                                             _buildMenuItem(
                                               context: context,
-                                              icon: Icons.logout,
+                                              icon: Ionicons.log_out,
                                               title: '退出',
                                               onTap: () async {
                                                 _overlayController.hide();
-                                                await windowManager.close();
+                                                await WindowManagerPlus.current
+                                                    .close();
                                               },
                                               textColor: Colors.redAccent,
                                             ),
@@ -272,7 +413,7 @@ class _DesktopSidebarState extends State<DesktopSidebar> {
                             ],
                           );
                         },
-                        child: Center(child: Icon(Icons.menu, size: 24)),
+                        child: Center(child: Icon(Ionicons.options, size: 24)),
                       ),
                     ),
                     const SizedBox(height: 8),

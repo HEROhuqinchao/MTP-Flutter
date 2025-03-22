@@ -1,12 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:mtp/src/core/widgets/platform_aware/desktop_sidebar.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/chat_screen.dart';
 
 class DesktopLayout extends StatelessWidget {
-  const DesktopLayout({super.key});
+  final Widget child;
+  final String? title;
+  final List<Widget>? actions;
+  final bool showDivider;
+  final PreferredSizeWidget? appBar;
+  final Widget? floatingActionButton;
+  final Color? backgroundColor;
+
+  const DesktopLayout({
+    super.key,
+    required this.child,
+    this.title,
+    this.actions,
+    this.showDivider = true,
+    this.appBar,
+    this.floatingActionButton,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [DesktopSidebar(), Expanded(child: ChatScreen())]);
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
+      floatingActionButton: floatingActionButton,
+      body: Row(
+        children: [
+          // 固定宽度的侧边栏
+          const DesktopSidebar(),
+
+          // 可选的分隔线
+          if (showDivider)
+            VerticalDivider(
+              width: 1,
+              thickness: 1,
+              color: theme.dividerColor.withOpacity(0.1),
+            ),
+
+          // 内容区域 - 使用Expanded填充剩余空间
+          Expanded(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar:
+                  appBar ??
+                  (title != null
+                      ? AppBar(
+                        title: Text(title!),
+                        actions: actions,
+                        scrolledUnderElevation: 0, // 避免滚动时的阴影
+                        backgroundColor:
+                            theme.appBarTheme.backgroundColor ??
+                            theme.colorScheme.surface,
+                      )
+                      : null),
+              body: child,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

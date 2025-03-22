@@ -45,3 +45,6 @@ class AppLogger {
     return '📝';
   }
 }
+
+final localLogger = Logger('LOCAL');
+final remoteLogger = Logger('NETWORK');
