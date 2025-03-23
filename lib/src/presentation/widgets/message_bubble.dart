@@ -137,7 +137,9 @@ class MessageBubble extends ConsumerWidget {
     // 创建图像小部件
     Widget? imageWidget;
     if (avatarPath != null) {
-      if (avatarPath.startsWith('assets/')) {
+      if (avatarPath == '') {
+        imageWidget = null;
+      } else if (avatarPath.startsWith('assets/')) {
         // 使用资源图像
         imageWidget = Image.asset(
           avatarPath,

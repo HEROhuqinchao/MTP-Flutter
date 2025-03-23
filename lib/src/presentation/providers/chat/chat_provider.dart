@@ -294,6 +294,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
       }
 
       final role = await _roleService.getRoleById(session.roleId);
+      String avatarPath = '';
+      if (role != null && role.avatars.isNotEmpty) {
+        avatarPath = role.avatars.first;
+      }
 
       // 1. 添加一个等待中的消息
       final waitingMessage = MessageEntity(
@@ -301,7 +305,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         content: '...',
         timestamp: DateTime.now(),
         senderName: role != null ? role.name : '',
-        senderAvatar: role != null ? role.avatars.first : '',
+        senderAvatar: avatarPath,
         isFromUser: false,
         isRead: true,
         isGenerating: true,
@@ -433,13 +437,27 @@ class ChatNotifier extends StateNotifier<ChatState> {
       );
     }
 
+    final filteredMessages =
+        session.messages.where((msg) => !msg.isGenerating).toList();
+
     // 添加会话历史消息（最多取最近10条）
     final historyMessages =
-        session.messages.length > 100
-            ? session.messages.sublist(session.messages.length - 100)
-            : session.messages;
+        filteredMessages.length > 100
+            ? filteredMessages.sublist(session.messages.length - 100)
+            : filteredMessages;
 
-    messages.addAll(historyMessages);
+    // 添加消息去重 - 防止API请求中出现重复内容
+    final uniqueMessages = <MessageEntity>[];
+    final seenContents = <String>{};
+
+    for (final msg in historyMessages) {
+      if (!seenContents.contains(msg.content)) {
+        uniqueMessages.add(msg);
+        seenContents.add(msg.content);
+      }
+    }
+
+    messages.addAll(uniqueMessages);
     return messages;
   }
 
@@ -492,6 +510,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
     String content,
   ) async {
     final role = await _roleService.getRoleById(originalSession.roleId);
+    String avatarPath = '';
+    if (role != null && role.avatars.isNotEmpty) {
+      avatarPath = role.avatars.first;
+    }
 
     // 创建最终的AI消息
     final finalAiMessage = MessageEntity(
@@ -499,7 +521,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       content: content,
       timestamp: DateTime.now(),
       senderName: role != null ? role.name : '',
-      senderAvatar: role != null ? role.avatars.first : '',
+      senderAvatar: avatarPath,
       isFromUser: false,
       isRead: true,
       isGenerating: false,

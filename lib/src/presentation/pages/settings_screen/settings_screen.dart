@@ -777,7 +777,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 TextField(
                   controller: tempartureController,
                   decoration: const InputDecoration(
-                    labelText: '温度 (0.0-1.0)',
+                    labelText: '温度 (0.0-2.0)',
                     hintText: '较低的值使输出更确定，较高的值使输出更随机',
                     border: OutlineInputBorder(),
                   ),
@@ -860,7 +860,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 TextField(
                   controller: tempartureController,
                   decoration: const InputDecoration(
-                    labelText: '温度 (0.0-1.0)',
+                    labelText: '温度 (0.0-2.0)',
                     hintText: '较低的值使输出更确定，较高的值使输出更随机',
                   ),
                   keyboardType: TextInputType.number,
