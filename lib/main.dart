@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:mtp/hive/hive_registrar.g.dart';
 import 'package:logging/logging.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:window_manager_plus/window_manager_plus.dart';
 import 'src/app/app.dart';
 import 'src/di/dependency_injection.dart';
@@ -17,13 +18,22 @@ void main(List<String> args) async {
   // 初始化日志系统
   AppLogger.init(level: Level.ALL); // 开发环境可以记录所有级别
 
-  final windowId = args.isEmpty ? 0 : int.tryParse(args[0]) ?? 0;
+  // 根据平台选择合适的存储路径
+  String hivePath;
+  if (Platform.isAndroid || Platform.isIOS) {
+    // 在移动平台上使用应用文档目录
+    final directory = await getApplicationDocumentsDirectory();
+    hivePath = directory.path;
+    localLogger.info('移动平台，Hive将使用路径: $hivePath');
+  } else {
+    // 在桌面平台上使用当前目录
+    hivePath = Directory.current.path;
+    localLogger.info('桌面平台，Hive将使用路径: $hivePath');
+  }
 
-  // 必须在桌面平台上初始化window_manager
-  await WindowManagerPlus.ensureInitialized(windowId);
   // Hive初始化
   Hive
-    ..init(Directory.current.path)
+    ..init(hivePath)
     ..registerAdapters();
   localLogger.info('Hive数据库初始化完成');
 
@@ -34,19 +44,29 @@ void main(List<String> args) async {
   // 确保每个角色都有默认会话
   await ensureDefaultSessions();
 
-  // 窗口配置
-  WindowOptions windowOptions = const WindowOptions(
-    minimumSize: Size(960, 654),
-    size: Size(960, 654),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.hidden, // 隐藏标题栏
-  );
-  await WindowManagerPlus.current.waitUntilReadyToShow(windowOptions, () async {
-    await WindowManagerPlus.current.show();
-    await WindowManagerPlus.current.focus();
-  });
+  if (!(Platform.isAndroid || Platform.isIOS)) {
+    final windowId = args.isEmpty ? 0 : int.tryParse(args[0]) ?? 0;
+
+    // 必须在桌面平台上初始化window_manager
+    await WindowManagerPlus.ensureInitialized(windowId);
+
+    // 窗口配置
+    WindowOptions windowOptions = const WindowOptions(
+      minimumSize: Size(960, 654),
+      size: Size(960, 654),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.hidden, // 隐藏标题栏
+    );
+    await WindowManagerPlus.current.waitUntilReadyToShow(
+      windowOptions,
+      () async {
+        await WindowManagerPlus.current.show();
+        await WindowManagerPlus.current.focus();
+      },
+    );
+  }
 
   runApp(ProviderScope(child: const App()));
 }

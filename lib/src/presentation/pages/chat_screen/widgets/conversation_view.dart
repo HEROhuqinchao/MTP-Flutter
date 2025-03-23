@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/domain/entities/message_entity.dart';
@@ -597,10 +598,14 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
     RoleEntity? role,
   ) {
     final theme = Theme.of(context);
+    final isMobile = Platform.isAndroid || Platform.isIOS;
 
     return Container(
       key: _headerKey, // 添加key以测量高度
-      padding: const EdgeInsets.only(top: 28, bottom: 12, left: 16, right: 16),
+      padding:
+          isMobile
+              ? const EdgeInsets.only(top: 28, left: 8, right: 8, bottom: 12)
+              : const EdgeInsets.only(top: 28, bottom: 12, left: 16, right: 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
@@ -613,6 +618,11 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
       ),
       child: Row(
         children: [
+          if (isMobile)
+            IconButton(
+              onPressed: () => GoRouter.of(context).pop(),
+              icon: Icon(Ionicons.chevron_back),
+            ),
           // 头像
           Container(
             width: 40,
@@ -717,8 +727,10 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
     BuildContext context,
     List<MessageEntity> messages,
   ) {
+    final isMobile = Platform.isAndroid || Platform.isIOS;
     // 计算消息区域实际宽度
-    final messageAreaWidth = MediaQuery.of(context).size.width - 252;
+    final messageAreaWidth =
+        MediaQuery.of(context).size.width - (isMobile ? 0 : 252);
 
     return ListView.builder(
       controller: _scrollController,
@@ -742,7 +754,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
             MessageBubble(
               message: message,
               isMe: isMe,
-              maxWidth: messageAreaWidth * 0.72,
+              maxWidth: messageAreaWidth * 0.7,
             ),
           ],
         );

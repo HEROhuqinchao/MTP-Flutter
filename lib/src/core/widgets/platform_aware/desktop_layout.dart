@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mtp/src/core/widgets/platform_aware/desktop_sidebar.dart';
+import 'package:mtp/src/core/widgets/responsive_layout.dart';
 
 class DesktopLayout extends StatelessWidget {
   final Widget child;
@@ -24,7 +25,27 @@ class DesktopLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isPhysicalMobile = context.isPhysicalMobile;
 
+    // Mobile override for desktop layout when on a mobile device
+    if (isPhysicalMobile) {
+      return Scaffold(
+        backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
+        floatingActionButton: floatingActionButton,
+        appBar:
+            appBar ??
+            (title != null
+                ? AppBar(
+                  title: Text(title!),
+                  actions: actions,
+                  scrolledUnderElevation: 0,
+                )
+                : null),
+        body: child,
+      );
+    }
+
+    // Standard desktop layout
     return Scaffold(
       backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
       floatingActionButton: floatingActionButton,

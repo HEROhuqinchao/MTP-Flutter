@@ -40,7 +40,7 @@ class MessageBubble extends ConsumerWidget {
                 return Container(
                   constraints: BoxConstraints(
                     maxWidth:
-                        maxWidth ?? MediaQuery.of(context).size.width * 0.5,
+                        maxWidth ?? MediaQuery.of(context).size.width * 0.7,
                   ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,

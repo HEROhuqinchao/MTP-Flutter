@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtp/src/presentation/pages/chat_screen/chat_screen.dart';
 import '../core/widgets/platform_aware/desktop_layout.dart';
@@ -30,33 +31,71 @@ class App extends ConsumerWidget {
   }
 }
 
-class AppHome extends StatelessWidget {
+class AppHome extends StatefulWidget {
   const AppHome({super.key});
+
+  @override
+  State<AppHome> createState() => _AppHomeState();
+}
+
+class _AppHomeState extends State<AppHome> {
+  @override
+  void initState() {
+    super.initState();
+    _configureSystemUI();
+  }
+
+  // Configure system UI based on platform
+  void _configureSystemUI() {
+    if (Platform.isAndroid || Platform.isIOS) {
+      // Mobile-specific UI configuration
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // 判断是否为桌面平台
     final bool isDesktopPlatform =
         Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+    final bool isMobilePlatform = Platform.isAndroid || Platform.isIOS;
 
     return Scaffold(
       // 在桌面平台上不使用AppBar，而使用自定义标题栏
-      appBar:
-          isDesktopPlatform
-              ? null
-              : AppBar(
-                title: const Text('Responsive App'),
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              ),
+      appBar: null,
+      // isDesktopPlatform
+      //     ? null
+      //     : AppBar(
+      //       title: const Text('MomoTalk Plus'),
+      //       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      //     ),
       body: Stack(
         children: [
           // 内容区域
           ResponsiveLayout(
+            // Mobile layout is different based on physical device
             mobileLayout: const MobileLayout(),
+            // On mobile devices, landscape should adapt
+            mobileLandscapeLayout: isMobilePlatform ? null : null,
+            // Tablet layout
             tabletLayout:
                 isDesktopPlatform
                     ? const DesktopLayout(child: ChatScreen())
                     : const TabletLayout(),
+            // Desktop layout
             desktopLayout: const DesktopLayout(child: ChatScreen()),
           ),
           // 桌面平台使用自定义标题栏，放在Stack顶层

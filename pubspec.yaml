@@ -25,6 +25,7 @@ dependencies:
   path_provider: ^2.1.1
   path: ^1.8.3
   ionicons: ^0.2.2
+  go_router: ^14.8.1
 
 dev_dependencies:
   flutter_test:

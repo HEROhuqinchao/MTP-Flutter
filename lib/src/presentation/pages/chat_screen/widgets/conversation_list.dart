@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/core/widgets/platform_aware/mobile_drawer.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
+import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:mtp/src/utils/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,11 +15,19 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'conversation_list_item.dart';
 
-class ConversationList extends ConsumerWidget {
+class ConversationList extends ConsumerStatefulWidget {
   const ConversationList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _ConversationListState();
+}
+
+class _ConversationListState extends ConsumerState<ConversationList> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  Widget build(BuildContext context) {
     // 使用Provider获取会话列表和状态
     final chatState = ref.watch(chatStateProvider);
     final filteredSessions = ref.watch(filteredSessionsProvider);
@@ -25,163 +36,107 @@ class ConversationList extends ConsumerWidget {
     print(
       '会话列表构建: 总共${chatState.sessions.length}个会话，过滤后${filteredSessions.length}个',
     );
+    final isMobile = Platform.isAndroid || Platform.isIOS;
 
-    return Container(
-      color: Theme.of(context).colorScheme.surface,
-      child: Column(
-        children: [
-          // header with search
-          Container(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            padding: const EdgeInsets.only(
-              top: 28,
-              bottom: 20,
-              left: 16,
-              right: 16,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 32,
-                    child: SearchBar(
-                      leading: const Icon(Ionicons.search, size: 16),
-                      hintText: "搜索对话",
-                      hintStyle: WidgetStateProperty.all(
-                        TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          height: 1.0,
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile ? MobileDrawer() : null,
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (!isMobile) return;
+          if (details.primaryVelocity! > 0) {
+            _scaffoldKey.currentState?.openDrawer();
+          }
+        },
+        child: Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: Column(
+            children: [
+              // header with search
+              if (isMobile) _buildMobileHeader() else _buildHeader(),
+              // 会话列表
+              Expanded(
+                child:
+                    chatState.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : filteredSessions.isEmpty
+                        ? chatState.searchQuery.isEmpty
+                            ? _buildNoConversations() // 无搜索且列表为空 - 显示"没有会话"
+                            : _buildEmptySearchResult(
+                              chatState.searchQuery,
+                            ) // 有搜索但无结果
+                        : ListView.builder(
+                          itemCount: filteredSessions.length,
+                          itemBuilder: (context, index) {
+                            final session = filteredSessions[index];
+                            final originalIndex = chatState.sessions.indexOf(
+                              session,
+                            );
+
+                            // 根据 roleId 获取角色信息
+                            final role =
+                                roleState.roles.isEmpty
+                                    ? null
+                                    : roleState.roles.firstWhere(
+                                      (role) => role.id == session.roleId,
+                                      orElse: () => roleState.roles.first,
+                                    );
+
+                            // 计算未读消息数量
+                            final unreadCount =
+                                session.messages
+                                    .where(
+                                      (msg) => !msg.isRead && !msg.isFromUser,
+                                    )
+                                    .length;
+
+                            // 确定是否活跃 (最近10分钟有新消息)
+                            final isActive =
+                                session.updatedAt != null &&
+                                DateTime.now()
+                                        .difference(session.updatedAt!)
+                                        .inMinutes <
+                                    10;
+
+                            // 获取角色头像
+                            String? avatarUrl;
+                            if (role != null && role.avatars.isNotEmpty) {
+                              avatarUrl = role.avatars.first;
+                            }
+
+                            return Column(
+                              children: [
+                                ConversationListItem(
+                                  title: session.title,
+                                  lastMessage:
+                                      session.messages.isNotEmpty
+                                          ? session.messages.last.content
+                                          : "",
+                                  timestamp:
+                                      session.updatedAt ?? DateTime.now(),
+                                  avatarUrl: avatarUrl, // 这里可以从角色数据中获取
+                                  unreadCount: unreadCount, // 从会话数据中获取
+                                  isActive: isActive, // 从用户状态中获取
+                                  isSelected:
+                                      selectedSessionIndex == originalIndex,
+                                  onTap: () {
+                                    // 使用Provider选择会话
+                                    ref
+                                        .read(chatStateProvider.notifier)
+                                        .selectSession(originalIndex);
+                                    if (Platform.isAndroid || Platform.isIOS) {
+                                      GoRouter.of(context).push('/chat');
+                                    }
+                                  },
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                      ),
-                      textStyle: WidgetStateProperty.all(
-                        const TextStyle(fontSize: 12, height: 1.0), // 确保输入文本也居中
-                      ),
-                      backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                      ),
-                      shadowColor: WidgetStateProperty.all(Colors.transparent),
-                      elevation: WidgetStateProperty.all(0),
-                      // padding: WidgetStateProperty.all(
-                      //   EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      // ),
-                      constraints: const BoxConstraints(
-                        maxHeight: 32, // 添加最大高度约束
-                        minHeight: 32, // 添加最小高度约束
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onChanged: (value) {
-                        ref
-                            .read(chatStateProvider.notifier)
-                            .setSearchQuery(value);
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  iconSize: 16,
-                  icon: const Icon(Ionicons.person_add),
-                  onPressed: () {
-                    // 创建新会话的逻辑，可以打开一个对话框
-                    _showNewConversationDialog(context, ref);
-                  },
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(
-                      Theme.of(context).colorScheme.surfaceContainerHighest,
-                    ),
-                    minimumSize: WidgetStateProperty.all(const Size(32, 32)),
-                    maximumSize: WidgetStateProperty.all(const Size(32, 32)),
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  tooltip: "新建角色",
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-
-          // 会话列表
-          Expanded(
-            child:
-                chatState.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : filteredSessions.isEmpty
-                    ? chatState.searchQuery.isEmpty
-                        ? _buildNoConversations() // 无搜索且列表为空 - 显示"没有会话"
-                        : _buildEmptySearchResult(
-                          chatState.searchQuery,
-                        ) // 有搜索但无结果
-                    : ListView.builder(
-                      itemCount: filteredSessions.length,
-                      itemBuilder: (context, index) {
-                        final session = filteredSessions[index];
-                        final originalIndex = chatState.sessions.indexOf(
-                          session,
-                        );
-
-                        // 根据 roleId 获取角色信息
-                        final role =
-                            roleState.roles.isEmpty
-                                ? null
-                                : roleState.roles.firstWhere(
-                                  (role) => role.id == session.roleId,
-                                  orElse: () => roleState.roles.first,
-                                );
-
-                        // 计算未读消息数量
-                        final unreadCount =
-                            session.messages
-                                .where((msg) => !msg.isRead && !msg.isFromUser)
-                                .length;
-
-                        // 确定是否活跃 (最近10分钟有新消息)
-                        final isActive =
-                            session.updatedAt != null &&
-                            DateTime.now()
-                                    .difference(session.updatedAt!)
-                                    .inMinutes <
-                                10;
-
-                        // 获取角色头像
-                        String? avatarUrl;
-                        if (role != null && role.avatars.isNotEmpty) {
-                          avatarUrl = role.avatars.first;
-                        }
-
-                        return Column(
-                          children: [
-                            ConversationListItem(
-                              title: session.title,
-                              lastMessage:
-                                  session.messages.isNotEmpty
-                                      ? session.messages.last.content
-                                      : "",
-                              timestamp: session.updatedAt ?? DateTime.now(),
-                              avatarUrl: avatarUrl, // 这里可以从角色数据中获取
-                              unreadCount: unreadCount, // 从会话数据中获取
-                              isActive: isActive, // 从用户状态中获取
-                              isSelected: selectedSessionIndex == originalIndex,
-                              onTap: () {
-                                // 使用Provider选择会话
-                                ref
-                                    .read(chatStateProvider.notifier)
-                                    .selectSession(originalIndex);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -205,7 +160,6 @@ class ConversationList extends ConsumerWidget {
 
   // 新建会话对话框
   void _showNewConversationDialog(BuildContext context, WidgetRef ref) {
-    // final sessionTitleController = TextEditingController();
     final roleNameController = TextEditingController();
     final rolePromptController = TextEditingController();
     File? selectedAvatar;
@@ -234,8 +188,6 @@ class ConversationList extends ConsumerWidget {
 
             // 表单验证
             bool isFormValid() {
-              // return sessionTitleController.text.trim().isNotEmpty &&
-              //     roleNameController.text.trim().isNotEmpty;
               return roleNameController.text.trim().isNotEmpty;
             }
 
@@ -303,23 +255,6 @@ class ConversationList extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
-
-                    // 会话信息部分
-                    // Text(
-                    //   '会话信息',
-                    //   style: Theme.of(context).textTheme.titleMedium,
-                    // ),
-                    // const SizedBox(height: 12),
-                    // TextField(
-                    //   controller: sessionTitleController,
-                    //   decoration: const InputDecoration(
-                    //     labelText: '会话标题',
-                    //     hintText: '请输入会话标题',
-                    //     border: OutlineInputBorder(),
-                    //     prefixIcon: Icon(Icons.chat),
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 24),
 
                     // 角色信息部分
                     Text(
@@ -454,6 +389,220 @@ class ConversationList extends ConsumerWidget {
       print('保存角色头像失败: $e');
       return null;
     }
+  }
+
+  Widget _buildMobileHeader() {
+    final settings = ref.watch(settingsProvider);
+
+    final avatarWidget = Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () {
+          // 导航到设置页面
+          _scaffoldKey.currentState?.openDrawer();
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceBright,
+              width: 2,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.primary.withOpacity(0.1),
+            backgroundImage:
+                settings?.userAvatar.isNotEmpty == true
+                    ? settings!.userAvatar.startsWith('assets/')
+                        ? AssetImage(settings.userAvatar)
+                        : FileImage(File(settings.userAvatar)) as ImageProvider
+                    : null,
+            child:
+                settings?.userAvatar.isEmpty != false
+                    ? Icon(
+                      Icons.person,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                    : null,
+          ),
+        ),
+      ),
+    );
+
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              avatarWidget,
+              SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    settings?.username ?? '',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Row(
+                    children: [
+                      Badge(smallSize: 8, backgroundColor: Colors.green),
+                      SizedBox(width: 4),
+                      Text(
+                        '手机在线',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Spacer(),
+              IconButton(
+                iconSize: 16,
+                icon: const Icon(Ionicons.person_add),
+                onPressed: () {
+                  // 创建新会话的逻辑，可以打开一个对话框
+                  _showNewConversationDialog(context, ref);
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
+                  minimumSize: WidgetStateProperty.all(const Size(32, 32)),
+                  maximumSize: WidgetStateProperty.all(const Size(32, 32)),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                tooltip: "新建角色",
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 32,
+                  child: SearchBar(
+                    leading: const Icon(Ionicons.search, size: 16),
+                    hintText: "搜索对话",
+                    hintStyle: WidgetStateProperty.all(
+                      TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        height: 1.0,
+                      ),
+                    ),
+                    textStyle: WidgetStateProperty.all(
+                      const TextStyle(fontSize: 12, height: 1.0), // 确保输入文本也居中
+                    ),
+                    backgroundColor: WidgetStateProperty.all(
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                    ),
+                    shadowColor: WidgetStateProperty.all(Colors.transparent),
+                    elevation: WidgetStateProperty.all(0),
+                    constraints: const BoxConstraints(
+                      maxHeight: 32, // 添加最大高度约束
+                      minHeight: 32, // 添加最小高度约束
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      ref
+                          .read(chatStateProvider.notifier)
+                          .setSearchQuery(value);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      padding: const EdgeInsets.only(top: 28, bottom: 20, left: 16, right: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 32,
+              child: SearchBar(
+                leading: const Icon(Ionicons.search, size: 16),
+                hintText: "搜索对话",
+                hintStyle: WidgetStateProperty.all(
+                  TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    height: 1.0,
+                  ),
+                ),
+                textStyle: WidgetStateProperty.all(
+                  const TextStyle(fontSize: 12, height: 1.0), // 确保输入文本也居中
+                ),
+                backgroundColor: WidgetStateProperty.all(
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+                ),
+                shadowColor: WidgetStateProperty.all(Colors.transparent),
+                elevation: WidgetStateProperty.all(0),
+                // padding: WidgetStateProperty.all(
+                //   EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                // ),
+                constraints: const BoxConstraints(
+                  maxHeight: 32, // 添加最大高度约束
+                  minHeight: 32, // 添加最小高度约束
+                ),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onChanged: (value) {
+                  ref.read(chatStateProvider.notifier).setSearchQuery(value);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            iconSize: 16,
+            icon: const Icon(Ionicons.person_add),
+            onPressed: () {
+              // 创建新会话的逻辑，可以打开一个对话框
+              _showNewConversationDialog(context, ref);
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
+              minimumSize: WidgetStateProperty.all(const Size(32, 32)),
+              maximumSize: WidgetStateProperty.all(const Size(32, 32)),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            tooltip: "新建角色",
+          ),
+        ],
+      ),
+    );
   }
 
   // // 新建会话对话框
