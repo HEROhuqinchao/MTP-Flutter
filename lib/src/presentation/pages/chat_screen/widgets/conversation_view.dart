@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/domain/entities/message_entity.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
+import 'package:mtp/src/domain/entities/session_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'package:mtp/src/presentation/widgets/simple_icon_button.dart';
@@ -304,46 +305,71 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
               // 操作按钮区域 - 保持在滚动区域外
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                child: Column(
                   children: [
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.edit),
-                      label: const Text("编辑角色"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _showEditRoleDialog(context, currentRole);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
+                    // 清除历史记录按钮
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Ionicons.trash),
+                        label: const Text("清除历史记录"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showClearHistoryConfirmation(context);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: theme.colorScheme.error,
+                          side: BorderSide(
+                            color: theme.colorScheme.error.withOpacity(0.5),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
                       ),
                     ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.delete_outline),
-                      label: const Text("删除角色"),
-                      onPressed: () {
-                        if (currentRole.id != null) {
-                          final currentSession = ref.watch(
-                            currentSessionProvider,
-                          );
-                          if (currentSession != null) {
-                            _showDeleteRoleConfirmation(
-                              context,
-                              currentRole.id!,
-                              currentSession.id!,
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('无法删除：找不到当前会话')),
-                            );
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.errorContainer,
-                        foregroundColor: theme.colorScheme.onErrorContainer,
-                      ),
+                    const SizedBox(height: 16),
+                    // 编辑与删除按钮行
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.edit),
+                          label: const Text("编辑角色"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showEditRoleDialog(context, currentRole);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text("删除角色"),
+                          onPressed: () {
+                            if (currentRole.id != null) {
+                              final currentSession = ref.watch(
+                                currentSessionProvider,
+                              );
+                              if (currentSession != null) {
+                                _showDeleteRoleConfirmation(
+                                  context,
+                                  currentRole.id!,
+                                  currentSession.id!,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('无法删除：找不到当前会话')),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.errorContainer,
+                            foregroundColor: theme.colorScheme.onErrorContainer,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -483,8 +509,11 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                               isUpdating
                                   ? null
                                   : () async {
-                                    if (roleNameController.text.trim().isEmpty)
+                                    if (roleNameController.text
+                                        .trim()
+                                        .isEmpty) {
                                       return;
+                                    }
 
                                     setState(() {
                                       isUpdating = true;
@@ -588,6 +617,56 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
             ],
           ),
     );
+  }
+
+  // 显示清除历史记录确认对话框
+  void _showClearHistoryConfirmation(BuildContext context) {
+    final currentSession = ref.read(currentSessionProvider);
+    if (currentSession == null) return;
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("清除历史记录"),
+            content: const Text("确定要清除所有聊天记录吗？此操作不可撤销，但会保留会话本身。"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("取消"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _clearChatHistory(currentSession);
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: const Text("清除"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // 清除聊天历史记录的方法
+  void _clearChatHistory(SessionEntity session) {
+    if (session.id == null) return;
+
+    // 创建一个新会话，保留原有信息但清空消息
+    final clearedSession = session.copyWith(
+      messages: [],
+      updatedAt: DateTime.now(),
+    );
+
+    // 更新会话
+    ref.read(chatStateProvider.notifier).importSession(clearedSession);
+
+    // 显示提示
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('聊天记录已清除')));
   }
 
   Widget _buildHeader(
