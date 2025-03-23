@@ -127,7 +127,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
           ),
 
           // 分隔线
-          Divider(height: 1, color: theme.dividerColor),
+          // Divider(height: 1, color: theme.dividerColor),
 
           // 消息输入区域
           _buildMessageComposer(context),
@@ -794,7 +794,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: theme.scaffoldBackgroundColor,
+      color: theme.primaryColor.withAlpha(5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end, // 关键：底部对齐
         children: [

@@ -32,7 +32,10 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
           Container(
             padding: EdgeInsets.only(top: 8, bottom: 8),
             alignment: Alignment.center,
-            child: Text("MTP", style: Theme.of(context).textTheme.titleMedium),
+            child: Text(
+              appName,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ),
           Expanded(
             child: Column(
@@ -155,15 +158,15 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                       onPressed: () => {},
                       style: ButtonStyle(
                         // 设置更小的内边距
-                        padding: MaterialStateProperty.all(EdgeInsets.all(4)),
+                        padding: WidgetStateProperty.all(EdgeInsets.all(4)),
                         // 设置背景颜色 - 选中时显示
-                        backgroundColor: MaterialStateProperty.resolveWith((
+                        backgroundColor: WidgetStateProperty.resolveWith((
                           states,
                         ) {
-                          if (states.contains(MaterialState.selected)) {
+                          if (states.contains(WidgetState.selected)) {
                             return Theme.of(
                               context,
-                            ).colorScheme.primaryContainer.withOpacity(0.8);
+                            ).colorScheme.onSurface.withValues(alpha: 0.1);
                           }
                           return Colors.transparent; // 未选中时透明
                         }),
