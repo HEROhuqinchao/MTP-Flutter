@@ -33,6 +33,8 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
+          tag_name: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             # MomoTalk Plus ${{ github.ref_name }}
             
@@ -82,7 +84,7 @@ jobs:
           name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: false
+          append_body: true
 
   build-windows:
     name: Build Windows
@@ -119,7 +121,7 @@ jobs:
           name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: false
+          append_body: true
 
   build-macos:
     name: Build macOS
@@ -156,7 +158,7 @@ jobs:
           name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: false
+          append_body: true
 
   build-linux:
     name: Build Linux
@@ -198,7 +200,7 @@ jobs:
           name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: false
+          append_body: true
 
   build-ios:
     name: Build iOS
@@ -236,4 +238,4 @@ jobs:
           name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: false
+          append_body: true
