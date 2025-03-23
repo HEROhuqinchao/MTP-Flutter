@@ -45,12 +45,12 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                     // 添加头像
                     InkWell(
                       onTap: () {
-                        // 点击头像打开设置页面
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const SettingsScreen(),
-                          ),
-                        );
+                        // // 点击头像打开设置页面
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (context) => const SettingsScreen(),
+                        //   ),
+                        // );
                       },
                       borderRadius: BorderRadius.circular(16),
                       child: Padding(
