@@ -20,6 +20,23 @@ MomoTalk Plus 是一款模拟游戏《蔚蓝档案》(Blue Archive) 中通讯软
 - **数据持久化**：使用 Hive 数据库本地存储聊天记录和用户数据
 - **现代化 UI**：基于 Material 3 设计的美观界面
 - **跨平台支持**：支持 Windows、macOS、Linux、Android 和 iOS 系统
+- **用户个性化**：支持自定义用户头像和用户名
+- **流式响应**：支持流式AI回复，实时查看生成内容
+- **角色自定义**：允许创建和编辑自定义角色，包括角色提示词和头像
+
+## 模型配置
+
+MomoTalk Plus 支持配置多种大语言模型服务，包括但不限于：
+
+- **OpenAI API**：支持GPT系列模型，或兼容OpenAI输出格式的模型
+- **Azure OpenAI**：支持微软Azure上的OpenAI服务
+- **本地模型**：支持接入本地部署的开源大语言模型
+
+配置新模型时需要提供以下信息：
+- 模型名称：为模型设置一个易于识别的名称
+- 基础URL：API服务的基础地址
+- API密钥：访问模型服务的授权密钥
+- 温度参数：控制回复的随机性和创造性(0-1之间)
 
 ## 技术架构
 
@@ -29,6 +46,8 @@ MomoTalk Plus 是一款模拟游戏《蔚蓝档案》(Blue Archive) 中通讯软
 - **状态管理**：Riverpod
 - **数据存储**：Hive
 - **LLM 集成**：支持多种模型 API
+- **路由管理**：GoRouter
+- **响应式编程**：使用Stream处理异步数据流
 
 ### 项目结构
 
@@ -58,6 +77,13 @@ MomoTalk Plus 是一款模拟游戏《蔚蓝档案》(Blue Archive) 中通讯软
 
 从 `release` 内下载对应版本的安装包安装即可
 
+### 初次使用
+
+1. 启动应用后，前往"设置"页面
+2. 配置您的用户名和头像
+3. 添加至少一个语言模型并选择它
+4. 返回主页，创建新角色开始对话
+
 ## 开发指南
 
 ### 开发步骤
@@ -85,6 +111,17 @@ flutter run
 
 - [VS Code](https://code.visualstudio.com/) + [Flutter 扩展](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter)
 - [Android Studio](https://developer.android.com/studio) + [Flutter 插件](https://plugins.jetbrains.com/plugin/9212-flutter)
+
+## 常见问题
+
+**Q: 为什么我无法获取AI回复？**  
+A: 请确保您已在设置中正确配置并选择至少一个语言模型。检查API密钥和基础URL是否正确。
+
+**Q: 如何更改应用主题？**  
+A: 在设置页面中，您可以选择浅色、深色或跟随系统主题。
+
+**Q: 如何备份我的聊天记录？**  
+A: 目前应用数据存储在本地，我们将在未来版本中添加数据备份和恢复功能。
 
 ## 贡献指南
 
