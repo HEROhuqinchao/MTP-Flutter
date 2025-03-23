@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
-import 'package:mtp/src/core/widgets/data_management/data_management_sheet.dart';
+import 'package:mtp/src/presentation/widgets/data_management_sheet.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';

@@ -12,7 +12,6 @@ import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:mtp/src/utils/logger.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DataManagementSheet extends ConsumerStatefulWidget {
@@ -260,28 +259,21 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
         bytes: bytes, // 添加字节数据，这是Android和iOS平台所必需的
       );
 
-      // 如果用户选择了保存位置，返回该路径
-      if (outputPath != null) {
-        return outputPath;
+      // 如果用户取消选择，直接返回null触发取消保存
+      if (outputPath == null) {
+        throw Exception('用户取消了保存操作');
       }
+
+      // 保存文件
+      final file = File(outputPath);
+      await file.writeAsString(jsonStr);
+
+      return outputPath;
     } catch (e) {
-      localLogger.info('使用FilePicker保存失败，尝试使用备选方法: $e');
-      // 如果出错，继续使用备选保存方法
+      localLogger.info('保存文件失败: $e');
+      // 出错时取消保存，将异常继续抛出
+      throw Exception('保存文件失败: $e');
     }
-
-    // 备选方法：保存到应用文档目录
-    final dir = await getApplicationDocumentsDirectory();
-    final backupDir = Directory('${dir.path}/backups');
-    if (!await backupDir.exists()) {
-      await backupDir.create(recursive: true);
-    }
-    final outputPath = '${backupDir.path}/$fileName';
-
-    // 保存文件
-    final file = File(outputPath);
-    await file.writeAsString(jsonStr);
-
-    return file.path;
   }
 
   Future<void> _shareExportedFile() async {
