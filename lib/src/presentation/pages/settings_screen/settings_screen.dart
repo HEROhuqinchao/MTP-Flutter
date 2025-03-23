@@ -710,11 +710,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         : null,
               ),
               onPressed: () {
-                // 更新选中状态
+                // if (!model.isSelected) {
                 final updatedModel = model.copyWith(
                   isSelected: !model.isSelected,
                 );
                 ref.read(settingsProvider.notifier).updateModel(updatedModel);
+                // }
               },
             ),
             // 编辑模型

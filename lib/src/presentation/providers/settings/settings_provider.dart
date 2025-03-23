@@ -101,8 +101,29 @@ class SettingsNotifier extends StateNotifier<SettingsEntity?> {
     if (state == null) return;
 
     try {
-      await _settingsRepository.updateModel(model);
-      await loadSettings(); // 重新加载所有设置
+      List<ChatModelEntity> updatedModels;
+
+      // 如果是要选中模型
+      if (model.isSelected) {
+        // 确保互斥选择：将其他所有模型设置为未选中
+        updatedModels =
+            state!.models.map((existingModel) {
+              return existingModel.id == model.id
+                  ? model // 当前模型保持选中
+                  : existingModel.copyWith(isSelected: false); // 其他模型取消选中
+            }).toList();
+      } else {
+        // 如果是要取消选中模型，直接允许操作
+        updatedModels =
+            state!.models.map((existingModel) {
+              return existingModel.id == model.id ? model : existingModel;
+            }).toList();
+      }
+
+      // 创建新的设置实体，替换模型列表
+      final updatedSettings = state!.copyWith(models: updatedModels);
+      await _settingsRepository.updateSettings(updatedSettings);
+      state = updatedSettings;
     } catch (e) {
       print('更新模型失败: $e');
     }
