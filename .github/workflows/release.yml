@@ -1,0 +1,236 @@
+name: Flutter Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: MomoTalk Plus ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            # MomoTalk Plus ${{ github.ref_name }}
+            
+            ## 下载
+            - **Windows**: `mtp-${{ steps.get_version.outputs.version }}-windows.zip`
+            - **macOS**: `mtp-${{ steps.get_version.outputs.version }}-macos.zip`
+            - **Linux**: `mtp-${{ steps.get_version.outputs.version }}-linux.zip`
+            - **Android**: `mtp-${{ steps.get_version.outputs.version }}.apk`
+            - **iOS**: `mtp-${{ steps.get_version.outputs.version }}-ios.ipa` (需要开发者账号)
+            
+            ## 安装说明
+            请参阅 [README.md](https://github.com/MTPGroup/MTP-Flutter/blob/main/README.md) 获取详细的安装和使用说明。
+
+  build-android:
+    name: Build Android
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_JKS_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          echo "storeFile=keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          name: MomoTalk Plus ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          append_body: false
+
+  build-windows:
+    name: Build Windows
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows
+        run: |
+          flutter config --enable-windows-desktop
+          flutter build windows --release
+
+      - name: Create Windows zip
+        run: |
+          cd build/windows/x64/runner/Release
+          Compress-Archive -Path * -DestinationPath "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-windows.zip"
+
+      - name: Upload Windows zip to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mtp-${{ needs.create-release.outputs.version }}-windows.zip
+          name: MomoTalk Plus ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          append_body: false
+
+  build-macos:
+    name: Build macOS
+    needs: create-release
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS
+        run: |
+          flutter config --enable-macos-desktop
+          flutter build macos --release
+
+      - name: Create macOS zip
+        run: |
+          cd build/macos/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent mtp.app "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-macos.zip"
+
+      - name: Upload macOS zip to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mtp-${{ needs.create-release.outputs.version }}-macos.zip
+          name: MomoTalk Plus ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          append_body: false
+
+  build-linux:
+    name: Build Linux
+    needs: create-release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build libgtk-3-dev libblkid-dev liblzma-dev
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Linux
+        run: |
+          flutter config --enable-linux-desktop
+          flutter build linux --release
+
+      - name: Create Linux zip
+        run: |
+          cd build/linux/x64/release/bundle
+          zip -r "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-linux.zip" *
+
+      - name: Upload Linux zip to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mtp-${{ needs.create-release.outputs.version }}-linux.zip
+          name: MomoTalk Plus ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          append_body: false
+
+  build-ios:
+    name: Build iOS
+    needs: create-release
+    runs-on: macos-latest
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS (no signing)
+        run: flutter build ios --release --no-codesign
+
+      - name: Create IPA Archive
+        run: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload
+          zip -r "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-ios.ipa" Payload
+
+      - name: Upload iOS IPA to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mtp-${{ needs.create-release.outputs.version }}-ios.ipa
+          name: MomoTalk Plus ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          append_body: false

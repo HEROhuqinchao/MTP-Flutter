@@ -49,3 +49,5 @@ app.*.map.json
 roles.lock
 sessions.lock
 settings.lock
+keystore.jks
+keystore_base64.txt
