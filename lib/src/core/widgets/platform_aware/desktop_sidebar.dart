@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
+import 'package:mtp/src/presentation/widgets/data_management_sheet.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager_plus/window_manager_plus.dart';
@@ -279,6 +280,51 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                                                         (context) =>
                                                             const SettingsScreen(),
                                                   ),
+                                                );
+                                              },
+                                            ),
+                                            Divider(
+                                              height: 1,
+                                              thickness: 1,
+                                              indent: 16,
+                                              endIndent: 16,
+                                            ),
+                                            _buildMenuItem(
+                                              context: context,
+                                              icon:
+                                                  Ionicons.folder_open_outline,
+                                              title: '导出/导入数据',
+                                              onTap: () {
+                                                _overlayController.hide();
+                                                // 显示数据管理界面
+                                                showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (context) => Dialog(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                16,
+                                                              ),
+                                                        ),
+                                                        child: Container(
+                                                          width: 500,
+                                                          constraints:
+                                                              BoxConstraints(
+                                                                maxHeight:
+                                                                    MediaQuery.of(
+                                                                      context,
+                                                                    ).size.height *
+                                                                    0.8,
+                                                              ),
+                                                          padding:
+                                                              const EdgeInsets.all(
+                                                                16,
+                                                              ),
+                                                          child:
+                                                              const DataManagementSheet(),
+                                                        ),
+                                                      ),
                                                 );
                                               },
                                             ),
