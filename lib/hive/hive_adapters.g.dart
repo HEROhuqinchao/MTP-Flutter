@@ -62,17 +62,23 @@ class ChatMessageAdapter extends TypeAdapter<ChatMessage> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return ChatMessage(role: fields[0] as String, content: fields[1] as String);
+    return ChatMessage(
+      role: fields[0] as String,
+      content: fields[1] as String,
+      isRead: fields[2] == null ? true : fields[2] as bool?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, ChatMessage obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.role)
       ..writeByte(1)
-      ..write(obj.content);
+      ..write(obj.content)
+      ..writeByte(2)
+      ..write(obj.isRead);
   }
 
   @override

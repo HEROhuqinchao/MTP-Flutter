@@ -459,9 +459,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
         final lastMsg = formattedMessages.last;
         if ((currentMsg.isFromUser && lastMsg.isFromUser) ||
             (!currentMsg.isFromUser && !lastMsg.isFromUser)) {
-          formattedMessages.last.copyWith(
-            content: lastMsg.content + currentMsg.content,
-          );
+          formattedMessages[formattedMessages.length - 1] = formattedMessages
+              .last
+              .copyWith(content: lastMsg.content + currentMsg.content);
         }
       }
 
@@ -627,5 +627,29 @@ class ChatNotifier extends StateNotifier<ChatState> {
   // 删除错误消息
   Future<void> clearErrorMessage() async {
     state = state.copyWith(errorMessage: null);
+  }
+
+  // 导入单个会话
+  Future<void> importSession(SessionEntity session) async {
+    try {
+      // 检查会话是否已存在
+      final existingIndex = state.sessions.indexWhere(
+        (s) => s.id == session.id,
+      );
+
+      if (existingIndex >= 0) {
+        // 已存在，更新
+        await _chatRepository.updateSession(session);
+      } else {
+        // 不存在，添加
+        await _chatRepository.addSession(session);
+      }
+
+      // 重新加载会话列表
+      await loadSessions();
+    } catch (e) {
+      print('导入会话失败: $e');
+      state = state.copyWith(errorMessage: '导入会话失败: $e');
+    }
   }
 }

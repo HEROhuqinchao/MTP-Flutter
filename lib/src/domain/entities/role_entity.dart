@@ -1,31 +1,18 @@
-class RoleEntity {
-  final String? id;
-  final String name;
-  final List<String> avatars;
-  final String prompt;
-  final String lastMessage;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  RoleEntity({
-    this.id,
-    required this.name,
-    required this.avatars,
-    required this.prompt,
-    required this.lastMessage,
-  });
+part 'role_entity.freezed.dart';
+part 'role_entity.g.dart';
 
-  RoleEntity copyWith({
+@freezed
+abstract class RoleEntity with _$RoleEntity {
+  const factory RoleEntity({
     String? id,
-    String? name,
-    List<String>? avatars,
-    String? prompt,
-    String? lastMessage,
-  }) {
-    return RoleEntity(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      avatars: avatars ?? this.avatars,
-      prompt: prompt ?? this.prompt,
-      lastMessage: lastMessage ?? this.lastMessage,
-    );
-  }
+    required String name,
+    required List<String> avatars,
+    required String prompt,
+    required String lastMessage,
+  }) = _RoleEntity;
+
+  factory RoleEntity.fromJson(Map<String, dynamic> json) =>
+      _$RoleEntityFromJson(json);
 }

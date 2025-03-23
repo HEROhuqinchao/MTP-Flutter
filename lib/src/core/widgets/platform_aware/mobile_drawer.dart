@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
+import 'package:mtp/src/core/widgets/data_management/data_management_sheet.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
@@ -117,12 +118,14 @@ class MobileDrawer extends ConsumerWidget {
                         icon: Ionicons.folder_open_outline,
                         title: '导入/导出数据',
                         onTap: () {
-                          Navigator.pop(context);
+                          GoRouter.of(context).pop();
                           // 显示导入导出对话框
-                          // showModalBottomSheet(
-                          //   context: context,
-                          //   builder: (context) => DataManagementSheet(),
-                          // );
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const DataManagementSheet(),
+                          );
                         },
                       ),
 

@@ -50,7 +50,7 @@ $Res call({
 });
 
 
-
+$SessionEntityCopyWith<$Res>? get currentSession;
 
 }
 /// @nodoc
@@ -75,7 +75,19 @@ as String?,searchQuery: null == searchQuery ? _self.searchQuery : searchQuery //
 as String,
   ));
 }
+/// Create a copy of ChatState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SessionEntityCopyWith<$Res>? get currentSession {
+    if (_self.currentSession == null) {
+    return null;
+  }
 
+  return $SessionEntityCopyWith<$Res>(_self.currentSession!, (value) {
+    return _then(_self.copyWith(currentSession: value));
+  });
+}
 }
 
 
@@ -134,7 +146,7 @@ $Res call({
 });
 
 
-
+@override $SessionEntityCopyWith<$Res>? get currentSession;
 
 }
 /// @nodoc
@@ -160,7 +172,19 @@ as String,
   ));
 }
 
+/// Create a copy of ChatState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SessionEntityCopyWith<$Res>? get currentSession {
+    if (_self.currentSession == null) {
+    return null;
+  }
 
+  return $SessionEntityCopyWith<$Res>(_self.currentSession!, (value) {
+    return _then(_self.copyWith(currentSession: value));
+  });
+}
 }
 
 // dart format on

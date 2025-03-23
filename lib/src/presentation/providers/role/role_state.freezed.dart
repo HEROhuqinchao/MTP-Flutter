@@ -50,7 +50,7 @@ $Res call({
 });
 
 
-
+$RoleEntityCopyWith<$Res>? get selectedRole;
 
 }
 /// @nodoc
@@ -72,7 +72,19 @@ as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessag
 as String?,
   ));
 }
+/// Create a copy of RoleState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$RoleEntityCopyWith<$Res>? get selectedRole {
+    if (_self.selectedRole == null) {
+    return null;
+  }
 
+  return $RoleEntityCopyWith<$Res>(_self.selectedRole!, (value) {
+    return _then(_self.copyWith(selectedRole: value));
+  });
+}
 }
 
 
@@ -128,7 +140,7 @@ $Res call({
 });
 
 
-
+@override $RoleEntityCopyWith<$Res>? get selectedRole;
 
 }
 /// @nodoc
@@ -151,7 +163,19 @@ as String?,
   ));
 }
 
+/// Create a copy of RoleState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$RoleEntityCopyWith<$Res>? get selectedRole {
+    if (_self.selectedRole == null) {
+    return null;
+  }
 
+  return $RoleEntityCopyWith<$Res>(_self.selectedRole!, (value) {
+    return _then(_self.copyWith(selectedRole: value));
+  });
+}
 }
 
 // dart format on

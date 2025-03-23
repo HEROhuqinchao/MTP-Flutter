@@ -1,34 +1,19 @@
-class ChatModelEntity {
-  final String? id;
-  final String name;
-  final String endpoint;
-  final double temparture;
-  final String apiKey;
-  final bool isSelected;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  ChatModelEntity({
-    this.id,
-    required this.name,
-    required this.endpoint,
-    required this.temparture,
-    required this.apiKey,
-    required this.isSelected,
-  });
+part 'chat_model_entity.freezed.dart';
+part 'chat_model_entity.g.dart';
 
-  ChatModelEntity copyWith({
-    String? name,
-    String? endpoint,
-    String? apiKey,
-    double? temparture,
-    bool? isSelected,
-  }) {
-    return ChatModelEntity(
-      id: this.id,
-      name: name ?? this.name,
-      endpoint: endpoint ?? this.endpoint,
-      temparture: temparture ?? this.temparture,
-      apiKey: apiKey ?? this.apiKey,
-      isSelected: isSelected ?? this.isSelected,
-    );
-  }
+@freezed
+abstract class ChatModelEntity with _$ChatModelEntity {
+  const factory ChatModelEntity({
+    String? id,
+    required String name,
+    required String endpoint,
+    required double temparture,
+    required String apiKey,
+    required bool isSelected,
+  }) = _ChatModelEntity;
+
+  factory ChatModelEntity.fromJson(Map<String, dynamic> json) =>
+      _$ChatModelEntityFromJson(json);
 }
