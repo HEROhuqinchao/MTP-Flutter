@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ScreenBreakpoints {
   static const double mobile = 650;
@@ -26,11 +27,15 @@ class ResponsiveLayout extends StatelessWidget {
         // Check orientation for mobile devices
         if (context.isMobile) {
           // Mobile layout - check orientation
-          final isLandscape =
-              MediaQuery.of(context).orientation == Orientation.landscape;
-          if (isLandscape && mobileLandscapeLayout != null) {
-            return mobileLandscapeLayout!;
-          }
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitDown,
+            DeviceOrientation.portraitUp,
+          ]);
+          // final isLandscape =
+          //     MediaQuery.of(context).orientation == Orientation.landscape;
+          // if (isLandscape && mobileLandscapeLayout != null) {
+          //   return mobileLandscapeLayout!;
+          // }
           return mobileLayout;
         } else if (context.isTablet) {
           // Tablet layout (or mobile layout if not provided)
