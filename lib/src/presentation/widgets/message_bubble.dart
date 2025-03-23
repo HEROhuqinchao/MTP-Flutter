@@ -5,8 +5,6 @@ import 'package:mtp/src/domain/entities/message_entity.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'dart:io';
 
-import 'package:mtp/src/utils/logger.dart';
-
 class MessageBubble extends ConsumerWidget {
   final MessageEntity message;
   final bool isMe;
@@ -139,7 +137,6 @@ class MessageBubble extends ConsumerWidget {
     // 创建图像小部件
     Widget? imageWidget;
     if (avatarPath != null) {
-      localLogger.info('avatarPath is $avatarPath');
       if (avatarPath.startsWith('assets/')) {
         // 使用资源图像
         imageWidget = Image.asset(

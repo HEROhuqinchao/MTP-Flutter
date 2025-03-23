@@ -173,12 +173,45 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
     try {
       final sessions = await _chatRepository.getAllSessions();
+
+      // 处理每个会话的消息，为AI消息添加角色信息
+      final enrichedSessions = await Future.wait(
+        sessions.map((session) async {
+          // 如果会话没有消息，直接返回原始会话
+          if (session.messages.isEmpty) return session;
+
+          // 获取会话对应的角色
+          final role = await _roleService.getRoleById(session.roleId);
+          if (role == null) return session;
+
+          // 为每条AI消息添加角色信息
+          final enrichedMessages =
+              session.messages.map((message) {
+                // 只处理非用户消息且缺少发送者信息的消息
+                if (!message.isFromUser &&
+                    (message.senderAvatar == null ||
+                        message.senderAvatar!.isEmpty)) {
+                  return message.copyWith(
+                    senderName: role.name,
+                    senderAvatar:
+                        role.avatars.isNotEmpty ? role.avatars.first : '',
+                  );
+                }
+                return message;
+              }).toList();
+
+          // 返回更新了消息的会话
+          return session.copyWith(messages: enrichedMessages);
+        }),
+      );
+
       state = state.copyWith(
-        sessions: sessions,
+        sessions: enrichedSessions,
         isLoading: false,
         currentSession:
-            sessions.isNotEmpty && sessions.length > state.selectedSessionIndex
-                ? sessions[state.selectedSessionIndex]
+            enrichedSessions.isNotEmpty &&
+                    enrichedSessions.length > state.selectedSessionIndex
+                ? enrichedSessions[state.selectedSessionIndex]
                 : null,
       );
     } catch (e) {
@@ -422,6 +455,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       id: messageId,
       content: content,
       timestamp: DateTime.now(),
+      senderName: waitingMessage.senderName, // 从等待消息中获取发送者名称
+      senderAvatar: waitingMessage.senderAvatar, // 从等待消息中获取发送者头像
       isFromUser: false,
       isRead: true,
       isGenerating: true,

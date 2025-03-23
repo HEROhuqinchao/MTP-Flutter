@@ -31,6 +31,7 @@ class ChatRepositoryImpl implements ChatRepository {
               (m) => ChatMessage(
                 role: m.isFromUser ? 'user' : 'assitant',
                 content: m.content,
+                isRead: m.isRead,
               ),
             )
             .toList();
@@ -64,6 +65,7 @@ class ChatRepositoryImpl implements ChatRepository {
                       msg.key ??
                       '', // Using message key as ID or empty string if null
                   content: msg.content,
+                  isRead: msg.isRead ?? false,
                   timestamp:
                       DateTime.now(), // Default to current time if not available in msg
                   isFromUser: msg.role == 'user',
@@ -92,6 +94,7 @@ class ChatRepositoryImpl implements ChatRepository {
                 msg.key ??
                 '', // Using message key as ID or empty string if null
             content: msg.content,
+            isRead: msg.isRead ?? false,
             timestamp:
                 DateTime.now(), // Default to current time if not available
             isFromUser: msg.role == 'user',
