@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ConversationListItem extends StatefulWidget {
@@ -94,7 +96,10 @@ class _ConversationListItemState extends State<ConversationListItem> {
                       image:
                           widget.avatarUrl != null
                               ? DecorationImage(
-                                image: NetworkImage(widget.avatarUrl!),
+                                image:
+                                    widget.avatarUrl!.startsWith('http')
+                                        ? NetworkImage(widget.avatarUrl!)
+                                        : FileImage(File(widget.avatarUrl!)),
                                 fit: BoxFit.cover,
                               )
                               : null,

@@ -47,7 +47,7 @@ class RoleRemoteDatasource {
             avatars = List<String>.from(data['avatars']);
           } else {
             // null或其他类型，使用默认值
-            avatars = ["assets/avatars/default.png"];
+            avatars = ["assets//default_avatar.png"];
           }
 
           return Role(

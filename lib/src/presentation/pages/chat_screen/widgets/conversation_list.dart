@@ -85,7 +85,7 @@ class ConversationList extends ConsumerWidget {
                 const SizedBox(width: 8),
                 IconButton(
                   iconSize: 16,
-                  icon: const Icon(Ionicons.chatbubbles),
+                  icon: const Icon(Ionicons.person_add),
                   onPressed: () {
                     // 创建新会话的逻辑，可以打开一个对话框
                     _showNewConversationDialog(context, ref);
@@ -102,7 +102,7 @@ class ConversationList extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  tooltip: "新建对话",
+                  tooltip: "新建角色",
                 ),
               ],
             ),

@@ -62,7 +62,7 @@ class RoleRepositoryImpl implements RoleRepository {
     final fallbackRoles = [
       Role(
         name: "助手",
-        avatars: ["assets/avatars/assistant.png"],
+        avatars: ["assets/default_assist_avatar.png"],
         prompt: "你是一个有用的AI助手。",
         lastMessage: "",
       ),

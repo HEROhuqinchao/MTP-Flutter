@@ -21,7 +21,7 @@ class Settings extends HiveObject {
   factory Settings.defaultSettings() {
     return Settings(
       username: "Sensei",
-      userAvatar: "",
+      userAvatar: "assets/default_avatar.png",
       theme: "system",
       models: [],
     );

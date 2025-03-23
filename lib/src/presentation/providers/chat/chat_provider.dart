@@ -132,8 +132,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   // 创建新会话
   Future<void> createSession(String title, String roleId) async {
+    final String newSessionId = uuid.v4();
+
     final session = SessionEntity(
-      id: uuid.v4(), // 新会话，ID为空
+      id: newSessionId, // 新会话，ID为空
       roleId: roleId,
       title: title,
       messages: [],
@@ -146,7 +148,17 @@ class ChatNotifier extends StateNotifier<ChatState> {
       // 重新加载会话列表
       await loadSessions();
       // 选择新创建的会话
-      selectSession(0); // 假设新会话会出现在列表头部
+      // 在会话列表中查找新创建的会话
+      final newSessionIndex = state.sessions.indexWhere(
+        (s) => s.id == newSessionId,
+      );
+      if (newSessionIndex != -1) {
+        // 找到后选择它
+        selectSession(newSessionIndex);
+      } else {
+        // 如果找不到(极少情况)，选择最后一个会话
+        selectSession(state.sessions.length - 1);
+      }
     } catch (e) {
       state = state.copyWith(errorMessage: '创建会话失败: $e');
     }

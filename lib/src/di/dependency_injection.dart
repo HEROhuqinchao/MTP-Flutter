@@ -70,35 +70,40 @@ Future<void> ensureDefaultSessions() async {
     // 获取所有角色
     final roles = await roleRepository.getAllRoles();
     localLogger.config('获取到 ${roles.length} 个角色');
+    final allSessions = await chatRepository.getAllSessions();
     final uuid = Uuid();
 
     // 为每个角色检查并创建默认会话
     for (final role in roles) {
       if (role.id == null) continue;
+      final roleHasSession = allSessions.any((s) => s.roleId == role.id);
 
-      try {
-        final sessions = await chatRepository.getSessionsByRoleId(role.id!);
-        if (sessions.isEmpty) {
-          // 创建默认会话
-          final defaultSession = SessionEntity(
-            id: uuid.v4(),
-            roleId: role.id!,
-            title: role.name,
-            messages: [],
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          );
+      if (!roleHasSession) {
+        try {
+          final sessions = await chatRepository.getSessionsByRoleId(role.id!);
+          if (sessions.isEmpty) {
+            // 创建默认会话
+            final defaultSession = SessionEntity(
+              id: uuid.v4(),
+              roleId: role.id!,
+              title: role.name,
+              messages: [],
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
 
-          await chatRepository.addSession(defaultSession);
-          localLogger.config('为角色 ${role.name} 创建了默认会话');
+            await chatRepository.addSession(defaultSession);
+            localLogger.config('为角色 ${role.name} 创建了默认会话');
+          }
+        } catch (e) {
+          localLogger.shout('为角色 ${role.name} 创建会话失败: $e');
         }
-      } catch (e) {
-        localLogger.shout('为角色 ${role.name} 创建会话失败: $e');
       }
     }
   } catch (e) {
     localLogger.shout('确保默认会话时出错: $e');
   }
+
   localLogger.config('确保默认会话完成');
 }
 
