@@ -37,6 +37,27 @@ class RoleNotifier extends StateNotifier<RoleState> {
     }
   }
 
+  // 根据ID获取角色
+  Future<RoleEntity?> getRoleById(String roleId) async {
+    try {
+      // 先尝试从本地状态中查找
+      final localRole = state.roles.firstWhere(
+        (role) => role.id == roleId,
+        orElse: () => throw Exception('未在本地状态中找到角色'),
+      );
+      return localRole;
+    } catch (_) {
+      try {
+        // 如果本地状态中没有，则从仓库中获取
+        final role = await _roleRepository.getRoleById(roleId);
+        return role;
+      } catch (e) {
+        print('获取角色失败: $e');
+        return null;
+      }
+    }
+  }
+
   // 确保每个角色都有一个默认会话
   // Future<void> _ensureDefaultSessionsForRoles(List<RoleEntity> roles) async {
   //   try {

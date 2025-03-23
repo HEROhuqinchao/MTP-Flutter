@@ -12,4 +12,20 @@ class RoleEntity {
     required this.prompt,
     required this.lastMessage,
   });
+
+  RoleEntity copyWith({
+    String? id,
+    String? name,
+    List<String>? avatars,
+    String? prompt,
+    String? lastMessage,
+  }) {
+    return RoleEntity(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      avatars: avatars ?? this.avatars,
+      prompt: prompt ?? this.prompt,
+      lastMessage: lastMessage ?? this.lastMessage,
+    );
+  }
 }

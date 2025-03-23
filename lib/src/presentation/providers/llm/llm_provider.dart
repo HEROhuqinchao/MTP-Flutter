@@ -41,7 +41,7 @@ final llmStreamProvider =
 // 创建会话请求辅助方法
 class LlmHelper {
   static CompletionRequestEntity createCompletionRequest({
-    required List<MessageEntity> messages,
+    required List<LLMMessageEntity> messages,
     required String modelName,
     double temperature = 0.7,
     int maxTokens = 800,

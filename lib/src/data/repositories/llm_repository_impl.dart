@@ -20,6 +20,10 @@ class LlmRepositoryImpl implements LlmRepository {
     CompletionRequestEntity request,
     ChatModelEntity model,
   ) async {
+    print('正在请求模型: ${model.name}');
+    print('端点: ${model.endpoint}');
+    print('使用模型/部署: ${request.model}');
+
     // 转换请求实体为数据模型
     final requestModel = _mapRequestEntityToModel(request);
     final modelModel = _mapModelEntityToModel(model);

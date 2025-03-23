@@ -1,5 +1,5 @@
 class CompletionRequestEntity {
-  final List<MessageEntity> messages;
+  final List<LLMMessageEntity> messages;
   final double temperature;
   final int maxTokens;
   final String model;
@@ -12,9 +12,9 @@ class CompletionRequestEntity {
   });
 }
 
-class MessageEntity {
+class LLMMessageEntity {
   final String role;
   final String content;
 
-  MessageEntity({required this.role, required this.content});
+  LLMMessageEntity({required this.role, required this.content});
 }

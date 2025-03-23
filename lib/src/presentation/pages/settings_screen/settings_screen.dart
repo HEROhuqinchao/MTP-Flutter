@@ -710,11 +710,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         : null,
               ),
               onPressed: () {
-                if (!model.isSelected) {
-                  // 更新选中状态
-                  final updatedModel = model.copyWith(isSelected: true);
-                  ref.read(settingsProvider.notifier).updateModel(updatedModel);
-                }
+                // 更新选中状态
+                final updatedModel = model.copyWith(
+                  isSelected: !model.isSelected,
+                );
+                ref.read(settingsProvider.notifier).updateModel(updatedModel);
               },
             ),
             // 编辑模型
@@ -750,22 +750,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: '模型名称'),
+                  decoration: const InputDecoration(
+                    labelText: '模型名称',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: endpointController,
-                  decoration: const InputDecoration(labelText: '基础URL'),
+                  decoration: const InputDecoration(
+                    labelText: '基础URL',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: apiKeyController,
-                  decoration: const InputDecoration(labelText: 'API密钥'),
+                  decoration: const InputDecoration(
+                    labelText: 'API密钥',
+                    border: OutlineInputBorder(),
+                  ),
                   obscureText: true,
                 ),
+                const SizedBox(height: 12),
                 TextField(
                   controller: tempartureController,
                   decoration: const InputDecoration(
                     labelText: '温度 (0.0-1.0)',
                     hintText: '较低的值使输出更确定，较高的值使输出更随机',
+                    border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
                 ),

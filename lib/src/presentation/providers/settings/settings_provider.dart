@@ -19,7 +19,7 @@ final selectedModelProvider = Provider<ChatModelEntity?>((ref) {
   // 返回当前选中的模型
   return settings.models.firstWhere(
     (model) => model.isSelected,
-    orElse: () => settings.models.first,
+    // orElse: () => settings.models.first,
   );
 });
 

@@ -272,7 +272,6 @@ class ConversationList extends ConsumerWidget {
                 await ref
                     .read(chatStateProvider.notifier)
                     .createSession(roleNameController.text.trim(), roleId);
-                // .createSession(sessionTitleController.text.trim(), roleId);
 
                 Navigator.of(context).pop();
               } catch (e) {

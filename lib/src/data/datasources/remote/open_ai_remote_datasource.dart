@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import '../../models/completion/request.dart';
@@ -83,7 +85,7 @@ class OpenAiRemoteDatasource implements LlmRemoteDatasource {
       final requestWithStream = Map<String, dynamic>.from(request.toJson())
         ..['stream'] = true;
 
-      final uri = '${model.endpoint}/v1/chat/completions';
+      final uri = '${model.endpoint}/chat/completions';
 
       // 使用Dio的响应类型为流
       final response = await dio.post(
@@ -97,7 +99,13 @@ class OpenAiRemoteDatasource implements LlmRemoteDatasource {
         final stream = response.data.stream as Stream<List<int>>;
 
         return stream
-            .transform(utf8.decoder)
+            .transform(
+              StreamTransformer<Uint8List, String>.fromHandlers(
+                handleData: (data, sink) {
+                  sink.add(utf8.decode(data));
+                },
+              ),
+            )
             .transform(const LineSplitter())
             .where(
               (line) =>

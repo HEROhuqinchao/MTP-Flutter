@@ -4,6 +4,8 @@ class MessageEntity {
   final DateTime timestamp;
   final bool isFromUser;
   final bool isRead;
+  final bool isGenerating;
+  final bool isSystem;
   final String? senderName;
   final String? senderAvatar;
 
@@ -13,6 +15,8 @@ class MessageEntity {
     required this.timestamp,
     required this.isFromUser,
     this.isRead = false,
+    this.isGenerating = false,
+    this.isSystem = false,
     this.senderName,
     this.senderAvatar,
   });
