@@ -16,7 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DataManagementSheet extends ConsumerStatefulWidget {
-  const DataManagementSheet({Key? key}) : super(key: key);
+  const DataManagementSheet({super.key});
 
   @override
   ConsumerState<DataManagementSheet> createState() =>
@@ -93,7 +93,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
             ),
             const SizedBox(height: 12),
             const Text(
-              '导出所有数据，包括聊天记录、角色设置及应用配置。',
+              '导出所有数据，包括聊天记录、角色设置及应用配置。您可以选择保存位置。',
               style: TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 16),
@@ -125,7 +125,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                          : const Text('导出'),
+                          : const Text('选择位置并导出'),
                 ),
               ],
             ),
@@ -247,14 +247,38 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
         '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
     final fileName = 'mtp_backup_$dateStr.json';
 
-    // 获取文档目录
+    // 将JSON字符串转换为字节数据
+    final bytes = utf8.encode(jsonStr);
+
+    try {
+      // 尝试让用户选择保存位置
+      String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: '选择备份文件保存位置',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: bytes, // 添加字节数据，这是Android和iOS平台所必需的
+      );
+
+      // 如果用户选择了保存位置，返回该路径
+      if (outputPath != null) {
+        return outputPath;
+      }
+    } catch (e) {
+      localLogger.info('使用FilePicker保存失败，尝试使用备选方法: $e');
+      // 如果出错，继续使用备选保存方法
+    }
+
+    // 备选方法：保存到应用文档目录
     final dir = await getApplicationDocumentsDirectory();
     final backupDir = Directory('${dir.path}/backups');
     if (!await backupDir.exists()) {
       await backupDir.create(recursive: true);
     }
+    final outputPath = '${backupDir.path}/$fileName';
 
-    final file = File('${backupDir.path}/$fileName');
+    // 保存文件
+    final file = File(outputPath);
     await file.writeAsString(jsonStr);
 
     return file.path;
