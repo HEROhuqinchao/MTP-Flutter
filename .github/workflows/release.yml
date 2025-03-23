@@ -81,7 +81,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/app-release.apk
-          name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           append_body: true
@@ -118,7 +117,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: mtp-${{ needs.create-release.outputs.version }}-windows.zip
-          name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           append_body: true
@@ -155,7 +153,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: mtp-${{ needs.create-release.outputs.version }}-macos.zip
-          name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           append_body: true
@@ -197,7 +194,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: mtp-${{ needs.create-release.outputs.version }}-linux.zip
-          name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           append_body: true
@@ -235,7 +231,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: mtp-${{ needs.create-release.outputs.version }}-ios.ipa
-          name: MomoTalk Plus ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
           append_body: true
