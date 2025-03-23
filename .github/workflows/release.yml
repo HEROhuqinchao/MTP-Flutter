@@ -13,7 +13,6 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
       version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout code
@@ -26,14 +25,13 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
           name: MomoTalk Plus ${{ github.ref_name }}
           draft: false
           prerelease: false
-          generate_release_notes: true
-          tag_name: ${{ github.ref }}
+          generateReleaseNotes: true
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             # MomoTalk Plus ${{ github.ref_name }}
@@ -47,6 +45,8 @@ jobs:
             
             ## 安装说明
             请参阅 [README.md](https://github.com/MTPGroup/MTP-Flutter/blob/main/README.md) 获取详细的安装和使用说明。
+          allowUpdates: true
+          removeArtifacts: false
 
   build-android:
     name: Build Android
@@ -77,13 +77,20 @@ jobs:
       - name: Build Android APK
         run: flutter build apk --release
 
+      - name: Rename APK
+        run: |
+          mkdir -p artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk artifacts/mtp-${{ needs.create-release.outputs.version }}.apk
+
       - name: Upload APK to Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
-          tag_name: ${{ github.ref }}
+          artifacts: "artifacts/mtp-${{ needs.create-release.outputs.version }}.apk"
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: true
+          allowUpdates: true
+          omitName: true
+          omitBody: true
 
   build-windows:
     name: Build Windows
@@ -114,12 +121,14 @@ jobs:
           Compress-Archive -Path * -DestinationPath "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-windows.zip"
 
       - name: Upload Windows zip to Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          files: mtp-${{ needs.create-release.outputs.version }}-windows.zip
-          tag_name: ${{ github.ref }}
+          artifacts: "mtp-${{ needs.create-release.outputs.version }}-windows.zip"
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: true
+          allowUpdates: true
+          omitName: true
+          omitBody: true
 
   build-macos:
     name: Build macOS
@@ -150,12 +159,14 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent mtp.app "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-macos.zip"
 
       - name: Upload macOS zip to Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          files: mtp-${{ needs.create-release.outputs.version }}-macos.zip
-          tag_name: ${{ github.ref }}
+          artifacts: "mtp-${{ needs.create-release.outputs.version }}-macos.zip"
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: true
+          allowUpdates: true
+          omitName: true
+          omitBody: true
 
   build-linux:
     name: Build Linux
@@ -191,12 +202,14 @@ jobs:
           zip -r "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-linux.zip" *
 
       - name: Upload Linux zip to Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          files: mtp-${{ needs.create-release.outputs.version }}-linux.zip
-          tag_name: ${{ github.ref }}
+          artifacts: "mtp-${{ needs.create-release.outputs.version }}-linux.zip"
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: true
+          allowUpdates: true
+          omitName: true
+          omitBody: true
 
   build-ios:
     name: Build iOS
@@ -228,9 +241,11 @@ jobs:
           zip -r "${{ github.workspace }}/mtp-${{ needs.create-release.outputs.version }}-ios.ipa" Payload
 
       - name: Upload iOS IPA to Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          files: mtp-${{ needs.create-release.outputs.version }}-ios.ipa
-          tag_name: ${{ github.ref }}
+          artifacts: "mtp-${{ needs.create-release.outputs.version }}-ios.ipa"
+          tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          append_body: true
+          allowUpdates: true
+          omitName: true
+          omitBody: true
