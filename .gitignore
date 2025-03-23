@@ -46,4 +46,6 @@ app.*.map.json
 /android/app/release
 
 *.hive
-*.lock
+roles.lock
+sessions.lock
+settings.lock
