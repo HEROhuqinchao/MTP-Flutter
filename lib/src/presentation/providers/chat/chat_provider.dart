@@ -437,27 +437,45 @@ class ChatNotifier extends StateNotifier<ChatState> {
       );
     }
 
+    // 筛选出非生成中的消息
     final filteredMessages =
         session.messages.where((msg) => !msg.isGenerating).toList();
 
-    // 添加会话历史消息（最多取最近10条）
-    final historyMessages =
-        filteredMessages.length > 100
-            ? filteredMessages.sublist(session.messages.length - 100)
-            : filteredMessages;
+    // 确保消息以用户消息开始且保持用户-助手交替
+    final formattedMessages = <MessageEntity>[];
 
-    // 添加消息去重 - 防止API请求中出现重复内容
-    final uniqueMessages = <MessageEntity>[];
-    final seenContents = <String>{};
-
-    for (final msg in historyMessages) {
-      if (!seenContents.contains(msg.content)) {
-        uniqueMessages.add(msg);
-        seenContents.add(msg.content);
-      }
+    // 如果第一条消息不是用户消息，跳过
+    int startIndex = 0;
+    if (filteredMessages.isNotEmpty && !filteredMessages[0].isFromUser) {
+      startIndex = 1;
     }
 
-    messages.addAll(uniqueMessages);
+    // 构建交替的消息序列
+    for (int i = startIndex; i < filteredMessages.length; i++) {
+      final currentMsg = filteredMessages[i];
+
+      // 确保消息交替 - 如果当前消息与前一条消息角色相同，则合并(兼容deepseek)
+      if (formattedMessages.isNotEmpty) {
+        final lastMsg = formattedMessages.last;
+        if ((currentMsg.isFromUser && lastMsg.isFromUser) ||
+            (!currentMsg.isFromUser && !lastMsg.isFromUser)) {
+          formattedMessages.last.copyWith(
+            content: lastMsg.content + currentMsg.content,
+          );
+        }
+      }
+
+      // 添加到格式化消息列表
+      formattedMessages.add(currentMsg);
+    }
+
+    // 若消息数量过多，取最近的一部分
+    final historyMessages =
+        formattedMessages.length > 100
+            ? formattedMessages.sublist(formattedMessages.length - 100)
+            : formattedMessages;
+
+    messages.addAll(historyMessages);
     return messages;
   }
 
