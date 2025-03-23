@@ -3,6 +3,8 @@ import '../../../domain/entities/settings_entity.dart';
 import '../../../domain/entities/chat_model_entity.dart';
 import '../../../domain/repositories/settings_repository.dart';
 import '../../../di/providers/repository_providers.dart';
+import 'package:flutter/material.dart';
+import '../../../app/theme/app_theme.dart';
 
 // 设置状态提供者
 final settingsProvider =
@@ -21,6 +23,14 @@ final selectedModelProvider = Provider<ChatModelEntity?>((ref) {
     (model) => model.isSelected,
     // orElse: () => settings.models.first,
   );
+});
+
+// 添加一个新的提供者，用于获取当前主题模式
+final themeModeProvider = Provider<ThemeMode>((ref) {
+  final settings = ref.watch(settingsProvider);
+  if (settings == null) return ThemeMode.system; // 默认值
+
+  return AppTheme.getThemeModeFromString(settings.theme);
 });
 
 // 设置状态管理器
