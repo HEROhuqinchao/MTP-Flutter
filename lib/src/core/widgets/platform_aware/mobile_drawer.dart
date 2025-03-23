@@ -223,7 +223,7 @@ class MobileDrawer extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -338,7 +338,7 @@ class MobileDrawer extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Divider(
-            color: Theme.of(context).colorScheme.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             thickness: 1,
           ),
         ],
