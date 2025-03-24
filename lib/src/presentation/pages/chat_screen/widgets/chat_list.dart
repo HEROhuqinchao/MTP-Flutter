@@ -26,6 +26,14 @@ class ChatList extends ConsumerStatefulWidget {
 
 class _ChatList extends ConsumerState<ChatList> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    // 释放资源
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +51,9 @@ class _ChatList extends ConsumerState<ChatList> {
       key: _scaffoldKey,
       drawer: isMobile ? MobileDrawer() : null,
       body: GestureDetector(
+        onTap: () {
+          _searchFocusNode.unfocus();
+        },
         onHorizontalDragEnd: (details) {
           if (!isMobile) return;
           if (details.primaryVelocity! > 0) {
@@ -505,6 +516,13 @@ class _ChatList extends ConsumerState<ChatList> {
                 child: SizedBox(
                   height: 32,
                   child: SearchBar(
+                    // 添加焦点节点
+                    focusNode: _searchFocusNode,
+                    // 添加完成按钮的处理
+                    onSubmitted: (value) {
+                      // 搜索完成后取消焦点
+                      _searchFocusNode.unfocus();
+                    },
                     leading: const Icon(Ionicons.search, size: 16),
                     hintText: "搜索对话",
                     hintStyle: WidgetStateProperty.all(
@@ -556,6 +574,13 @@ class _ChatList extends ConsumerState<ChatList> {
             child: SizedBox(
               height: 32,
               child: SearchBar(
+                // 添加焦点节点
+                focusNode: _searchFocusNode,
+                // 添加完成按钮的处理
+                onSubmitted: (value) {
+                  // 搜索完成后取消焦点
+                  _searchFocusNode.unfocus();
+                },
                 leading: const Icon(Ionicons.search, size: 16),
                 hintText: "搜索对话",
                 hintStyle: WidgetStateProperty.all(
