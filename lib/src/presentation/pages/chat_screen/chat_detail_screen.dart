@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/core/utils/immersive_mode.dart';
 import 'package:mtp/src/domain/entities/message_entity.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
 import 'package:mtp/src/domain/entities/session_entity.dart';
@@ -29,6 +30,35 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isComposing = false;
   final GlobalKey _headerKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // 设置沉浸式状态栏，延迟执行以获取正确的主题颜色
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _updateStatusBarColor();
+      }
+    });
+  }
+
+  // 更新状态栏颜色以匹配header背景色
+  void _updateStatusBarColor() {
+    final brightness = Theme.of(context).brightness;
+    final headerColor = Theme.of(context).colorScheme.surface;
+
+    ImmersiveMode.set(
+      statusBarColor: headerColor,
+      isDark: brightness == Brightness.dark,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 主题变化时更新状态栏颜色
+    _updateStatusBarColor();
+  }
 
   @override
   void dispose() {
@@ -298,9 +328,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: theme.colorScheme.error,
                           side: BorderSide(
-                            color: theme.colorScheme.error.withValues(
-                              alpha: 0.5,
-                            ),
+                            color: theme.colorScheme.error.withOpacity(0.5),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
@@ -675,15 +703,30 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   ) {
     final theme = Theme.of(context);
     final isMobile = Platform.isAndroid || Platform.isIOS;
+    final statusBarHeight = ImmersiveMode.getStatusBarHeight(context);
+    final headerColor = theme.colorScheme.surface;
+
+    // 确保状态栏颜色与header背景一致
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ImmersiveMode.set(
+          statusBarColor: headerColor,
+          isDark: theme.brightness == Brightness.dark,
+        );
+      }
+    });
 
     return Container(
       key: _headerKey, // 添加key以测量高度
-      padding:
-          isMobile
-              ? const EdgeInsets.only(top: 28, left: 8, right: 8, bottom: 12)
-              : const EdgeInsets.only(top: 28, bottom: 12, left: 16, right: 16),
+      padding: EdgeInsets.only(
+        // 添加状态栏高度到顶部内边距
+        top: statusBarHeight + (isMobile ? 8 : 20),
+        left: isMobile ? 8 : 16,
+        right: isMobile ? 8 : 16,
+        bottom: 12,
+      ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: headerColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),

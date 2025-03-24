@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
+import 'package:mtp/src/core/utils/immersive_mode.dart'; // 添加导入
 import 'package:mtp/src/domain/entities/chat_model_entity.dart';
 import 'package:mtp/src/domain/entities/settings_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
@@ -28,6 +29,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isHoveringAvatar = false;
 
   @override
+  void initState() {
+    super.initState();
+    // 设置沉浸式状态栏，延迟执行以获取正确的主题颜色
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _updateStatusBarColor();
+      }
+    });
+  }
+
+  // 更新状态栏颜色以匹配header背景色
+  void _updateStatusBarColor() {
+    final brightness = Theme.of(context).brightness;
+    final headerColor = Theme.of(context).colorScheme.surface;
+
+    ImmersiveMode.set(
+      statusBarColor: headerColor,
+      isDark: brightness == Brightness.dark,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 主题变化时更新状态栏颜色
+    _updateStatusBarColor();
+  }
+
+  @override
   void dispose() {
     _usernameController.dispose();
     super.dispose();
@@ -36,55 +66,92 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    final statusBarHeight = ImmersiveMode.getStatusBarHeight(context);
+    final isMobile = Platform.isAndroid || Platform.isIOS;
+    final headerColor = Theme.of(context).colorScheme.surface;
 
     if (settings == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // 不再包装在 Column 和自定义 AppBar 中，而是直接返回内容
     return Scaffold(
-      appBar: AppBar(
-        title: Text('设置'),
-        leading: IconButton(
-          onPressed: () {
-            GoRouter.of(context).pop();
-          },
-          icon: Icon(Ionicons.chevron_back),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
+      // 移除系统预定义的AppBar，使用自定义头部
+      appBar: null,
+      body: Column(
         children: [
-          // 用户资料设置卡片
-          _buildSection(
-            title: '用户资料',
-            icon: Icons.person_outline,
-            children: [_buildProfileSettings(settings)],
+          // 自定义沉浸式头部
+          Container(
+            padding: EdgeInsets.only(
+              top: statusBarHeight + (isMobile ? 8 : 16),
+              left: 16,
+              right: 16,
+              bottom: 8,
+            ),
+            decoration: BoxDecoration(
+              color: headerColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  offset: const Offset(0, 1),
+                  blurRadius: 3,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    GoRouter.of(context).pop();
+                  },
+                  icon: Icon(Ionicons.chevron_back),
+                  iconSize: 24,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(minWidth: 40, minHeight: 40),
+                ),
+                SizedBox(width: 8),
+                Text('设置', style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 16),
+          // 设置页面内容
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: [
+                // 用户资料设置卡片
+                _buildSection(
+                  title: '用户资料',
+                  icon: Icons.person_outline,
+                  children: [_buildProfileSettings(settings)],
+                ),
 
-          // 外观设置卡片
-          _buildSection(
-            title: '外观',
-            icon: Icons.palette_outlined,
-            children: [_buildThemeSettings(settings)],
-          ),
+                const SizedBox(height: 16),
 
-          const SizedBox(height: 16),
+                // 外观设置卡片
+                _buildSection(
+                  title: '外观',
+                  icon: Icons.palette_outlined,
+                  children: [_buildThemeSettings(settings)],
+                ),
 
-          // 语言模型设置卡片
-          _buildSection(
-            title: '语言模型',
-            icon: Icons.smart_toy_outlined,
-            children: [_buildModelsSettings(settings)],
-          ),
+                const SizedBox(height: 16),
 
-          // 添加系统设置部分
-          _buildSection(
-            title: '系统设置',
-            icon: Icons.settings_outlined,
-            children: [_buildSystemSettings()],
+                // 语言模型设置卡片
+                _buildSection(
+                  title: '语言模型',
+                  icon: Icons.smart_toy_outlined,
+                  children: [_buildModelsSettings(settings)],
+                ),
+
+                // 添加系统设置部分
+                _buildSection(
+                  title: '系统设置',
+                  icon: Icons.settings_outlined,
+                  children: [_buildSystemSettings()],
+                ),
+              ],
+            ),
           ),
         ],
       ),

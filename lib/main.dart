@@ -10,9 +10,14 @@ import 'package:window_manager_plus/window_manager_plus.dart';
 import 'src/app/app.dart';
 import 'src/di/dependency_injection.dart';
 import 'src/utils/logger.dart';
+import 'package:flutter/services.dart';
+import 'package:mtp/src/core/utils/immersive_mode.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 设置沉浸式状态栏 - 初始为透明，视觉效果更好
+  ImmersiveMode.set(statusBarColor: Colors.transparent);
 
   // 主窗口的初始化逻辑
   // 初始化日志系统

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/core/utils/immersive_mode.dart'; // 添加导入
 import 'package:mtp/src/core/widgets/platform_aware/mobile_drawer.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
@@ -27,6 +28,39 @@ class ChatList extends ConsumerStatefulWidget {
 class _ChatList extends ConsumerState<ChatList> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // 延迟执行确保上下文已准备好
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // 首次设置状态栏颜色
+        _forceUpdateStatusBarColor();
+      }
+    });
+  }
+
+  // 强制更新状态栏颜色，确保设置生效
+  void _forceUpdateStatusBarColor() {
+    final headerColor = Theme.of(context).colorScheme.surfaceContainer;
+    final isDark = Theme.of(context).brightness == Brightness.light;
+
+    // 先设置透明过渡，然后设置实际颜色，这样可以触发重绘
+    ImmersiveMode.set(statusBarColor: Colors.transparent);
+    Future.delayed(Duration(milliseconds: 50), () {
+      if (mounted) {
+        ImmersiveMode.set(statusBarColor: headerColor, isDark: isDark);
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 主题变化时更新状态栏颜色
+    _forceUpdateStatusBarColor();
+  }
 
   @override
   void dispose() {
@@ -437,6 +471,18 @@ class _ChatList extends ConsumerState<ChatList> {
 
   Widget _buildMobileHeader() {
     final settings = ref.watch(settingsProvider);
+    final statusBarHeight = ImmersiveMode.getStatusBarHeight(context);
+    final headerColor = Theme.of(context).colorScheme.surfaceContainer;
+
+    // 每次构建时重新应用状态栏颜色
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ImmersiveMode.set(
+          statusBarColor: headerColor,
+          isDark: Theme.of(context).brightness == Brightness.light,
+        );
+      }
+    });
 
     final avatarWidget = Material(
       color: Colors.transparent,
@@ -480,8 +526,13 @@ class _ChatList extends ConsumerState<ChatList> {
     );
 
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: headerColor,
+      padding: EdgeInsets.only(
+        top: statusBarHeight + 8, // 添加状态栏高度
+        left: 16,
+        right: 16,
+        bottom: 12,
+      ),
       child: Column(
         children: [
           Row(
@@ -587,9 +638,27 @@ class _ChatList extends ConsumerState<ChatList> {
   }
 
   Widget _buildHeader() {
+    final statusBarHeight = ImmersiveMode.getStatusBarHeight(context);
+    final headerColor = Theme.of(context).colorScheme.surfaceContainer;
+
+    // 确保状态栏颜色与header背景一致
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ImmersiveMode.set(
+          statusBarColor: headerColor,
+          isDark: Theme.of(context).brightness == Brightness.dark,
+        );
+      }
+    });
+
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      padding: const EdgeInsets.only(top: 28, bottom: 20, left: 16, right: 16),
+      color: headerColor,
+      padding: EdgeInsets.only(
+        top: statusBarHeight + 20, // 添加状态栏高度
+        bottom: 20,
+        left: 16,
+        right: 16,
+      ),
       child: Row(
         children: [
           Expanded(
