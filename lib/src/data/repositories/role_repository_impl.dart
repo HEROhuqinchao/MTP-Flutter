@@ -1,3 +1,5 @@
+import 'package:mtp/src/utils/logger.dart';
+
 import '../../domain/entities/role_entity.dart';
 import '../../domain/repositories/role_repository.dart';
 import '../datasources/local/role_local_datasource.dart';
@@ -19,27 +21,34 @@ class RoleRepositoryImpl implements RoleRepository {
     // 检查是否首次运行，由仓库决定是否加载初始数据
     if (await localDatasource.isEmpty()) {
       try {
-        // 从远程获取数据
-        final roles = await remoteDatasource.fetchDefaultRoles();
-        print('获取到${roles.length}个远程角色');
+        List<Role> roles;
+        try {
+          // 先尝试从本地获取数据
+          roles = await localDatasource.fetchDefaultRoles();
+        } catch (e) {
+          localLogger.warning('从本地获取数据失败，尝试从远程获取数据');
+          // 从远程获取数据
+          roles = await remoteDatasource.fetchDefaultRoles();
+        }
+        localLogger.fine('获取到${roles.length}个角色');
 
         // 保存到本地
         for (final role in roles) {
           try {
             await localDatasource.addRole(role);
             addedRoles.add(role);
-            print('成功添加角色: ${role.name}');
+            localLogger.fine('成功添加角色: ${role.name}');
           } catch (e) {
-            print('添加单个角色失败: ${role.name}, 错误: $e');
+            localLogger.shout('添加单个角色失败: ${role.name}, 错误: $e');
           }
         }
       } catch (e, stackTrace) {
-        print('远程获取或处理数据失败: $e');
-        print('堆栈: $stackTrace');
+        localLogger.shout('远程获取或处理数据失败: $e');
+        localLogger.shout('堆栈: $stackTrace');
 
         // 远程获取失败，加载备用数据
         addedRoles = await _loadFallbackRoles();
-        print('远程获取失败，加载备用数据');
+        localLogger.info('远程获取失败，加载备用数据');
       }
     }
 
