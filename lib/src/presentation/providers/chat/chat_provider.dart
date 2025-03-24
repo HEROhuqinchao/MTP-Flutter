@@ -626,6 +626,45 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
+  // 清除所有会话
+  Future<void> clearAllSessions() async {
+    try {
+      await _chatRepository.clearAllSessions();
+
+      // 清空本地状态
+      state = state.copyWith(
+        sessions: [],
+        currentSession: null,
+        selectedSessionIndex: -1,
+      );
+    } catch (e) {
+      print('清除所有会话失败: $e');
+      state = state.copyWith(errorMessage: '清除所有会话失败: $e');
+    }
+  }
+
+  // 清空所有聊天记录（保留会话）
+  Future<void> clearAllMessages() async {
+    try {
+      await _chatRepository.clearAllMessages();
+
+      // 清空本地状态中的消息，但保留会话
+      final updatedSessions =
+          state.sessions.map((session) {
+            return session.copyWith(messages: [], updatedAt: DateTime.now());
+          }).toList();
+
+      // 更新状态
+      state = state.copyWith(
+        sessions: updatedSessions,
+        currentSession: state.currentSession?.copyWith(messages: []),
+      );
+    } catch (e) {
+      print('清空聊天记录失败: $e');
+      state = state.copyWith(errorMessage: '清空聊天记录失败: $e');
+    }
+  }
+
   // 删除错误消息
   Future<void> clearErrorMessage() async {
     state = state.copyWith(errorMessage: null);

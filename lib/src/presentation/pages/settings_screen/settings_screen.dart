@@ -1,4 +1,5 @@
 import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
 import 'package:mtp/src/domain/entities/chat_model_entity.dart';
 import 'package:mtp/src/domain/entities/settings_entity.dart';
+import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
@@ -742,7 +744,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             border: Border.all(
               color: Theme.of(
                 context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ).colorScheme.outlineVariant.withOpacity(0.5),
               width: 1,
             ),
           ),
@@ -800,13 +802,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   onTap: () {
+                    final dialogContext = context;
                     // 实现清除所有对话的逻辑
                     showDialog(
-                      context: context,
+                      context: dialogContext,
                       builder:
                           (context) => AlertDialog(
                             title: const Text('清除所有对话'),
-                            content: const Text('确定要删除所有聊天记录吗？此操作无法撤销。'),
+                            content: const Text('确定要删除所有对话吗？此操作无法撤销。'),
                             actions: [
                               TextButton(
                                 child: const Text('取消'),
@@ -819,9 +822,98 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ),
                                 onPressed: () {
                                   // 添加删除逻辑
-                                  GoRouter.of(context).pop();
+                                  ref
+                                      .read(chatStateProvider.notifier)
+                                      .clearAllSessions();
+                                  GoRouter.of(dialogContext).pop();
+
+                                  // 显示成功提示
+                                  ElegantNotification.success(
+                                    title: Text('清除成功'),
+                                    description: Text('所有会话已清除'),
+                                    icon: Icon(Ionicons.checkmark_circle),
+                                    position:
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? Alignment.topCenter
+                                            : Alignment.bottomRight,
+                                    animation:
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? AnimationType.fromTop
+                                            : AnimationType.fromRight,
+                                  ).show(context);
                                 },
                                 child: const Text('清除'),
+                              ),
+                            ],
+                          ),
+                    );
+                  },
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  leading: Icon(
+                    Ionicons.trash,
+                    color: Theme.of(context).colorScheme.error.withOpacity(0.8),
+                  ),
+                  title: Text(
+                    '清空所有聊天记录',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  subtitle: Text('删除所有会话中的消息内容，但保留会话本身'),
+                  trailing: Icon(
+                    Ionicons.chevron_forward,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  onTap: () {
+                    final dialogContext = context;
+                    // 实现清空所有聊天记录的逻辑
+                    showDialog(
+                      context: dialogContext,
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('清空所有聊天记录'),
+                            content: const Text(
+                              '确定要删除所有会话中的消息吗？此操作无法撤销。会话本身将被保留。',
+                            ),
+                            actions: [
+                              TextButton(
+                                child: const Text('取消'),
+                                onPressed: () => GoRouter.of(context).pop(),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.error,
+                                ),
+                                onPressed: () {
+                                  // 调用清空聊天记录方法
+                                  ref
+                                      .read(chatStateProvider.notifier)
+                                      .clearAllMessages();
+                                  GoRouter.of(dialogContext).pop();
+
+                                  // 显示成功提示
+                                  ElegantNotification.success(
+                                    title: Text('清空成功'),
+                                    description: Text('所有聊天记录已清空'),
+                                    icon: Icon(Ionicons.checkmark_circle),
+                                    position:
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? Alignment.topCenter
+                                            : Alignment.bottomRight,
+                                    animation:
+                                        Platform.isAndroid || Platform.isIOS
+                                            ? AnimationType.fromTop
+                                            : AnimationType.fromRight,
+                                  ).show(context);
+                                },
+                                child: const Text('清空'),
                               ),
                             ],
                           ),

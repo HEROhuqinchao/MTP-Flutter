@@ -10,4 +10,10 @@ abstract class ChatRepository {
   Future<void> addMessageToSession(String sessionId, MessageEntity message);
   Future<void> deleteSession(String id);
   Future<List<MessageEntity>> getMessagesFromSession(String sessionId);
+
+  // 添加清除所有会话的方法
+  Future<void> clearAllSessions();
+
+  // 添加清空所有聊天记录但保留会话的方法
+  Future<void> clearAllMessages();
 }

@@ -192,4 +192,14 @@ class ChatRepositoryImpl implements ChatRepository {
 
     await localDatasource.updateSession(sessionModel);
   }
+
+  @override
+  Future<void> clearAllSessions() async {
+    await localDatasource.clearAllSessions();
+  }
+
+  @override
+  Future<void> clearAllMessages() async {
+    await localDatasource.clearAllMessages();
+  }
 }

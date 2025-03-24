@@ -121,6 +121,24 @@ class ChatLocalDatasource {
     await sessionsBox.clear();
   }
 
+  // 清空所有会话中的消息（保留会话本身）
+  Future<void> clearAllMessages() async {
+    await _ensureInitialized();
+
+    // 获取所有会话
+    final sessions = sessionsBox.values.toList();
+
+    // 遍历每个会话，清空消息
+    for (int i = 0; i < sessions.length; i++) {
+      final session = sessions[i];
+      session.messages = []; // 清空消息列表
+      session.updatedAt = DateTime.now(); // 更新时间戳
+
+      // 更新会话
+      await sessionsBox.putAt(i, session);
+    }
+  }
+
   // 搜索会话
   Future<List<Session>> searchSessions(String query) async {
     await _ensureInitialized();
