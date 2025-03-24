@@ -1,14 +1,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--网络访问-->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 基本网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
-    <!--存储-->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-    <!--相机-->
+    
+    <!-- 存储权限（低版本Android兼容性） -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="29" />
+    
+    <!-- 移除这个权限，它在新版Android上不再被推荐使用 -->
+    <!-- <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" /> -->
+    
+    <!-- 仅当您的应用需要访问用户头像时保留 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" 
+                     android:minSdkVersion="33"/>
+    
+    <!-- 仅当需要相机功能时 -->
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application

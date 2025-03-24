@@ -1,7 +1,9 @@
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mtp/src/core/widgets/custom_window/window_title_bar.dart';
-import 'package:mtp/src/core/widgets/platform_aware/desktop_layout.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/core/constants/app_info.dart';
 import 'package:mtp/src/domain/entities/chat_model_entity.dart';
 import 'package:mtp/src/domain/entities/settings_entity.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
@@ -34,71 +36,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final settings = ref.watch(settingsProvider);
 
     if (settings == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Center(child: CircularProgressIndicator());
     }
 
-    // 检测是否是在桌面平台
-    final isDesktopLayout = MediaQuery.of(context).size.width > 650;
-
-    final content = ListView(
-      padding: const EdgeInsets.all(16.0),
-      children: [
-        // 用户资料设置卡片
-        _buildSection(
-          title: '用户资料',
-          icon: Icons.person_outline,
-          children: [_buildProfileSettings(settings)],
+    // 不再包装在 Column 和自定义 AppBar 中，而是直接返回内容
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('设置'),
+        leading: IconButton(
+          onPressed: () {
+            GoRouter.of(context).pop();
+          },
+          icon: Icon(Ionicons.chevron_back),
         ),
-
-        const SizedBox(height: 16),
-
-        // 外观设置卡片
-        _buildSection(
-          title: '外观',
-          icon: Icons.palette_outlined,
-          children: [_buildThemeSettings(settings)],
-        ),
-
-        const SizedBox(height: 16),
-
-        // 语言模型设置卡片
-        _buildSection(
-          title: '语言模型',
-          icon: Icons.smart_toy_outlined,
-          children: [_buildModelsSettings(settings)],
-        ),
-      ],
-    );
-
-    if (isDesktopLayout) {
-      return Stack(
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
         children: [
-          DesktopLayout(title: '设置', child: content),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: WindowTitleBar(
-              onReset: () => _showResetConfirmDialog(context),
-            ),
+          // 用户资料设置卡片
+          _buildSection(
+            title: '用户资料',
+            icon: Icons.person_outline,
+            children: [_buildProfileSettings(settings)],
+          ),
+
+          const SizedBox(height: 16),
+
+          // 外观设置卡片
+          _buildSection(
+            title: '外观',
+            icon: Icons.palette_outlined,
+            children: [_buildThemeSettings(settings)],
+          ),
+
+          const SizedBox(height: 16),
+
+          // 语言模型设置卡片
+          _buildSection(
+            title: '语言模型',
+            icon: Icons.smart_toy_outlined,
+            children: [_buildModelsSettings(settings)],
+          ),
+
+          // 添加系统设置部分
+          _buildSection(
+            title: '系统设置',
+            icon: Icons.settings_outlined,
+            children: [_buildSystemSettings()],
           ),
         ],
-      );
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('设置'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: '重置为默认设置',
-              onPressed: () => _showResetConfirmDialog(context),
-            ),
-          ],
-        ),
-        body: content,
-      );
-    }
+      ),
+    );
   }
 
   Widget _buildSection({
@@ -217,20 +205,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                   // 悬停效果 - 显示半透明蒙版和相机图标
                   if (_isHoveringAvatar)
-                    Positioned.fill(
-                      child: ClipOval(
-                        child: Container(
-                          color: Colors.black.withOpacity(0.5),
-                          child: const Center(
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
+                    // 悬停效果 - 显示半透明蒙版和相机图标
+                    if (_isHoveringAvatar)
+                      Positioned.fill(
+                        child: ClipOval(
+                          child: Container(
+                            color: Colors.black.withOpacity(0.5),
+                            child: const Center(
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
                 ],
               ),
             ),
@@ -734,6 +724,139 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  // 新增系统设置部分
+  Widget _buildSystemSettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 添加标题
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Text('应用数据', style: Theme.of(context).textTheme.titleMedium),
+        ),
+
+        // 使用卡片样式的容器，提供更好的视觉层次
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: Column(
+              children: [
+                // 重置设置选项
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  leading: Icon(
+                    Ionicons.refresh,
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
+                  title: Text(
+                    '重置设置',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text('将所有设置恢复为默认值'),
+                  trailing: Icon(
+                    Ionicons.chevron_forward,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  onTap: () => _showResetConfirmDialog(context),
+                ),
+
+                // 可以在此添加更多系统选项，例如：
+                Divider(indent: 56, endIndent: 16),
+
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  leading: Icon(
+                    Ionicons.trash,
+                    color: Theme.of(context).colorScheme.error.withOpacity(0.8),
+                  ),
+                  title: Text(
+                    '清除所有对话',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  subtitle: Text('删除所有聊天记录和历史数据'),
+                  trailing: Icon(
+                    Ionicons.chevron_forward,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  onTap: () {
+                    // 实现清除所有对话的逻辑
+                    showDialog(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('清除所有对话'),
+                            content: const Text('确定要删除所有聊天记录吗？此操作无法撤销。'),
+                            actions: [
+                              TextButton(
+                                child: const Text('取消'),
+                                onPressed: () => GoRouter.of(context).pop(),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.error,
+                                ),
+                                onPressed: () {
+                                  // 添加删除逻辑
+                                  GoRouter.of(context).pop();
+                                },
+                                child: const Text('清除'),
+                              ),
+                            ],
+                          ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // 应用信息区域
+        Padding(
+          padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
+          child: Text('关于', style: Theme.of(context).textTheme.titleMedium),
+        ),
+
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text('版本', style: Theme.of(context).textTheme.bodyMedium),
+          subtitle: Text(
+            'v$appVersion',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          trailing: OutlinedButton(
+            child: Text('检查更新'),
+            onPressed: () {
+              // 检查更新逻辑
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   // 弹窗：添加语言模型
   Future<void> _showAddModelDialog(BuildContext context) async {
     final nameController = TextEditingController();
@@ -788,7 +911,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             actions: [
               TextButton(
                 child: const Text('取消'),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
               ),
               TextButton(
                 child: const Text('添加'),
@@ -815,7 +938,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       isSelected: false,
                     );
                     ref.read(settingsProvider.notifier).addModel(newModel);
-                    Navigator.of(context).pop();
+                    GoRouter.of(context).pop();
                   }
                 },
               ),
@@ -870,7 +993,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             actions: [
               TextButton(
                 child: const Text('取消'),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
               ),
               TextButton(
                 child: const Text('保存'),
@@ -897,7 +1020,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ref
                         .read(settingsProvider.notifier)
                         .updateModel(updatedModel);
-                    Navigator.of(context).pop();
+                    GoRouter.of(context).pop();
                   }
                 },
               ),
@@ -920,13 +1043,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             actions: [
               TextButton(
                 child: const Text('取消'),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
                 onPressed: () {
                   ref.read(settingsProvider.notifier).deleteModel(modelId);
-                  Navigator.of(context).pop();
+                  GoRouter.of(context).pop();
                 },
                 child: const Text('删除'),
               ),
@@ -946,13 +1069,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             actions: [
               TextButton(
                 child: const Text('取消'),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
               ),
               TextButton(
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
                 onPressed: () {
                   ref.read(settingsProvider.notifier).resetToDefault();
-                  Navigator.of(context).pop();
+                  GoRouter.of(context).pop();
                 },
                 child: const Text('重置'),
               ),
@@ -979,7 +1102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   leading: const Icon(Icons.photo_camera),
                   title: const Text('拍照'),
                   onTap: () async {
-                    Navigator.pop(context);
+                    GoRouter.of(context).pop();
                     final XFile? image = await imagePicker.pickImage(
                       source: ImageSource.camera,
                       imageQuality: 80,
@@ -995,7 +1118,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   leading: const Icon(Icons.photo_library),
                   title: const Text('从相册选择'),
                   onTap: () async {
-                    Navigator.pop(context);
+                    GoRouter.of(context).pop();
                     final XFile? image = await imagePicker.pickImage(
                       source: ImageSource.gallery,
                       imageQuality: 80,
@@ -1044,9 +1167,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // 更新状态
       ref.read(settingsProvider.notifier).updateUserAvatar(savedFile.path);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('头像更新失败: $e')));
+      final isMobile = Platform.isAndroid || Platform.isIOS;
+
+      ElegantNotification.error(
+        title: Text('发生错误'),
+        description: Text('头像更新失败: $e'),
+        icon: Icon(Ionicons.sad),
+        position: isMobile ? Alignment.topRight : Alignment.bottomRight,
+      ).show(context);
     }
   }
 }

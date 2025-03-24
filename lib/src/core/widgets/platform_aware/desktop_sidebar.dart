@@ -1,14 +1,15 @@
 import 'dart:io';
 
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
 import 'package:mtp/src/presentation/widgets/data_management_sheet.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager_plus/window_manager_plus.dart';
-import 'package:mtp/src/presentation/pages/settings_screen/settings_screen.dart';
 
 class DesktopSidebar extends ConsumerStatefulWidget {
   const DesktopSidebar({super.key});
@@ -274,13 +275,9 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                                               onTap: () async {
                                                 _overlayController.hide();
                                                 // 打开设置界面
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                    builder:
-                                                        (context) =>
-                                                            const SettingsScreen(),
-                                                  ),
-                                                );
+                                                GoRouter.of(
+                                                  context,
+                                                ).push('/settings');
                                               },
                                             ),
                                             Divider(
@@ -363,30 +360,34 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                                                     )) {
                                                       // 如果打开失败，显示错误消息
                                                       if (context.mounted) {
-                                                        ScaffoldMessenger.of(
-                                                          context,
-                                                        ).showSnackBar(
-                                                          const SnackBar(
-                                                            content: Text(
-                                                              '无法打开帮助页面，请稍后再试',
-                                                            ),
+                                                        ElegantNotification.error(
+                                                          title: Text('发生错误'),
+                                                          description: Text(
+                                                            '无法打开帮助页面，请稍后重试',
                                                           ),
-                                                        );
+                                                          icon: Icon(
+                                                            Ionicons.sad,
+                                                          ),
+                                                          position:
+                                                              Alignment
+                                                                  .bottomRight,
+                                                        ).show(context);
                                                       }
                                                     }
                                                   }
                                                 } catch (e) {
                                                   // 捕获可能的异常并提供反馈
                                                   if (context.mounted) {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          '打开帮助页面时出错: $e',
-                                                        ),
+                                                    ElegantNotification.error(
+                                                      title: Text('发生错误'),
+                                                      description: Text(
+                                                        '打开帮助页面时出错: $e',
                                                       ),
-                                                    );
+                                                      icon: Icon(Ionicons.sad),
+                                                      position:
+                                                          Alignment.bottomRight,
+                                                      width: 360,
+                                                    ).show(context);
                                                   }
                                                 }
                                               },

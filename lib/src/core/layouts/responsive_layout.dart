@@ -7,15 +7,11 @@ class ScreenBreakpoints {
 
 class ResponsiveLayout extends StatelessWidget {
   final Widget mobileLayout;
-  final Widget? tabletLayout;
-  final Widget? desktopLayout;
   final Widget? mobileLandscapeLayout;
 
   const ResponsiveLayout({
     super.key,
     required this.mobileLayout,
-    this.tabletLayout,
-    this.desktopLayout,
     this.mobileLandscapeLayout,
   });
 
@@ -23,20 +19,10 @@ class ResponsiveLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Check orientation for mobile devices
-        if (context.isMobile) {
-          // final isLandscape =
-          //     MediaQuery.of(context).orientation == Orientation.landscape;
-          // if (isLandscape && mobileLandscapeLayout != null) {
-          //   return mobileLandscapeLayout!;
-          // }
-          return mobileLayout;
-        } else if (context.isTablet) {
-          // Tablet layout (or mobile layout if not provided)
-          return tabletLayout ?? mobileLayout;
+        if (context.isLandscape) {
+          return mobileLandscapeLayout ?? mobileLayout;
         } else {
-          // Desktop layout (or tablet layout or mobile layout if not provided)
-          return desktopLayout ?? tabletLayout ?? mobileLayout;
+          return mobileLayout;
         }
       },
     );

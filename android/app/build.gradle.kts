@@ -7,9 +7,9 @@ plugins {
 
 android {
     namespace = "com.example.mtp"
-    compileSdkVersion 33
     compileSdk = flutter.compileSdkVersion
     // ndkVersion = flutter.ndkVersion
+    // compileSdk = 33
     ndkVersion = "27.0.12077973"
 
     compileOptions {

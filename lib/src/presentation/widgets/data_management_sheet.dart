@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
 import 'package:mtp/src/domain/entities/session_entity.dart';
@@ -13,8 +13,11 @@ import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:mtp/src/utils/logger.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class DataManagementSheet extends ConsumerStatefulWidget {
   const DataManagementSheet({super.key});
@@ -62,7 +65,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
                 child: const Text('关闭'),
               ),
             ),
@@ -200,11 +203,23 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
 
   Future<void> _exportData() async {
     // 首先请求权限
-    final hasPermission = await _requestStoragePermission();
+    // final hasPermission = await _requestStoragePermission();
 
-    if (!hasPermission) {
-      _showPermissionDeniedDialog();
-      return;
+    // if (!hasPermission) {
+    //   _showPermissionDeniedDialog();
+    //   return;
+    // }
+    // 只在需要时请求权限
+    if (Platform.isAndroid) {
+      final sdkInt = await _getAndroidSDKVersion();
+      if (sdkInt < 33) {
+        // 只在老版本Android上检查权限
+        final hasPermission = await _requestStoragePermission();
+        if (!hasPermission) {
+          _showPermissionDeniedDialog();
+          return;
+        }
+      }
     }
 
     setState(() {
@@ -260,28 +275,24 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
     final bytes = utf8.encode(jsonStr);
 
     try {
-      // 尝试让用户选择保存位置
-      String? outputPath = await FilePicker.platform.saveFile(
+      // 使用FilePicker保存文件，让系统接管文件写入过程
+      final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: '选择备份文件保存位置',
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: ['json'],
-        bytes: bytes, // 添加字节数据，这是Android和iOS平台所必需的
+        bytes: bytes, // 提供字节数据让FilePicker处理写入
       );
 
-      // 如果用户取消选择，直接返回null触发取消保存
+      // 如果用户取消选择，抛出异常
       if (outputPath == null) {
         throw Exception('用户取消了保存操作');
       }
 
-      // 保存文件
-      final file = File(outputPath);
-      await file.writeAsString(jsonStr);
-
+      // 直接返回路径，无需再次写入文件
       return outputPath;
     } catch (e) {
-      localLogger.info('保存文件失败: $e');
-      // 出错时取消保存，将异常继续抛出
+      localLogger.shout('保存文件失败: $e');
       throw Exception('保存文件失败: $e');
     }
   }
@@ -290,7 +301,27 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
     if (_exportedFilePath == null) return;
 
     try {
-      final xFile = XFile(_exportedFilePath!);
+      // 1. 先创建应用内临时文件
+      final tempDir = await getTemporaryDirectory();
+      final fileName = path.basename(_exportedFilePath!);
+      final tempFile = File(path.join(tempDir.path, fileName));
+
+      // 2. 从导出的文件中读取数据
+      final originalFile = File(_exportedFilePath!);
+
+      // 3. 尝试通过两种方式获取内容
+      try {
+        // 方法1: 直接复制文件内容到临时文件
+        await tempFile.writeAsBytes(await originalFile.readAsBytes());
+      } catch (e) {
+        // 如果直接访问文件失败，重新收集导出数据
+        final exportData = await _collectDataForExport();
+        final jsonStr = jsonEncode(exportData);
+        await tempFile.writeAsString(jsonStr);
+      }
+
+      // 4. 使用临时文件分享
+      final xFile = XFile(tempFile.path);
       await Share.shareXFiles([xFile], text: 'MomoTalk Plus 数据备份');
     } catch (e) {
       _showErrorDialog('分享失败', '分享备份文件时发生错误: $e');
@@ -298,12 +329,17 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
   }
 
   Future<void> _importData() async {
-    // 首先请求权限
-    final hasPermission = await _requestStoragePermission();
-
-    if (!hasPermission) {
-      _showPermissionDeniedDialog();
-      return;
+    // 只在需要时请求权限
+    if (Platform.isAndroid) {
+      final sdkInt = await _getAndroidSDKVersion();
+      if (sdkInt < 33) {
+        // 只在老版本Android上检查权限
+        final hasPermission = await _requestStoragePermission();
+        if (!hasPermission) {
+          _showPermissionDeniedDialog();
+          return;
+        }
+      }
     }
 
     setState(() {
@@ -387,11 +423,11 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
                 content: const Text('导入数据将覆盖当前的设置、聊天记录和角色信息。此操作不可撤销，确定要继续吗？'),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
+                    onPressed: () => GoRouter.of(context).pop(false),
                     child: const Text('取消'),
                   ),
                   ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(true),
+                    onPressed: () => GoRouter.of(context).pop(true),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.error,
                       foregroundColor: Theme.of(context).colorScheme.onError,
@@ -432,37 +468,50 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
 
   // 请求存储权限
   Future<bool> _requestStoragePermission() async {
-    // 检查当前权限状态
-    PermissionStatus status;
-
-    // Android 13+ (API 33+) 使用细分的媒体权限
+    // 对于Android 13+直接返回true
     if (Platform.isAndroid) {
       final sdkInt = await _getAndroidSDKVersion();
-      if (sdkInt >= 33) {
-        // Android 13+: 使用更细分的权限
-        status = await Permission.photos.request();
-        final videos = await Permission.videos.request();
-        final audio = await Permission.audio.request();
+      if (sdkInt >= 33) return true;
 
-        // 所有权限都需要被授予
-        return status.isGranted && videos.isGranted && audio.isGranted;
-      } else if (sdkInt >= 30) {
-        // Android 11-12: 使用管理外部存储权限
-        status = await Permission.manageExternalStorage.request();
-        return status.isGranted;
+      if (sdkInt >= 30) {
+        final status = await Permission.manageExternalStorage.status;
+        if (status.isGranted) return true;
+
+        return await Permission.manageExternalStorage.request().isGranted;
       } else {
-        // Android 10及以下: 使用存储权限
-        status = await Permission.storage.request();
-        return status.isGranted;
+        final status = await Permission.storage.status;
+        if (status.isGranted) return true;
+
+        return await Permission.storage.request().isGranted;
       }
-    } else if (Platform.isIOS) {
-      // iOS: 需要照片权限
-      status = await Permission.photos.request();
-      return status.isGranted;
     }
 
-    // 其他平台默认返回true
-    return true;
+    return true; // 非Android平台
+    // // 检查当前权限状态
+    // PermissionStatus status;
+
+    // // Android 13+ (API 33+) 使用细分的媒体权限
+    // if (Platform.isAndroid) {
+    //   final sdkInt = await _getAndroidSDKVersion();
+    //   if (sdkInt >= 33) {
+    //     // Android 13+ (API 33+): 不需要请求存储权限，因为使用 FilePicker
+    //     // 已经通过 SAF (Storage Access Framework) 处理了文件选择
+    //     return true;
+    //   } else if (sdkInt >= 30) {
+    //     // Android 11-12：使用管理外部存储权限
+    //     status = await Permission.manageExternalStorage.request();
+    //     return status.isGranted;
+    //   } else {
+    //     // Android 10及以下: 使用存储权限
+    //     status = await Permission.storage.request();
+    //     return status.isGranted;
+    //   }
+    // } else if (Platform.isIOS) {
+    //   return true;
+    // }
+
+    // // 其他平台默认返回true
+    // return true;
   }
 
   // 获取Android SDK版本
@@ -470,49 +519,61 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
     if (!Platform.isAndroid) return 0;
 
     try {
-      return int.parse(await _getSystemProperty('ro.build.version.sdk'));
+      // 使用device_info_plus插件获取系统信息
+      final deviceInfo = DeviceInfoPlugin();
+      final androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.version.sdkInt;
     } catch (e) {
       print('获取Android SDK版本失败: $e');
-      return 0;
-    }
-  }
-
-  // 获取Android系统属性
-  Future<String> _getSystemProperty(String property) async {
-    try {
-      if (Platform.isAndroid) {
-        return await MethodChannel(
-              'flutter.native/helper',
-            ).invokeMethod('getSystemProperty', {'property': property}) ??
-            '';
-      }
-      return '';
-    } catch (e) {
-      print('获取系统属性失败: $e');
-      return '';
+      // 如果无法获取，返回一个足够高的版本号让应用默认使用SAF
+      return 33; // 默认视为Android 13+
     }
   }
 
   // 显示权限被拒绝的对话框
-  void _showPermissionDeniedDialog() {
+  void _showPermissionDeniedDialog() async {
+    final sdkInt = Platform.isAndroid ? await _getAndroidSDKVersion() : 0;
+
+    if (!mounted) return;
+
+    final String message;
+    if (Platform.isAndroid && sdkInt >= 33) {
+      // Android 13+提示
+      message = '此应用需要访问文件选择器来导入/导出数据。请在下一步的文件选择器中选择适当的位置。';
+    } else if (Platform.isAndroid && sdkInt >= 30) {
+      // Android 11-12提示
+      message = '为了导出或导入数据，应用需要"管理所有文件"权限。请在设置中允许此权限。';
+    } else {
+      // 其他版本
+      message = '为了导出或导入数据，应用需要访问设备存储的权限。请在设置中允许此权限。';
+    }
+
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('需要存储权限'),
-            content: const Text('为了导出或导入数据，应用需要访问设备存储的权限。请在设置中允许此权限。'),
+            title: const Text('需要文件访问权限'),
+            content: Text(message),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
                 child: const Text('取消'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  openAppSettings();
-                },
-                child: const Text('前往设置'),
-              ),
+              if (sdkInt < 33) // 只在旧版Android上显示前往设置按钮
+                ElevatedButton(
+                  onPressed: () {
+                    GoRouter.of(context).pop();
+                    openAppSettings();
+                  },
+                  child: const Text('前往设置'),
+                ),
+              if (sdkInt >= 33) // 在新版Android上直接确认
+                ElevatedButton(
+                  onPressed: () {
+                    GoRouter.of(context).pop();
+                  },
+                  child: const Text('我知道了'),
+                ),
             ],
           ),
     );
@@ -527,7 +588,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
             content: Text(message),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => GoRouter.of(context).pop(),
                 child: const Text('确定'),
               ),
             ],

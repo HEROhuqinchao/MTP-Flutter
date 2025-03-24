@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-class ConversationListItem extends StatefulWidget {
+class ChatListItem extends StatefulWidget {
   final String title;
   final String lastMessage;
   final DateTime timestamp;
@@ -12,7 +12,7 @@ class ConversationListItem extends StatefulWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const ConversationListItem({
+  const ChatListItem({
     super.key,
     required this.title,
     required this.lastMessage,
@@ -25,10 +25,10 @@ class ConversationListItem extends StatefulWidget {
   });
 
   @override
-  State<ConversationListItem> createState() => _ConversationListItemState();
+  State<ChatListItem> createState() => _ChatListItemState();
 }
 
-class _ConversationListItemState extends State<ConversationListItem> {
+class _ChatListItemState extends State<ChatListItem> {
   bool _isHovering = false;
 
   @override

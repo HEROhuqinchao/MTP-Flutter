@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/chat_screen.dart';
-import '../core/widgets/platform_aware/desktop_layout.dart';
-import '../core/widgets/platform_aware/mobile_layout.dart';
-import '../core/widgets/platform_aware/tablet_layout.dart';
-import '../core/widgets/responsive_layout.dart';
+import 'package:mtp/src/app/routes.dart';
+import '../core/layouts/responsive_layout.dart';
 import '../core/widgets/custom_window/window_title_bar.dart';
 import '../presentation/providers/settings/settings_provider.dart';
 import 'theme/app_theme.dart';
@@ -19,20 +16,23 @@ class App extends ConsumerWidget {
     // 获取当前主题模式
     final themeMode = ref.watch(themeModeProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'MTP',
       debugShowCheckedModeBanner: false,
       // 设置主题
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const AppHome(),
+      routerConfig: router,
+      builder: (context, child) => AppHome(child: child!),
     );
   }
 }
 
 class AppHome extends StatefulWidget {
-  const AppHome({super.key});
+  final Widget child;
+
+  const AppHome({super.key, required this.child});
 
   @override
   State<AppHome> createState() => _AppHomeState();
@@ -84,26 +84,26 @@ class _AppHomeState extends State<AppHome> {
     // 判断是否为桌面平台
     final bool isDesktopPlatform =
         Platform.isWindows || Platform.isMacOS || Platform.isLinux;
-    final bool isMobilePlatform = Platform.isAndroid || Platform.isIOS;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 内容区域
-          ResponsiveLayout(
-            // Mobile layout is different based on physical device
-            mobileLayout: const MobileLayout(),
-            // On mobile devices, landscape should adapt
-            mobileLandscapeLayout: isMobilePlatform ? null : null,
-            // Tablet layout
-            tabletLayout:
-                isDesktopPlatform
-                    ? const DesktopLayout(child: ChatScreen())
-                    : const TabletLayout(),
-            // Desktop layout
-            desktopLayout: const DesktopLayout(child: ChatScreen()),
-          ),
+          widget.child,
+          // // 内容区域
+          // ResponsiveLayout(
+          //   // Mobile layout is different based on physical device
+          //   mobileLayout: const MobileLayout(),
+          //   // On mobile devices, landscape should adapt
+          //   mobileLandscapeLayout: isMobilePlatform ? null : null,
+          //   // Tablet layout
+          //   tabletLayout:
+          //       isDesktopPlatform
+          //           ? const DesktopLayout(child: ChatScreen())
+          //           : const TabletLayout(),
+          //   // Desktop layout
+          //   desktopLayout: const DesktopLayout(child: ChatScreen()),
+          // ),
           // 桌面平台使用自定义标题栏，放在Stack顶层
           if (isDesktopPlatform)
             const Positioned(

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,44 +13,22 @@ import 'package:mtp/src/domain/entities/session_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'package:mtp/src/presentation/widgets/simple_icon_button.dart';
-import 'package:mtp/src/utils/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import '../../../widgets/message_bubble.dart';
+import '../../widgets/message_bubble.dart';
 
-class ConversationView extends ConsumerStatefulWidget {
-  const ConversationView({super.key});
+class ChatDetailScreen extends ConsumerStatefulWidget {
+  const ChatDetailScreen({super.key});
 
   @override
-  ConsumerState<ConversationView> createState() => _ConversationViewState();
+  ConsumerState<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
 
-class _ConversationViewState extends ConsumerState<ConversationView> {
+class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isComposing = false;
   final GlobalKey _headerKey = GlobalKey();
-  double _headerHeight = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    // 在下一帧计算标题栏高度
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _calculateHeaderHeight();
-    });
-  }
-
-  // 计算标题栏高度
-  void _calculateHeaderHeight() {
-    if (_headerKey.currentContext != null) {
-      final RenderBox renderBox =
-          _headerKey.currentContext!.findRenderObject() as RenderBox;
-      setState(() {
-        _headerHeight = renderBox.size.height;
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -105,12 +85,6 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       endDrawer: _buildRoleManagementDrawer(context, currentSession.roleId),
-      onEndDrawerChanged: (isOpened) {
-        if (!isOpened) {
-          // 抽屉关闭时重新计算标题栏高度
-          _calculateHeaderHeight();
-        }
-      },
       // 移除默认的抽屉按钮
       appBar: PreferredSize(
         preferredSize: Size.zero,
@@ -129,9 +103,6 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                     : _buildMessagesList(context, messages),
           ),
 
-          // 分隔线
-          // Divider(height: 1, color: theme.dividerColor),
-
           // 消息输入区域
           _buildMessageComposer(context),
         ],
@@ -144,7 +115,6 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
     BuildContext context,
     String? currentRoleId,
   ) {
-    final screenHeight = MediaQuery.of(context).size.height;
     final theme = Theme.of(context);
     final roleState = ref.watch(roleStateProvider);
 
@@ -168,16 +138,22 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                 : FileImage(File(currentRole.avatars.first)))
             : null;
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(8),
-        bottomLeft: Radius.circular(8),
-      ),
-      child: Drawer(
-        width: 300,
+    final isMobile = Platform.isAndroid || Platform.isIOS;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final width = isMobile ? screenWidth : 300.0;
+
+    return Material(
+      borderRadius:
+          isMobile
+              ? BorderRadius.zero
+              : BorderRadius.only(
+                topLeft: Radius.circular(8),
+                bottomLeft: Radius.circular(8),
+              ),
+      child: SizedBox(
+        width: width,
         // 设置抽屉高度为屏幕高度减去标题栏高度
         child: Container(
-          height: screenHeight - _headerHeight,
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,11 +165,12 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("角色信息", style: theme.textTheme.titleLarge),
-                    // IconButton(
-                    //   icon: const Icon(Icons.close),
-                    //   onPressed: () => Navigator.of(context).pop(),
-                    //   tooltip: "关闭",
-                    // ),
+                    if (isMobile)
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => GoRouter.of(context).pop(),
+                        tooltip: "关闭",
+                      ),
                   ],
                 ),
               ),
@@ -315,13 +292,15 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                         icon: const Icon(Ionicons.trash),
                         label: const Text("清除历史记录"),
                         onPressed: () {
-                          Navigator.pop(context);
+                          GoRouter.of(context).pop();
                           _showClearHistoryConfirmation(context);
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: theme.colorScheme.error,
                           side: BorderSide(
-                            color: theme.colorScheme.error.withOpacity(0.5),
+                            color: theme.colorScheme.error.withValues(
+                              alpha: 0.5,
+                            ),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
@@ -336,7 +315,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                           icon: const Icon(Icons.edit),
                           label: const Text("编辑角色"),
                           onPressed: () {
-                            Navigator.pop(context);
+                            GoRouter.of(context).pop();
                             _showEditRoleDialog(context, currentRole);
                           },
                           style: ElevatedButton.styleFrom(
@@ -359,8 +338,18 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                                   currentSession.id!,
                                 );
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('无法删除：找不到当前会话')),
+                                ElegantNotification.error(
+                                  title: Text('发生错误'),
+                                  description: Text('无法删除：找不到当前会话'),
+                                  icon: Icon(Ionicons.sad),
+                                  position:
+                                      isMobile
+                                          ? Alignment.topCenter
+                                          : Alignment.bottomRight,
+                                  animation:
+                                      isMobile
+                                          ? AnimationType.fromTop
+                                          : AnimationType.fromRight,
                                 );
                               }
                             }
@@ -389,6 +378,8 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
     File? selectedAvatar;
     String? avatarPath;
     bool isUpdating = false;
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -501,7 +492,9 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                       children: [
                         TextButton(
                           onPressed:
-                              isUpdating ? null : () => Navigator.pop(context),
+                              isUpdating
+                                  ? null
+                                  : () => GoRouter.of(context).pop(),
                           child: const Text('取消'),
                         ),
                         const SizedBox(width: 16),
@@ -544,13 +537,14 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                                       await ref
                                           .read(roleStateProvider.notifier)
                                           .updateRole(updatedRole);
-                                      Navigator.of(context).pop();
+                                      GoRouter.of(context).pop();
                                     } catch (e) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(content: Text('更新失败: $e')),
-                                      );
+                                      ElegantNotification.error(
+                                        title: Text('发生错误'),
+                                        description: Text('更新失败: $e'),
+                                        icon: Icon(Ionicons.sad),
+                                        position: Alignment.bottomRight,
+                                      ).show(context);
                                     } finally {
                                       if (mounted) {
                                         setState(() {
@@ -603,13 +597,13 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
             content: const Text("确定要删除这个角色吗？与该角色的所有对话也会被删除。"),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => GoRouter.of(context).pop(),
                 child: const Text("取消"),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // 关闭确认对话框
-                  Navigator.pop(context); // 关闭角色管理抽屉
+                  GoRouter.of(context).pop(); // 关闭确认对话框
+                  GoRouter.of(context).pop(); // 关闭角色管理抽屉
                   ref.read(roleStateProvider.notifier).deleteRole(roleId);
                   ref.read(chatStateProvider.notifier).deleteSession(sessionId);
                 },
@@ -633,12 +627,12 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
             content: const Text("确定要清除所有聊天记录吗？此操作不可撤销，但会保留会话本身。"),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => GoRouter.of(context).pop(),
                 child: const Text("取消"),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  GoRouter.of(context).pop();
                   _clearChatHistory(currentSession);
                 },
                 style: TextButton.styleFrom(
@@ -665,9 +659,11 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
     ref.read(chatStateProvider.notifier).importSession(clearedSession);
 
     // 显示提示
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('聊天记录已清除')));
+    ElegantNotification.success(
+      description: Text('聊天记录已清除'),
+      icon: Icon(Ionicons.checkmark_done_circle),
+      position: Alignment.bottomRight,
+    ).show(context);
   }
 
   Widget _buildHeader(
@@ -679,7 +675,6 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
   ) {
     final theme = Theme.of(context);
     final isMobile = Platform.isAndroid || Platform.isIOS;
-    final width = MediaQuery.of(context).size.width;
 
     return Container(
       key: _headerKey, // 添加key以测量高度
@@ -702,11 +697,8 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
           if (isMobile)
             IconButton(
               onPressed: () {
-                if (width >= 1000) {
-                  ref.read(chatStateProvider.notifier).selectSession(-1);
-                } else {
-                  GoRouter.of(context).pop();
-                }
+                ref.read(chatStateProvider.notifier).selectSession(-1);
+                GoRouter.of(context).go('/chat');
               },
               icon: Icon(Ionicons.chevron_back),
             ),

@@ -1,3 +1,5 @@
+import 'package:elegant_notification/elegant_notification.dart';
+import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,17 +15,16 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'conversation_list_item.dart';
+import 'chat_list_item.dart';
 
-class ConversationList extends ConsumerStatefulWidget {
-  const ConversationList({super.key});
+class ChatList extends ConsumerStatefulWidget {
+  const ChatList({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _ConversationListState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChatList();
 }
 
-class _ConversationListState extends ConsumerState<ConversationList> {
+class _ChatList extends ConsumerState<ChatList> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -106,7 +107,7 @@ class _ConversationListState extends ConsumerState<ConversationList> {
 
                             return Column(
                               children: [
-                                ConversationListItem(
+                                ChatListItem(
                                   title: session.title,
                                   lastMessage:
                                       session.messages.isNotEmpty
@@ -124,9 +125,7 @@ class _ConversationListState extends ConsumerState<ConversationList> {
                                     ref
                                         .read(chatStateProvider.notifier)
                                         .selectSession(originalIndex);
-                                    if (Platform.isAndroid || Platform.isIOS) {
-                                      GoRouter.of(context).push('/chat');
-                                    }
+                                    GoRouter.of(context).push('/chat/session');
                                   },
                                 ),
                               ],
@@ -225,11 +224,21 @@ class _ConversationListState extends ConsumerState<ConversationList> {
                     .read(chatStateProvider.notifier)
                     .createSession(roleNameController.text.trim(), roleId);
 
-                Navigator.of(context).pop();
+                GoRouter.of(context).pop();
               } catch (e) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('创建失败: $e')));
+                final isMobile = Platform.isAndroid || Platform.isIOS;
+
+                ElegantNotification.error(
+                  title: Text('发生错误'),
+                  description: Text('创建失败: $e'),
+                  icon: Icon(Ionicons.sad),
+                  position:
+                      isMobile ? Alignment.topCenter : Alignment.bottomRight,
+                  animation:
+                      isMobile
+                          ? AnimationType.fromTop
+                          : AnimationType.fromRight,
+                ).show(context);
               } finally {
                 setState(() {
                   isCreating = false;
@@ -329,7 +338,9 @@ class _ConversationListState extends ConsumerState<ConversationList> {
                       children: [
                         TextButton(
                           onPressed:
-                              isCreating ? null : () => Navigator.pop(context),
+                              isCreating
+                                  ? null
+                                  : () => GoRouter.of(context).pop(),
                           child: const Text('取消'),
                         ),
                         const SizedBox(width: 16),
@@ -604,44 +615,6 @@ class _ConversationListState extends ConsumerState<ConversationList> {
       ),
     );
   }
-
-  // // 新建会话对话框
-  // void _showNewConversationDialog(BuildContext context, WidgetRef ref) {
-  //   final titleController = TextEditingController();
-
-  //   showDialog(
-  //     context: context,
-  //     builder:
-  //         (context) => AlertDialog(
-  //           title: const Text('新建对话'),
-  //           content: TextField(
-  //             controller: titleController,
-  //             decoration: const InputDecoration(hintText: '请输入对话标题'),
-  //             autofocus: true,
-  //           ),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () => Navigator.pop(context),
-  //               child: const Text('取消'),
-  //             ),
-  //             TextButton(
-  //               onPressed: () {
-  //                 if (titleController.text.trim().isNotEmpty) {
-  //                   ref
-  //                       .read(chatStateProvider.notifier)
-  //                       .createSession(
-  //                         titleController.text,
-  //                         'default', // 默认角色ID
-  //                       );
-  //                   Navigator.pop(context);
-  //                 }
-  //               },
-  //               child: const Text('创建'),
-  //             ),
-  //           ],
-  //         ),
-  //   );
-  // }
 }
 
 // 添加这个新方法来显示"没有会话"的状态

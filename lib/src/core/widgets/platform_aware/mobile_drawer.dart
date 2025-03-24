@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,8 +25,10 @@ class MobileDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final screenWidth = MediaQuery.of(context).size.width;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     // 计算抽屉宽度 - 使用屏幕宽度的80%或300点，取较小值
-    final drawerWidth = screenWidth * 0.8 < 360 ? screenWidth * 0.8 : 360.0;
+    final drawerWidth = isPortrait ? screenWidth : 360.0;
     final avatarWidget = Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -54,14 +57,11 @@ class MobileDrawer extends ConsumerWidget {
       ),
     );
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topRight: Radius.circular(0),
-        bottomRight: Radius.circular(0),
-      ),
+    return Material(
+      elevation: 0,
       child: SizedBox(
         width: drawerWidth, // 设置抽屉宽度
-        child: Drawer(
+        child: SizedBox(
           width: drawerWidth, // 确保Drawer也使用相同宽度
           child: SafeArea(
             child: Column(
@@ -93,8 +93,8 @@ class MobileDrawer extends ConsumerWidget {
                         icon: Ionicons.chatbubble_outline,
                         title: '聊天',
                         onTap: () {
-                          Navigator.pop(context);
-                          GoRouter.of(context).go('/');
+                          GoRouter.of(context).pop();
+                          GoRouter.of(context).go('/chat');
                         },
                       ),
 
@@ -157,20 +157,24 @@ class MobileDrawer extends ConsumerWidget {
                               )) {
                                 // 如果打开失败，显示错误消息
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('无法打开帮助页面，请稍后再试'),
-                                    ),
-                                  );
+                                  ElegantNotification.error(
+                                    title: Text('发生错误'),
+                                    description: Text('无法打开帮助页面，请稍后再试'),
+                                    icon: Icon(Ionicons.sad),
+                                    position: Alignment.topRight,
+                                  ).show(context);
                                 }
                               }
                             }
                           } catch (e) {
                             // 捕获可能的异常并提供反馈
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('打开帮助页面时出错: $e')),
-                              );
+                              ElegantNotification.error(
+                                title: Text('发生错误'),
+                                description: Text('打开帮助页面时出错: $e'),
+                                icon: Icon(Ionicons.sad),
+                                position: Alignment.topRight,
+                              ).show(context);
                             }
                           }
                         },
@@ -223,7 +227,8 @@ class MobileDrawer extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -278,7 +283,7 @@ class MobileDrawer extends ConsumerWidget {
                       IconButton(
                         tooltip: '设置',
                         onPressed: () {
-                          Navigator.pop(context); // 关闭抽屉
+                          GoRouter.of(context).pop(); // 关闭抽屉
                           GoRouter.of(context).push('/settings');
                         },
                         icon: const Icon(Ionicons.cog_outline),
@@ -552,11 +557,14 @@ class MobileDrawer extends ConsumerWidget {
                     .read(chatStateProvider.notifier)
                     .createSession(roleNameController.text.trim(), roleId);
 
-                Navigator.of(context).pop();
+                GoRouter.of(context).pop();
               } catch (e) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('创建失败: $e')));
+                ElegantNotification.error(
+                  title: Text('发生错误'),
+                  description: Text('创建失败: $e'),
+                  icon: Icon(Ionicons.sad),
+                  position: Alignment.topRight,
+                ).show(context);
               } finally {
                 setState(() {
                   isCreating = false;
@@ -656,7 +664,9 @@ class MobileDrawer extends ConsumerWidget {
                       children: [
                         TextButton(
                           onPressed:
-                              isCreating ? null : () => Navigator.pop(context),
+                              isCreating
+                                  ? null
+                                  : () => GoRouter.of(context).pop(),
                           child: const Text('取消'),
                         ),
                         const SizedBox(width: 16),

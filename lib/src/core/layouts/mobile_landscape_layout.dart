@@ -1,13 +1,13 @@
-import 'dart:io';
-
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/presentation/pages/chat_screen/widgets/chat_list.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/widgets/conversation_list.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/widgets/conversation_view.dart';
 
-class ChatScreen extends ConsumerWidget {
-  const ChatScreen({super.key});
+class MobileLandscapeLayout extends ConsumerWidget {
+  final Widget child;
+  const MobileLandscapeLayout({super.key, required this.child});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,24 +20,23 @@ class ChatScreen extends ConsumerWidget {
     if (errorMessage != null) {
       // 使用WidgetsBinding.instance.addPostFrameCallback以避免在构建过程中显示SnackBar
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+        ElegantNotification(
+          title: Text('发生错误'),
+          description: Text(errorMessage),
+          icon: Icon(Ionicons.warning),
+          width: 360,
+          progressIndicatorColor: Colors.orange,
+          position: Alignment.bottomRight,
+        ).show(context);
         // 清除错误消息
         ref.read(chatStateProvider.notifier).clearErrorMessage();
       });
     }
-    final conversationListWidth = (Platform.isAndroid || Platform.isIOS) ? 320.0 : 252.0;
-
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Row(
+    return SafeArea(
+      child: Row(
         children: [
-          // 左侧对话列表
-          SizedBox(width: conversationListWidth, child: ConversationList()),
-
-          // 右侧对话内容
-          Expanded(child: ConversationView()),
+          SizedBox(width: 360, child: ChatList()),
+          Expanded(child: child),
         ],
       ),
     );
