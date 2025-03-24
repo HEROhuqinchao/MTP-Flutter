@@ -50,103 +50,125 @@ class _ChatList extends ConsumerState<ChatList> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: isMobile ? MobileDrawer() : null,
-      body: GestureDetector(
-        onTap: () {
-          _searchFocusNode.unfocus();
-        },
-        onHorizontalDragEnd: (details) {
-          if (!isMobile) return;
-          if (details.primaryVelocity! > 0) {
-            _scaffoldKey.currentState?.openDrawer();
-          }
-        },
-        child: Container(
-          color: Theme.of(context).colorScheme.surface,
-          child: Column(
-            children: [
-              // header with search
-              if (isMobile) _buildMobileHeader() else _buildHeader(),
-              // 会话列表
-              Expanded(
-                child:
-                    chatState.isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : filteredSessions.isEmpty
-                        ? chatState.searchQuery.isEmpty
-                            ? _buildNoConversations() // 无搜索且列表为空 - 显示"没有会话"
-                            : _buildEmptySearchResult(
-                              chatState.searchQuery,
-                            ) // 有搜索但无结果
-                        : ListView.builder(
-                          itemCount: filteredSessions.length,
-                          itemBuilder: (context, index) {
-                            final session = filteredSessions[index];
-                            final originalIndex = chatState.sessions.indexOf(
-                              session,
-                            );
+      body: Stack(
+        children: [
+          Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: Column(
+              children: [
+                // header with search
+                if (isMobile) _buildMobileHeader() else _buildHeader(),
+                // 会话列表
+                Expanded(
+                  child:
+                      chatState.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : filteredSessions.isEmpty
+                          ? chatState.searchQuery.isEmpty
+                              ? _buildNoConversations() // 无搜索且列表为空 - 显示"没有会话"
+                              : _buildEmptySearchResult(
+                                chatState.searchQuery,
+                              ) // 有搜索但无结果
+                          : ListView.builder(
+                            itemCount: filteredSessions.length,
+                            itemBuilder: (context, index) {
+                              final session = filteredSessions[index];
+                              final originalIndex = chatState.sessions.indexOf(
+                                session,
+                              );
 
-                            // 根据 roleId 获取角色信息
-                            final role =
-                                roleState.roles.isEmpty
-                                    ? null
-                                    : roleState.roles.firstWhere(
-                                      (role) => role.id == session.roleId,
-                                      orElse: () => roleState.roles.first,
-                                    );
+                              // 根据 roleId 获取角色信息
+                              final role =
+                                  roleState.roles.isEmpty
+                                      ? null
+                                      : roleState.roles.firstWhere(
+                                        (role) => role.id == session.roleId,
+                                        orElse: () => roleState.roles.first,
+                                      );
 
-                            // 计算未读消息数量
-                            final unreadCount =
-                                session.messages
-                                    .where(
-                                      (msg) => !msg.isRead && !msg.isFromUser,
-                                    )
-                                    .length;
+                              // 计算未读消息数量
+                              final unreadCount =
+                                  session.messages
+                                      .where(
+                                        (msg) => !msg.isRead && !msg.isFromUser,
+                                      )
+                                      .length;
 
-                            // 确定是否活跃 (最近10分钟有新消息)
-                            final isActive =
-                                session.updatedAt != null &&
-                                DateTime.now()
-                                        .difference(session.updatedAt!)
-                                        .inMinutes <
-                                    10;
+                              // 确定是否活跃 (最近10分钟有新消息)
+                              final isActive =
+                                  session.updatedAt != null &&
+                                  DateTime.now()
+                                          .difference(session.updatedAt!)
+                                          .inMinutes <
+                                      10;
 
-                            // 获取角色头像
-                            String? avatarUrl;
-                            if (role != null && role.avatars.isNotEmpty) {
-                              avatarUrl = role.avatars.first;
-                            }
+                              // 获取角色头像
+                              String? avatarUrl;
+                              if (role != null && role.avatars.isNotEmpty) {
+                                avatarUrl = role.avatars.first;
+                              }
 
-                            return Column(
-                              children: [
-                                ChatListItem(
-                                  title: session.title,
-                                  lastMessage:
-                                      session.messages.isNotEmpty
-                                          ? session.messages.last.content
-                                          : "",
-                                  timestamp:
-                                      session.updatedAt ?? DateTime.now(),
-                                  avatarUrl: avatarUrl, // 这里可以从角色数据中获取
-                                  unreadCount: unreadCount, // 从会话数据中获取
-                                  isActive: isActive, // 从用户状态中获取
-                                  isSelected:
-                                      selectedSessionIndex == originalIndex,
-                                  onTap: () {
-                                    // 使用Provider选择会话
-                                    ref
-                                        .read(chatStateProvider.notifier)
-                                        .selectSession(originalIndex);
-                                    GoRouter.of(context).push('/chat/session');
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-              ),
-            ],
+                              return Column(
+                                children: [
+                                  ChatListItem(
+                                    title: session.title,
+                                    lastMessage:
+                                        session.messages.isNotEmpty
+                                            ? session.messages.last.content
+                                            : "",
+                                    timestamp:
+                                        session.updatedAt ?? DateTime.now(),
+                                    avatarUrl: avatarUrl, // 这里可以从角色数据中获取
+                                    unreadCount: unreadCount, // 从会话数据中获取
+                                    isActive: isActive, // 从用户状态中获取
+                                    isSelected:
+                                        selectedSessionIndex == originalIndex,
+                                    isPinned: session.isPinned ?? false,
+                                    onTap: () {
+                                      // 使用Provider选择会话
+                                      ref
+                                          .read(chatStateProvider.notifier)
+                                          .selectSession(originalIndex);
+                                      GoRouter.of(
+                                        context,
+                                      ).push('/chat/session');
+                                    },
+                                    onPin: () {
+                                      // 处理置顶操作
+                                      ref
+                                          .read(chatStateProvider.notifier)
+                                          .togglePinSession(session.id!);
+                                    },
+                                    onClear: () {
+                                      // 处理删除操作
+                                      ref
+                                          .read(chatStateProvider.notifier)
+                                          .deleteSession(session.id!);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                ),
+              ],
+            ),
           ),
-        ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 180,
+            child: GestureDetector(
+              onHorizontalDragEnd: (details) {
+                if (!isMobile) return;
+                if (details.primaryVelocity! > 0) {
+                  _scaffoldKey.currentState?.openDrawer();
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

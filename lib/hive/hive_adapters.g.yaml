@@ -29,10 +29,8 @@ types:
         index: 2
   Session:
     typeId: 3
-    nextIndex: 6
+    nextIndex: 7
     fields:
-      key:
-        index: 0
       roleId:
         index: 1
       title:
@@ -43,6 +41,8 @@ types:
         index: 4
       updatedAt:
         index: 5
+      isPinned:
+        index: 6
   ChatModel:
     typeId: 4
     nextIndex: 6

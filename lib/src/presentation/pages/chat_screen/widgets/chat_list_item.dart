@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ChatListItem extends StatefulWidget {
   final String title;
@@ -10,7 +11,10 @@ class ChatListItem extends StatefulWidget {
   final int unreadCount;
   final bool isActive;
   final bool isSelected;
+  final bool isPinned;
   final VoidCallback onTap;
+  final VoidCallback? onPin;
+  final VoidCallback? onClear;
 
   const ChatListItem({
     super.key,
@@ -21,7 +25,10 @@ class ChatListItem extends StatefulWidget {
     this.unreadCount = 0,
     this.isActive = false,
     this.isSelected = false,
+    this.isPinned = false,
     required this.onTap,
+    this.onPin,
+    this.onClear,
   });
 
   @override
@@ -35,6 +42,7 @@ class _ChatListItemState extends State<ChatListItem> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
+    final isMobile = Platform.isAndroid || Platform.isIOS;
 
     // Format the timestamp
     final now = DateTime.now();
@@ -63,7 +71,8 @@ class _ChatListItemState extends State<ChatListItem> {
           '${widget.timestamp.day}/${widget.timestamp.month}/${widget.timestamp.year}';
     }
 
-    return MouseRegion(
+    // 构建主内容
+    Widget content = MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       child: InkWell(
@@ -72,7 +81,7 @@ class _ChatListItemState extends State<ChatListItem> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           decoration: BoxDecoration(
             color:
-                widget.isSelected
+                widget.isSelected || widget.isPinned
                     ? theme.colorScheme.primaryContainer.withValues(alpha: 0.5)
                     : _isHovering
                     ? theme.colorScheme.surfaceContainerHighest.withValues(
@@ -83,7 +92,7 @@ class _ChatListItemState extends State<ChatListItem> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Avatar with active indicator
+              // 头像部分
               Stack(
                 children: [
                   // Avatar
@@ -137,12 +146,36 @@ class _ChatListItemState extends State<ChatListItem> {
                         ),
                       ),
                     ),
+
+                  // 置顶标识
+                  if (widget.isPinned)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.scaffoldBackgroundColor,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.push_pin,
+                          size: 8,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
+                    ),
                 ],
               ),
 
               const SizedBox(width: 12.0),
 
-              // Conversation details
+              // 会话详情
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,5 +277,45 @@ class _ChatListItemState extends State<ChatListItem> {
         ),
       ),
     );
+
+    // 在移动设备上使用 Slidable
+    if (isMobile && (widget.onPin != null || widget.onClear != null)) {
+      return Slidable(
+        // 设置只能从右向左滑动（即向右滑）
+        direction: Axis.horizontal,
+
+        // 右侧显示的操作按钮
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          children: [
+            // 置顶/取消置顶按钮
+            if (widget.onPin != null)
+              SlidableAction(
+                onPressed: (_) => widget.onPin!(),
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                icon:
+                    widget.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+                label: widget.isPinned ? '取消置顶' : '置顶',
+              ),
+
+            // 删除按钮
+            if (widget.onClear != null)
+              SlidableAction(
+                onPressed: (_) => widget.onClear!(),
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                icon: Icons.delete_outline,
+                label: '删除',
+              ),
+          ],
+        ),
+
+        // 主内容
+        child: content,
+      );
+    }
+
+    return content;
   }
 }

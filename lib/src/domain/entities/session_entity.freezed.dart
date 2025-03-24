@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SessionEntity {
 
- String? get id; String get roleId; String get title; List<MessageEntity> get messages; DateTime? get createdAt; DateTime? get updatedAt;
+ String? get id; String get roleId; String get title; List<MessageEntity> get messages; DateTime? get createdAt; DateTime? get updatedAt; bool? get isPinned;
 /// Create a copy of SessionEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $SessionEntityCopyWith<SessionEntity> get copyWith => _$SessionEntityCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.messages, messages)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.messages, messages)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isPinned, isPinned) || other.isPinned == isPinned));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,roleId,title,const DeepCollectionEquality().hash(messages),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,roleId,title,const DeepCollectionEquality().hash(messages),createdAt,updatedAt,isPinned);
 
 @override
 String toString() {
-  return 'SessionEntity(id: $id, roleId: $roleId, title: $title, messages: $messages, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'SessionEntity(id: $id, roleId: $roleId, title: $title, messages: $messages, createdAt: $createdAt, updatedAt: $updatedAt, isPinned: $isPinned)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $SessionEntityCopyWith<$Res>  {
   factory $SessionEntityCopyWith(SessionEntity value, $Res Function(SessionEntity) _then) = _$SessionEntityCopyWithImpl;
 @useResult
 $Res call({
- String? id, String roleId, String title, List<MessageEntity> messages, DateTime? createdAt, DateTime? updatedAt
+ String? id, String roleId, String title, List<MessageEntity> messages, DateTime? createdAt, DateTime? updatedAt, bool? isPinned
 });
 
 
@@ -66,7 +66,7 @@ class _$SessionEntityCopyWithImpl<$Res>
 
 /// Create a copy of SessionEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? roleId = null,Object? title = null,Object? messages = null,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? roleId = null,Object? title = null,Object? messages = null,Object? createdAt = freezed,Object? updatedAt = freezed,Object? isPinned = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,roleId: null == roleId ? _self.roleId : roleId // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,8 @@ as String,title: null == title ? _self.title : title // ignore: cast_nullable_to
 as String,messages: null == messages ? _self.messages : messages // ignore: cast_nullable_to_non_nullable
 as List<MessageEntity>,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,isPinned: freezed == isPinned ? _self.isPinned : isPinned // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 
@@ -85,14 +86,14 @@ as DateTime?,
 @JsonSerializable()
 
 class _SessionEntity implements SessionEntity {
-  const _SessionEntity({this.id, required this.roleId, required this.title, required final  List<MessageEntity> messages, this.createdAt, this.updatedAt}): _messages = messages;
+  const _SessionEntity({this.id, required this.roleId, required this.title, final  List<MessageEntity> messages = const [], this.createdAt, this.updatedAt, this.isPinned = false}): _messages = messages;
   factory _SessionEntity.fromJson(Map<String, dynamic> json) => _$SessionEntityFromJson(json);
 
 @override final  String? id;
 @override final  String roleId;
 @override final  String title;
  final  List<MessageEntity> _messages;
-@override List<MessageEntity> get messages {
+@override@JsonKey() List<MessageEntity> get messages {
   if (_messages is EqualUnmodifiableListView) return _messages;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_messages);
@@ -100,6 +101,7 @@ class _SessionEntity implements SessionEntity {
 
 @override final  DateTime? createdAt;
 @override final  DateTime? updatedAt;
+@override@JsonKey() final  bool? isPinned;
 
 /// Create a copy of SessionEntity
 /// with the given fields replaced by the non-null parameter values.
@@ -114,16 +116,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._messages, _messages)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._messages, _messages)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.isPinned, isPinned) || other.isPinned == isPinned));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,roleId,title,const DeepCollectionEquality().hash(_messages),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,roleId,title,const DeepCollectionEquality().hash(_messages),createdAt,updatedAt,isPinned);
 
 @override
 String toString() {
-  return 'SessionEntity(id: $id, roleId: $roleId, title: $title, messages: $messages, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'SessionEntity(id: $id, roleId: $roleId, title: $title, messages: $messages, createdAt: $createdAt, updatedAt: $updatedAt, isPinned: $isPinned)';
 }
 
 
@@ -134,7 +136,7 @@ abstract mixin class _$SessionEntityCopyWith<$Res> implements $SessionEntityCopy
   factory _$SessionEntityCopyWith(_SessionEntity value, $Res Function(_SessionEntity) _then) = __$SessionEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String roleId, String title, List<MessageEntity> messages, DateTime? createdAt, DateTime? updatedAt
+ String? id, String roleId, String title, List<MessageEntity> messages, DateTime? createdAt, DateTime? updatedAt, bool? isPinned
 });
 
 
@@ -151,7 +153,7 @@ class __$SessionEntityCopyWithImpl<$Res>
 
 /// Create a copy of SessionEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? roleId = null,Object? title = null,Object? messages = null,Object? createdAt = freezed,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? roleId = null,Object? title = null,Object? messages = null,Object? createdAt = freezed,Object? updatedAt = freezed,Object? isPinned = freezed,}) {
   return _then(_SessionEntity(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,roleId: null == roleId ? _self.roleId : roleId // ignore: cast_nullable_to_non_nullable
@@ -159,7 +161,8 @@ as String,title: null == title ? _self.title : title // ignore: cast_nullable_to
 as String,messages: null == messages ? _self._messages : messages // ignore: cast_nullable_to_non_nullable
 as List<MessageEntity>,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,isPinned: freezed == isPinned ? _self.isPinned : isPinned // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 

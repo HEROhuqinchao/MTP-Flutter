@@ -16,7 +16,7 @@ class ChatRepositoryImpl implements ChatRepository {
     MessageEntity message,
   ) async {
     final messageModel = ChatMessage(
-      role: message.isFromUser ? 'user' : 'assitant',
+      role: message.isFromUser ? 'user' : 'assistant',
       content: message.content,
     );
 
@@ -29,7 +29,7 @@ class ChatRepositoryImpl implements ChatRepository {
         session.messages
             .map(
               (m) => ChatMessage(
-                role: m.isFromUser ? 'user' : 'assitant',
+                role: m.isFromUser ? 'user' : 'assistant',
                 content: m.content,
                 isRead: m.isRead,
               ),
@@ -43,6 +43,7 @@ class ChatRepositoryImpl implements ChatRepository {
       messages: messageModels,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
+      isPinned: session.isPinned,
     );
 
     await localDatasource.addSession(sessionModel);
@@ -80,6 +81,7 @@ class ChatRepositoryImpl implements ChatRepository {
         messages: messageEntities,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
+        isPinned: session.isPinned,
       );
     }).toList();
   }
@@ -173,7 +175,7 @@ class ChatRepositoryImpl implements ChatRepository {
         session.messages
             .map(
               (m) => ChatMessage(
-                role: m.isFromUser ? 'user' : 'assitant',
+                role: m.isFromUser ? 'user' : 'assistant',
                 content: m.content,
               ),
             )
@@ -185,6 +187,7 @@ class ChatRepositoryImpl implements ChatRepository {
       messages: messageModels,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
+      isPinned: session.isPinned,
     )..key = session.id;
 
     await localDatasource.updateSession(sessionModel);

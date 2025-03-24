@@ -12,9 +12,10 @@ _SessionEntity _$SessionEntityFromJson(Map<String, dynamic> json) =>
       roleId: json['roleId'] as String,
       title: json['title'] as String,
       messages:
-          (json['messages'] as List<dynamic>)
-              .map((e) => MessageEntity.fromJson(e as Map<String, dynamic>))
-              .toList(),
+          (json['messages'] as List<dynamic>?)
+              ?.map((e) => MessageEntity.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
       createdAt:
           json['createdAt'] == null
               ? null
@@ -23,6 +24,7 @@ _SessionEntity _$SessionEntityFromJson(Map<String, dynamic> json) =>
           json['updatedAt'] == null
               ? null
               : DateTime.parse(json['updatedAt'] as String),
+      isPinned: json['isPinned'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$SessionEntityToJson(_SessionEntity instance) =>
@@ -33,4 +35,5 @@ Map<String, dynamic> _$SessionEntityToJson(_SessionEntity instance) =>
       'messages': instance.messages,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'isPinned': instance.isPinned,
     };

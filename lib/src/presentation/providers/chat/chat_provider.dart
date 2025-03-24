@@ -232,10 +232,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         currentSession: state.sessions[index],
       );
     } else {
-      state = state.copyWith(
-        selectedSessionIndex: -1,
-        currentSession: null
-      );
+      state = state.copyWith(selectedSessionIndex: -1, currentSession: null);
     }
   }
 
@@ -655,6 +652,45 @@ class ChatNotifier extends StateNotifier<ChatState> {
     } catch (e) {
       print('导入会话失败: $e');
       state = state.copyWith(errorMessage: '导入会话失败: $e');
+    }
+  }
+
+  // 置顶或取消置顶会话
+  Future<void> togglePinSession(String sessionId) async {
+    final sessionIndex = state.sessions.indexWhere((s) => s.id == sessionId);
+    if (sessionIndex == -1) return;
+
+    final session = state.sessions[sessionIndex];
+    final isPinned = session.isPinned ?? false;
+
+    // 更新会话的置顶状态
+    final updatedSession = session.copyWith(isPinned: !isPinned);
+
+    // 更新本地状态
+    final updatedSessions = [...state.sessions];
+    updatedSessions[sessionIndex] = updatedSession;
+
+    // 重新排序会话：置顶的在前面
+    updatedSessions.sort((a, b) {
+      final aIsPinned = a.isPinned ?? false;
+      final bIsPinned = b.isPinned ?? false;
+
+      if (aIsPinned && !bIsPinned) return -1;
+      if (!aIsPinned && bIsPinned) return 1;
+
+      // 同为置顶或非置顶时，按更新时间排序
+      final aTime = a.updatedAt ?? DateTime(1970);
+      final bTime = b.updatedAt ?? DateTime(1970);
+      return bTime.compareTo(aTime); // 最新的在前
+    });
+
+    state = state.copyWith(sessions: updatedSessions);
+
+    // 更新数据库
+    try {
+      await _chatRepository.updateSession(updatedSession);
+    } catch (e) {
+      state = state.copyWith(errorMessage: '更新会话状态失败: $e');
     }
   }
 }

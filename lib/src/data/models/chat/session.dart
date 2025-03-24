@@ -9,6 +9,7 @@ class Session extends HiveObject {
     this.messages = const [],
     this.createdAt,
     this.updatedAt,
+    this.isPinned = false,
   });
 
   @override
@@ -18,6 +19,7 @@ class Session extends HiveObject {
   List<ChatMessage> messages;
   DateTime? createdAt;
   DateTime? updatedAt;
+  bool? isPinned;
 
   // 添加新消息
   void addMessage(ChatMessage message) {

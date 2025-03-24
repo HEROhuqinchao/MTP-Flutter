@@ -4,6 +4,7 @@
 
 import 'package:hive_ce/hive.dart';
 import 'package:mtp/hive/hive_adapters.dart';
+import 'package:mtp/src/data/models/chat/session.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {

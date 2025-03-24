@@ -103,7 +103,6 @@ class SessionAdapter extends TypeAdapter<Session> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Session(
-      key: fields[0] as String?,
       roleId: fields[1] as String,
       title: fields[2] as String,
       messages:
@@ -112,6 +111,7 @@ class SessionAdapter extends TypeAdapter<Session> {
               : (fields[3] as List).cast<ChatMessage>(),
       createdAt: fields[4] as DateTime?,
       updatedAt: fields[5] as DateTime?,
+      isPinned: fields[6] == null ? false : fields[6] as bool?,
     );
   }
 
@@ -119,8 +119,6 @@ class SessionAdapter extends TypeAdapter<Session> {
   void write(BinaryWriter writer, Session obj) {
     writer
       ..writeByte(6)
-      ..writeByte(0)
-      ..write(obj.key)
       ..writeByte(1)
       ..write(obj.roleId)
       ..writeByte(2)
@@ -130,7 +128,9 @@ class SessionAdapter extends TypeAdapter<Session> {
       ..writeByte(4)
       ..write(obj.createdAt)
       ..writeByte(5)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(6)
+      ..write(obj.isPinned);
   }
 
   @override
