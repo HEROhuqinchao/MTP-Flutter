@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/domain/entities/role_entity.dart';
@@ -12,6 +13,7 @@ import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:mtp/src/utils/logger.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DataManagementSheet extends ConsumerStatefulWidget {
@@ -197,6 +199,14 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
   }
 
   Future<void> _exportData() async {
+    // 首先请求权限
+    final hasPermission = await _requestStoragePermission();
+
+    if (!hasPermission) {
+      _showPermissionDeniedDialog();
+      return;
+    }
+
     setState(() {
       _isExporting = true;
       _exportedFilePath = null;
@@ -288,6 +298,14 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
   }
 
   Future<void> _importData() async {
+    // 首先请求权限
+    final hasPermission = await _requestStoragePermission();
+
+    if (!hasPermission) {
+      _showPermissionDeniedDialog();
+      return;
+    }
+
     setState(() {
       _isImporting = true;
       _importMessage = null;
@@ -410,6 +428,94 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
         await chatNotifier.importSession(session);
       }
     }
+  }
+
+  // 请求存储权限
+  Future<bool> _requestStoragePermission() async {
+    // 检查当前权限状态
+    PermissionStatus status;
+
+    // Android 13+ (API 33+) 使用细分的媒体权限
+    if (Platform.isAndroid) {
+      final sdkInt = await _getAndroidSDKVersion();
+      if (sdkInt >= 33) {
+        // Android 13+: 使用更细分的权限
+        status = await Permission.photos.request();
+        final videos = await Permission.videos.request();
+        final audio = await Permission.audio.request();
+
+        // 所有权限都需要被授予
+        return status.isGranted && videos.isGranted && audio.isGranted;
+      } else if (sdkInt >= 30) {
+        // Android 11-12: 使用管理外部存储权限
+        status = await Permission.manageExternalStorage.request();
+        return status.isGranted;
+      } else {
+        // Android 10及以下: 使用存储权限
+        status = await Permission.storage.request();
+        return status.isGranted;
+      }
+    } else if (Platform.isIOS) {
+      // iOS: 需要照片权限
+      status = await Permission.photos.request();
+      return status.isGranted;
+    }
+
+    // 其他平台默认返回true
+    return true;
+  }
+
+  // 获取Android SDK版本
+  Future<int> _getAndroidSDKVersion() async {
+    if (!Platform.isAndroid) return 0;
+
+    try {
+      return int.parse(await _getSystemProperty('ro.build.version.sdk'));
+    } catch (e) {
+      print('获取Android SDK版本失败: $e');
+      return 0;
+    }
+  }
+
+  // 获取Android系统属性
+  Future<String> _getSystemProperty(String property) async {
+    try {
+      if (Platform.isAndroid) {
+        return await MethodChannel(
+              'flutter.native/helper',
+            ).invokeMethod('getSystemProperty', {'property': property}) ??
+            '';
+      }
+      return '';
+    } catch (e) {
+      print('获取系统属性失败: $e');
+      return '';
+    }
+  }
+
+  // 显示权限被拒绝的对话框
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('需要存储权限'),
+            content: const Text('为了导出或导入数据，应用需要访问设备存储的权限。请在设置中允许此权限。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('取消'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  openAppSettings();
+                },
+                child: const Text('前往设置'),
+              ),
+            ],
+          ),
+    );
   }
 
   void _showErrorDialog(String title, String message) {
