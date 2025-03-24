@@ -69,8 +69,6 @@ MomoTalk Plus 支持配置多种大语言模型服务，包括但不限于：
 
 ### 环境要求
 
-- Flutter SDK 3.16+
-- Dart 3.0+
 - 支持的操作系统：Windows、macOS、Linux、Android、iOS
 
 ### 安装步骤
@@ -85,6 +83,11 @@ MomoTalk Plus 支持配置多种大语言模型服务，包括但不限于：
 4. 返回主页，创建新角色开始对话
 
 ## 开发指南
+
+### 环境要求
+
+- Flutter SDK 3.16+
+- Dart 3.0+
 
 ### 开发步骤
 

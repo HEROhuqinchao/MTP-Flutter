@@ -1,3 +1,3 @@
 const String appName = "MTP";
-const String appVersion = "0.1.0";
-const String appHelpUrl = 'https://mtp.hanasaki.tech';
+const String appVersion = "0.1.1";
+const String appHelpUrl = 'https://github.com/MTPGroup/MTP-Flutter';

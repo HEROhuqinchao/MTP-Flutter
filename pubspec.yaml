@@ -1,7 +1,7 @@
 name: mtp
-description: "A new Flutter project."
+description: "MomoTalk Plus(MTP) 一款BA学生扮演聊天软件"
 publish_to: 'none'
-version: 0.1.0
+version: 0.1.1
 
 environment:
   sdk: ^3.7.2
@@ -46,3 +46,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/data/student.json

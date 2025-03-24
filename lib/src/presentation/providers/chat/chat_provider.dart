@@ -231,6 +231,11 @@ class ChatNotifier extends StateNotifier<ChatState> {
         selectedSessionIndex: index,
         currentSession: state.sessions[index],
       );
+    } else {
+      state = state.copyWith(
+        selectedSessionIndex: -1,
+        currentSession: null
+      );
     }
   }
 

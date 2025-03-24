@@ -42,20 +42,18 @@ class _AppHomeState extends State<AppHome> {
   @override
   void initState() {
     super.initState();
-    _configureSystemUI();
+    // 不要在这里调用包含MediaQuery的方法
+    _configureBasicSystemUI();
+
+    // 使用post-frame回调安全地设置依赖于MediaQuery的设置
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _configureScreenDependentUI();
+    });
   }
 
-  // Configure system UI based on platform
-  void _configureSystemUI() {
+  // 基本UI配置，不依赖MediaQuery
+  void _configureBasicSystemUI() {
     if (Platform.isAndroid || Platform.isIOS) {
-      // Mobile-specific UI configuration
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-
       SystemChrome.setSystemUIOverlayStyle(
         const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -63,6 +61,21 @@ class _AppHomeState extends State<AppHome> {
           statusBarBrightness: Brightness.light,
         ),
       );
+    }
+  }
+
+  // 依赖屏幕尺寸的配置
+  void _configureScreenDependentUI() {
+    if (Platform.isAndroid || Platform.isIOS) {
+      final width = MediaQuery.of(context).size.width;
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        if (width >= ScreenBreakpoints.mobile) ...[
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ],
+      ]);
     }
   }
 
@@ -74,14 +87,7 @@ class _AppHomeState extends State<AppHome> {
     final bool isMobilePlatform = Platform.isAndroid || Platform.isIOS;
 
     return Scaffold(
-      // 在桌面平台上不使用AppBar，而使用自定义标题栏
-      appBar: null,
-      // isDesktopPlatform
-      //     ? null
-      //     : AppBar(
-      //       title: const Text('MomoTalk Plus'),
-      //       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      //     ),
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // 内容区域

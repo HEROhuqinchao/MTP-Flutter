@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class ScreenBreakpoints {
   static const double mobile = 650;
@@ -26,11 +25,6 @@ class ResponsiveLayout extends StatelessWidget {
       builder: (context, constraints) {
         // Check orientation for mobile devices
         if (context.isMobile) {
-          // Mobile layout - check orientation
-          SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitDown,
-            DeviceOrientation.portraitUp,
-          ]);
           // final isLandscape =
           //     MediaQuery.of(context).orientation == Orientation.landscape;
           // if (isLandscape && mobileLandscapeLayout != null) {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
@@ -25,12 +27,14 @@ class ChatScreen extends ConsumerWidget {
         ref.read(chatStateProvider.notifier).clearErrorMessage();
       });
     }
+    final conversationListWidth = (Platform.isAndroid || Platform.isIOS) ? 320.0 : 252.0;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Row(
         children: [
           // 左侧对话列表
-          SizedBox(width: 252, child: ConversationList()),
+          SizedBox(width: conversationListWidth, child: ConversationList()),
 
           // 右侧对话内容
           Expanded(child: ConversationView()),

@@ -11,6 +11,7 @@ import 'package:mtp/src/domain/entities/session_entity.dart';
 import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
 import 'package:mtp/src/presentation/providers/role/role_provider.dart';
 import 'package:mtp/src/presentation/widgets/simple_icon_button.dart';
+import 'package:mtp/src/utils/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../../../widgets/message_bubble.dart';
@@ -678,6 +679,7 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
   ) {
     final theme = Theme.of(context);
     final isMobile = Platform.isAndroid || Platform.isIOS;
+    final width = MediaQuery.of(context).size.width;
 
     return Container(
       key: _headerKey, // 添加key以测量高度
@@ -699,7 +701,13 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
         children: [
           if (isMobile)
             IconButton(
-              onPressed: () => GoRouter.of(context).pop(),
+              onPressed: () {
+                if (width >= 1000) {
+                  ref.read(chatStateProvider.notifier).selectSession(-1);
+                } else {
+                  GoRouter.of(context).pop();
+                }
+              },
               icon: Icon(Ionicons.chevron_back),
             ),
           // 头像
@@ -920,7 +928,8 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withOpacity(0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,
@@ -933,10 +942,14 @@ class _ConversationViewState extends ConsumerState<ConversationView> {
                   ),
                   isDense: true, // 使输入框更紧凑
                 ),
-                maxLines: null, // 允许多行
-                minLines: 1, // 最少一行
-                textInputAction: TextInputAction.newline, // 允许换行
-                keyboardType: TextInputType.multiline, // 多行输入
+                maxLines: null,
+                // 允许多行
+                minLines: 1,
+                // 最少一行
+                textInputAction: TextInputAction.newline,
+                // 允许换行
+                keyboardType: TextInputType.multiline,
+                // 多行输入
                 onChanged: (text) {
                   setState(() {
                     _isComposing = text.trim().isNotEmpty;
