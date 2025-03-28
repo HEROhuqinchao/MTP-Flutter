@@ -1,0 +1,692 @@
+[
+    {
+        "id": 1,
+        "name": "阿露",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10000.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10031.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10089.webp\"]",
+        "prompt": "请你扮演阿露"
+    },
+    {
+        "id": 2,
+        "name": "艾米",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10001.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20032.webp\"]",
+        "prompt": "请你扮演艾米"
+    },
+    {
+        "id": 3,
+        "name": "晴奈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10002.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10057.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20030.webp\"]",
+        "prompt": "请你扮演晴奈"
+    },
+    {
+        "id": 4,
+        "name": "日富美",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10003.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20005.webp\"]",
+        "prompt": "请你扮演日富美"
+    },
+    {
+        "id": 5,
+        "name": "日奈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10004.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10022.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10086.webp\"]",
+        "prompt": "请你扮演日奈"
+    },
+    {
+        "id": 6,
+        "name": "星野",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10005.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10045.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10098.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10099.webp\"]",
+        "prompt": "请你扮演星野"
+    },
+    {
+        "id": 7,
+        "name": "伊织",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10006.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10023.webp\"]",
+        "prompt": "请你扮演伊织"
+    },
+    {
+        "id": 8,
+        "name": "真纪",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10007.webp\"]",
+        "prompt": "请你扮演真纪"
+    },
+    {
+        "id": 9,
+        "name": "尼露",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10008.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10026.webp\"]",
+        "prompt": "请你扮演尼露"
+    },
+    {
+        "id": 10,
+        "name": "泉",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10009.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16006.webp\"]",
+        "prompt": "请你扮演泉"
+    },
+    {
+        "id": 11,
+        "name": "白子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10010.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10024.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20027.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10100.webp\"]",
+        "prompt": "请你扮演白子"
+    },
+    {
+        "id": 12,
+        "name": "瞬",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10011.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10025.webp\"]",
+        "prompt": "请你扮演瞬"
+    },
+    {
+        "id": 13,
+        "name": "堇",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10012.webp\"]",
+        "prompt": "请你扮演堇"
+    },
+    {
+        "id": 14,
+        "name": "鹤城",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10013.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16005.webp\"]",
+        "prompt": "请你扮演鹤城"
+    },
+    {
+        "id": 15,
+        "name": "茜",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13000.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20019.webp\"]",
+        "prompt": "请你扮演茜"
+    },
+    {
+        "id": 16,
+        "name": "千世",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13001.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10047.webp\"]",
+        "prompt": "请你扮演千世"
+    },
+    {
+        "id": 17,
+        "name": "明里",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13002.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20034.webp\"]",
+        "prompt": "请你扮演明里"
+    },
+    {
+        "id": 18,
+        "name": "莲见",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13003.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16011.webp\"]",
+        "prompt": "请你扮演莲见"
+    },
+    {
+        "id": 19,
+        "name": "野宫",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13004.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10044.webp\"]",
+        "prompt": "请你扮演野宫"
+    },
+    {
+        "id": 20,
+        "name": "佳代子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13005.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10064.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10088.webp\"]",
+        "prompt": "请你扮演佳代子"
+    },
+    {
+        "id": 21,
+        "name": "睦月",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13006.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10032.webp\"]",
+        "prompt": "请你扮演睦月"
+    },
+    {
+        "id": 22,
+        "name": "纯子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13007.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16012.webp\"]",
+        "prompt": "请你扮演纯子"
+    },
+    {
+        "id": 23,
+        "name": "芹香",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13008.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20011.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20036.webp\"]",
+        "prompt": "请你扮演芹香"
+    },
+    {
+        "id": 24,
+        "name": "椿",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13009.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20035.webp\"]",
+        "prompt": "请你扮演椿"
+    },
+    {
+        "id": 25,
+        "name": "优香",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13010.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10053.webp\"]",
+        "prompt": "请你扮演优香"
+    },
+    {
+        "id": 26,
+        "name": "遥香",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16000.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20025.webp\"]",
+        "prompt": "请你扮演遥香"
+    },
+    {
+        "id": 27,
+        "name": "明日奈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16001.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10028.webp\"]",
+        "prompt": "请你扮演明日奈"
+    },
+    {
+        "id": 28,
+        "name": "琴里",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16002.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10076.webp\"]",
+        "prompt": "请你扮演琴里"
+    },
+    {
+        "id": 29,
+        "name": "铃美",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16003.webp\"]",
+        "prompt": "请你扮演铃美"
+    },
+    {
+        "id": 30,
+        "name": "菲娜",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16004.webp\"]",
+        "prompt": "请你扮演菲娜"
+    },
+    {
+        "id": 31,
+        "name": "响",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20000.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16010.webp\"]",
+        "prompt": "请你扮演响"
+    },
+    {
+        "id": 32,
+        "name": "花凛",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20001.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10027.webp\"]",
+        "prompt": "请你扮演花凛"
+    },
+    {
+        "id": 33,
+        "name": "纱绫",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20002.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20006.webp\"]",
+        "prompt": "请你扮演纱绫"
+    },
+    {
+        "id": 34,
+        "name": "爱莉",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23000.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16015.webp\"]",
+        "prompt": "请你扮演爱莉"
+    },
+    {
+        "id": 35,
+        "name": "枫香",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23001.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20022.webp\"]",
+        "prompt": "请你扮演枫香"
+    },
+    {
+        "id": 36,
+        "name": "花江",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23002.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20021.webp\"]",
+        "prompt": "请你扮演花江"
+    },
+    {
+        "id": 37,
+        "name": "晴",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23003.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10085.webp\"]",
+        "prompt": "请你扮演晴"
+    },
+    {
+        "id": 38,
+        "name": "歌原",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23004.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10051.webp\"]",
+        "prompt": "请你扮演歌原"
+    },
+    {
+        "id": 39,
+        "name": "绫音",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23005.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/26007.webp\"]",
+        "prompt": "请你扮演绫音"
+    },
+    {
+        "id": 40,
+        "name": "千夏",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26000.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10030.webp\"]",
+        "prompt": "请你扮演千夏"
+    },
+    {
+        "id": 41,
+        "name": "小玉",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26001.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10084.webp\"]",
+        "prompt": "请你扮演小玉"
+    },
+    {
+        "id": 42,
+        "name": "茱莉",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26002.webp\"]",
+        "prompt": "请你扮演茱莉"
+    },
+    {
+        "id": 43,
+        "name": "芹娜",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26003.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10056.webp\"]",
+        "prompt": "请你扮演芹娜"
+    },
+    {
+        "id": 44,
+        "name": "志美子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26004.webp\"]",
+        "prompt": "请你扮演志美子"
+    },
+    {
+        "id": 45,
+        "name": "好美",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26005.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10092.webp\"]",
+        "prompt": "请你扮演好美"
+    },
+    {
+        "id": 46,
+        "name": "真白",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20003.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20004.webp\"]",
+        "prompt": "请你扮演真白"
+    },
+    {
+        "id": 47,
+        "name": "泉奈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10014.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10046.webp\"]",
+        "prompt": "请你扮演泉奈"
+    },
+    {
+        "id": 48,
+        "name": "静子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23006.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/26008.webp\"]",
+        "prompt": "请你扮演静子"
+    },
+    {
+        "id": 49,
+        "name": "爱丽丝",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10015.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10066.webp\"]",
+        "prompt": "请你扮演爱丽丝"
+    },
+    {
+        "id": 50,
+        "name": "绿",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10016.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10095.webp\"]",
+        "prompt": "请你扮演绿"
+    },
+    {
+        "id": 51,
+        "name": "桃井",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13011.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10094.webp\"]",
+        "prompt": "请你扮演桃井"
+    },
+    {
+        "id": 52,
+        "name": "切里诺",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10017.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20009.webp\"]",
+        "prompt": "请你扮演切里诺"
+    },
+    {
+        "id": 53,
+        "name": "和香",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26006.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20010.webp\"]",
+        "prompt": "请你扮演和香"
+    },
+    {
+        "id": 54,
+        "name": "柚子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10018.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/26009.webp\"]",
+        "prompt": "请你扮演柚子"
+    },
+    {
+        "id": 55,
+        "name": "梓",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10019.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10021.webp\"]",
+        "prompt": "请你扮演梓"
+    },
+    {
+        "id": 56,
+        "name": "花子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23007.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10074.webp\"]",
+        "prompt": "请你扮演花子"
+    },
+    {
+        "id": 57,
+        "name": "小春",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10020.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/16013.webp\"]",
+        "prompt": "请你扮演小春"
+    },
+    {
+        "id": 58,
+        "name": "桐乃",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13012.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/26012.webp\"]",
+        "prompt": "请你扮演桐乃"
+    },
+    {
+        "id": 59,
+        "name": "夏",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10029.webp\"]",
+        "prompt": "请你扮演夏"
+    },
+    {
+        "id": 60,
+        "name": "玛丽",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/23008.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10054.webp\"]",
+        "prompt": "请你扮演玛丽"
+    },
+    {
+        "id": 61,
+        "name": "未来",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20007.webp\"]",
+        "prompt": "请你扮演未来"
+    },
+    {
+        "id": 62,
+        "name": "亚子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20008.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10087.webp\"]",
+        "prompt": "请你扮演亚子"
+    },
+    {
+        "id": 63,
+        "name": "智惠",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16007.webp\"]",
+        "prompt": "请你扮演智惠"
+    },
+    {
+        "id": 64,
+        "name": "若藻",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10033.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10043.webp\"]",
+        "prompt": "请你扮演若藻"
+    },
+    {
+        "id": 65,
+        "name": "吹雪",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16008.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20037.webp\"]",
+        "prompt": "请你扮演吹雪"
+    },
+    {
+        "id": 66,
+        "name": "濑名",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20012.webp\"]",
+        "prompt": "请你扮演濑名"
+    },
+    {
+        "id": 67,
+        "name": "千寻",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20013.webp\"]",
+        "prompt": "请你扮演千寻"
+    },
+    {
+        "id": 68,
+        "name": "三森",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10034.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20029.webp\"]",
+        "prompt": "请你扮演三森"
+    },
+    {
+        "id": 69,
+        "name": "忧",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10035.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10073.webp\"]",
+        "prompt": "请你扮演忧"
+    },
+    {
+        "id": 70,
+        "name": "日向",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10036.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20028.webp\"]",
+        "prompt": "请你扮演日向"
+    },
+    {
+        "id": 71,
+        "name": "玛利娜",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10037.webp\"]",
+        "prompt": "请你扮演玛利娜"
+    },
+    {
+        "id": 72,
+        "name": "宫子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10038.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10071.webp\"]",
+        "prompt": "请你扮演宫子"
+    },
+    {
+        "id": 73,
+        "name": "咲",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20014.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10072.webp\"]",
+        "prompt": "请你扮演咲"
+    },
+    {
+        "id": 74,
+        "name": "美游",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10039.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/26010.webp\"]",
+        "prompt": "请你扮演美游"
+    },
+    {
+        "id": 75,
+        "name": "枫",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20015.webp\"]",
+        "prompt": "请你扮演枫"
+    },
+    {
+        "id": 76,
+        "name": "伊吕波",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20016.webp\"]",
+        "prompt": "请你扮演伊吕波"
+    },
+    {
+        "id": 77,
+        "name": "满",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16009.webp\"]",
+        "prompt": "请你扮演满"
+    },
+    {
+        "id": 78,
+        "name": "月咏",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10040.webp\"]",
+        "prompt": "请你扮演月咏"
+    },
+    {
+        "id": 79,
+        "name": "美咲",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10041.webp\"]",
+        "prompt": "请你扮演美咲"
+    },
+    {
+        "id": 80,
+        "name": "日和",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20017.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10102.webp\"]",
+        "prompt": "请你扮演日和"
+    },
+    {
+        "id": 81,
+        "name": "亚津子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10042.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/26013.webp\"]",
+        "prompt": "请你扮演亚津子"
+    },
+    {
+        "id": 82,
+        "name": "纱织",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10048.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10101.webp\"]",
+        "prompt": "请你扮演纱织"
+    },
+    {
+        "id": 83,
+        "name": "萌绘",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20018.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10097.webp\"]",
+        "prompt": "请你扮演萌绘"
+    },
+    {
+        "id": 84,
+        "name": "和纱",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10049.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10091.webp\"]",
+        "prompt": "请你扮演和纱"
+    },
+    {
+        "id": 85,
+        "name": "心奈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10050.webp\"]",
+        "prompt": "请你扮演心奈"
+    },
+    {
+        "id": 86,
+        "name": "诺亚",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10052.webp\"]",
+        "prompt": "请你扮演诺亚"
+    },
+    {
+        "id": 87,
+        "name": "日鞠",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20020.webp\"]",
+        "prompt": "请你扮演日鞠"
+    },
+    {
+        "id": 88,
+        "name": "时雨",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10055.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/20031.webp\"]",
+        "prompt": "请你扮演时雨"
+    },
+    {
+        "id": 89,
+        "name": "美祢",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10058.webp\"]",
+        "prompt": "请你扮演美祢"
+    },
+    {
+        "id": 90,
+        "name": "未花",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10059.webp\"]",
+        "prompt": "请你扮演未花"
+    },
+    {
+        "id": 91,
+        "name": "惠",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10060.webp\"]",
+        "prompt": "请你扮演惠"
+    },
+    {
+        "id": 92,
+        "name": "叶渚",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20023.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10096.webp\"]",
+        "prompt": "请你扮演叶渚"
+    },
+    {
+        "id": 93,
+        "name": "樱子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10061.webp\"]",
+        "prompt": "请你扮演樱子"
+    },
+    {
+        "id": 94,
+        "name": "时",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10062.webp\",\"https://aronacdn.hanasaki.tech/images/student/icon/10067.webp\"]",
+        "prompt": "请你扮演时"
+    },
+    {
+        "id": 95,
+        "name": "渚",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20024.webp\"]",
+        "prompt": "请你扮演渚"
+    },
+    {
+        "id": 96,
+        "name": "小雪",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10063.webp\"]",
+        "prompt": "请你扮演小雪"
+    },
+    {
+        "id": 97,
+        "name": "果穗",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10065.webp\"]",
+        "prompt": "请你扮演果穗"
+    },
+    {
+        "id": 98,
+        "name": "玲纱",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10068.webp\"]",
+        "prompt": "请你扮演玲纱"
+    },
+    {
+        "id": 99,
+        "name": "瑠美",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10069.webp\"]",
+        "prompt": "请你扮演瑠美"
+    },
+    {
+        "id": 100,
+        "name": "弥奈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10070.webp\"]",
+        "prompt": "请你扮演弥奈"
+    },
+    {
+        "id": 101,
+        "name": "实里",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20026.webp\"]",
+        "prompt": "请你扮演实里"
+    },
+    {
+        "id": 102,
+        "name": "芽瑠",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10075.webp\"]",
+        "prompt": "请你扮演芽瑠"
+    },
+    {
+        "id": 103,
+        "name": "红叶",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/13013.webp\"]",
+        "prompt": "请你扮演红叶"
+    },
+    {
+        "id": 104,
+        "name": "一花",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10077.webp\"]",
+        "prompt": "请你扮演一花"
+    },
+    {
+        "id": 105,
+        "name": "霞",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10078.webp\"]",
+        "prompt": "请你扮演霞"
+    },
+    {
+        "id": 106,
+        "name": "美琴",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10079.webp\"]",
+        "prompt": "请你扮演美琴"
+    },
+    {
+        "id": 107,
+        "name": "操祈",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10080.webp\"]",
+        "prompt": "请你扮演操祈"
+    },
+    {
+        "id": 108,
+        "name": "泪子",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/26011.webp\"]",
+        "prompt": "请你扮演泪子"
+    },
+    {
+        "id": 109,
+        "name": "紫草",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10081.webp\"]",
+        "prompt": "请你扮演紫草"
+    },
+    {
+        "id": 110,
+        "name": "莲华",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10082.webp\"]",
+        "prompt": "请你扮演莲华"
+    },
+    {
+        "id": 111,
+        "name": "桔梗",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10083.webp\"]",
+        "prompt": "请你扮演桔梗"
+    },
+    {
+        "id": 112,
+        "name": "伊吹",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/16014.webp\"]",
+        "prompt": "请你扮演伊吹"
+    },
+    {
+        "id": 113,
+        "name": "真琴",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/20033.webp\"]",
+        "prompt": "请你扮演真琴"
+    },
+    {
+        "id": 114,
+        "name": "海香",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10090.webp\"]",
+        "prompt": "请你扮演海香"
+    },
+    {
+        "id": 115,
+        "name": "绮罗罗",
+        "avatars": "[\"https://aronacdn.hanasaki.tech/images/student/icon/10093.webp\"]",
+        "prompt": "请你扮演绮罗罗"
+    }
+]

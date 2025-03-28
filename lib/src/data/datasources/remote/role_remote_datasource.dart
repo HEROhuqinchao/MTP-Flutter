@@ -11,7 +11,6 @@ class RoleRemoteDatasource {
 
   Future<List<Role>> fetchDefaultRoles() async {
     try {
-      // 替换为你的API端点
       final response = await _dio.get(
         'https://aronacdn.hanasaki.tech/mtp/student.json',
       );

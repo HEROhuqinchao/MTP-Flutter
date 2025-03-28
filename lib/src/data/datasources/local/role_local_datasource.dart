@@ -18,7 +18,7 @@ class RoleLocalDatasource {
     try {
       // 从本地资源加载数据
       final String jsonString = await rootBundle.loadString(
-        'assets/data/student.json',
+        'assets/data/student_updated.json',
       );
       final List<dynamic> rolesData = jsonDecode(jsonString);
       localLogger.info('从本地资源加载默认角色成功');
