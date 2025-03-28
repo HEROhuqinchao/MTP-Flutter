@@ -1,7 +1,7 @@
 name: mtp
 description: "MomoTalk Plus(MTP) 一款BA学生扮演聊天软件"
 publish_to: 'none'
-version: 0.1.2
+version: 0.1.3
 
 environment:
   sdk: ^3.7.2
