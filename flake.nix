@@ -21,13 +21,18 @@
           };
         };
         android-sdk = android-nixpkgs.sdk.${system} (sdkPkgs:
-          with sdkPkgs; [
+          with sdkPkgs;
+          [
             cmdline-tools-latest
             build-tools-34-0-0
             platform-tools
             platforms-android-34
             emulator
-          ]);
+          ] ++ pkgs.lib.optionals (system == "aarch64-darwin")
+          [ system-images-android-34-google-apis-arm64-v8a ]
+          ++ pkgs.lib.optionals
+          (system == "x86_64-darwin" || system == "x86_64-linux")
+          [ system-images-android-34-google-apis-x86-64 ]);
         pinnedJDK = pkgs.jdk;
       in {
         devShells = {
