@@ -51,3 +51,8 @@ sessions.lock
 settings.lock
 keystore.jks
 keystore_base64.txt
+
+# nix
+.envrc
+.direnv
+flake-*
