@@ -1,4 +1,4 @@
-package com.example.mtp
+package tech.hanasaki.mtp
 
 import io.flutter.embedding.android.FlutterActivity
 

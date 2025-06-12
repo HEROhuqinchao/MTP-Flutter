@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:window_manager_plus/window_manager_plus.dart';
+import 'package:window_manager/window_manager.dart';
 
 class WindowTitleBar extends StatelessWidget {
   final Color? backgroundColor;
@@ -18,13 +18,13 @@ class WindowTitleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanStart: (details) {
-        WindowManagerPlus.current.startDragging();
+        windowManager.startDragging();
       },
       onDoubleTap: () async {
-        if (await WindowManagerPlus.current.isMaximized()) {
-          WindowManagerPlus.current.unmaximize();
+        if (await windowManager.isMaximized()) {
+          windowManager.unmaximize();
         } else {
-          WindowManagerPlus.current.maximize();
+          windowManager.maximize();
         }
       },
       child: Container(
@@ -47,21 +47,21 @@ class WindowTitleBar extends StatelessWidget {
               ),
             _WindowButton(
               icon: Ionicons.remove,
-              onPressed: () => WindowManagerPlus.current.minimize(),
+              onPressed: () => windowManager.minimize(),
             ),
             _WindowButton(
               icon: Ionicons.square_outline,
               onPressed: () async {
-                if (await WindowManagerPlus.current.isMaximized()) {
-                  WindowManagerPlus.current.unmaximize();
+                if (await windowManager.isMaximized()) {
+                  windowManager.unmaximize();
                 } else {
-                  WindowManagerPlus.current.maximize();
+                  windowManager.maximize();
                 }
               },
             ),
             _WindowButton(
               icon: Ionicons.close,
-              onPressed: () => WindowManagerPlus.current.close(),
+              onPressed: () => windowManager.close(),
             ),
           ],
         ),

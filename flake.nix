@@ -37,8 +37,9 @@
       in {
         devShells = {
           default = pkgs.mkShell {
-            name = "My-flutter-dev-shell";
-            buildInputs = with pkgs; [ flutter ] ++ [ pinnedJDK android-sdk ];
+            name = "flutter-dev";
+            buildInputs = with pkgs;
+              [ flutter gtk3 libepoxy mesa ] ++ [ pinnedJDK android-sdk ];
             JAVA_HOME = pinnedJDK;
             ANDROID_HOME = "${android-sdk}/share/android-sdk";
             GRADLE_USER_HOME = "/home/hanasaki/.gradle";

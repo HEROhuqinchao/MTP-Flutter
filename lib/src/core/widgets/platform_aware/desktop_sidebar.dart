@@ -9,7 +9,7 @@ import 'package:mtp/src/core/constants/app_info.dart';
 import 'package:mtp/src/presentation/widgets/data_management_sheet.dart';
 import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:window_manager_plus/window_manager_plus.dart';
+import 'package:window_manager/window_manager.dart';
 
 class DesktopSidebar extends ConsumerStatefulWidget {
   const DesktopSidebar({super.key});
@@ -448,8 +448,7 @@ class _DesktopSidebarState extends ConsumerState<DesktopSidebar> {
                                               title: '退出',
                                               onTap: () async {
                                                 _overlayController.hide();
-                                                await WindowManagerPlus.current
-                                                    .close();
+                                                await windowManager.close();
                                               },
                                               textColor: Colors.redAccent,
                                             ),

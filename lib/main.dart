@@ -6,11 +6,10 @@ import 'package:hive_ce/hive.dart';
 import 'package:mtp/hive/hive_registrar.g.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:window_manager_plus/window_manager_plus.dart';
+import 'package:window_manager/window_manager.dart';
 import 'src/app/app.dart';
 import 'src/di/dependency_injection.dart';
 import 'src/utils/logger.dart';
-import 'package:flutter/services.dart';
 import 'package:mtp/src/core/utils/immersive_mode.dart';
 
 void main(List<String> args) async {
@@ -50,10 +49,8 @@ void main(List<String> args) async {
   await ensureDefaultSessions();
 
   if (!(Platform.isAndroid || Platform.isIOS)) {
-    final windowId = args.isEmpty ? 0 : int.tryParse(args[0]) ?? 0;
-
     // 必须在桌面平台上初始化window_manager
-    await WindowManagerPlus.ensureInitialized(windowId);
+    await windowManager.ensureInitialized();
 
     // 窗口配置
     WindowOptions windowOptions = const WindowOptions(
@@ -64,13 +61,10 @@ void main(List<String> args) async {
       skipTaskbar: false,
       titleBarStyle: TitleBarStyle.hidden, // 隐藏标题栏
     );
-    await WindowManagerPlus.current.waitUntilReadyToShow(
-      windowOptions,
-      () async {
-        await WindowManagerPlus.current.show();
-        await WindowManagerPlus.current.focus();
-      },
-    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
   }
 
   runApp(ProviderScope(child: const App()));

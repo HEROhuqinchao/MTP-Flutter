@@ -1,0 +1,6 @@
+targets:
+  $default:
+    bulders:
+      drift_dev:
+        options:
+          write_from_josn_string_constructor: true
