@@ -2,8 +2,8 @@ import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/widgets/chat_list.dart';
-import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
+import 'package:mtp/src/features/chat/presentation/widgets/chat_list.dart';
+import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
 
 class MobileLandscapeLayout extends ConsumerWidget {
   final Widget child;

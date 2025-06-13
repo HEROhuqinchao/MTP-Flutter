@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mtp/src/app/routes.dart';
 import '../core/layouts/responsive_layout.dart';
 import '../core/widgets/custom_window/window_title_bar.dart';
-import '../presentation/providers/settings/settings_provider.dart';
+import '../features/settings/presentation/providers/settings_provider.dart';
 import 'theme/app_theme.dart';
 import 'dart:io' show Platform;
 

@@ -5,27 +5,27 @@ import 'package:mtp/src/utils/logger.dart';
 import 'package:uuid/uuid.dart';
 
 // Data Sources
-import '../data/datasources/local/role_local_datasource.dart';
-import '../data/datasources/local/chat_local_datasource.dart';
-import '../data/datasources/local/settings_local_datasource.dart';
-import '../data/datasources/remote/role_remote_datasource.dart';
-import '../data/datasources/remote/open_ai_remote_datasource.dart';
-import '../data/datasources/remote/azure_open_ai_remote_datasource.dart';
+import '../features/role/data/datasources/local/role_local_datasource.dart';
+import '../features/chat/data/datasources/local/chat_local_datasource.dart';
+import '../features/settings/data/datasources/local/settings_local_datasource.dart';
+import '../features/role/data/datasources/remote/role_remote_datasource.dart';
+import '../features/chat/data/datasources/remote/open_ai_remote_datasource.dart';
+import '../features/chat/data/datasources/remote/azure_open_ai_remote_datasource.dart';
 
 // Repositories
-import '../data/repositories/llm_repository_impl.dart';
-import '../data/repositories/role_repository_impl.dart';
-import '../data/repositories/chat_repository_impl.dart';
-import '../data/repositories/settings_repository_impl.dart';
+import '../features/chat/data/repositories/llm_repository_impl.dart';
+import '../features/role/data/repositories/role_repository_impl.dart';
+import '../features/chat/data/repositories/chat_repository_impl.dart';
+import '../features/settings/data/repositories/settings_repository_impl.dart';
 
 // Domain
-import '../domain/entities/session_entity.dart';
-import '../domain/repositories/llm_repository.dart';
-import '../domain/repositories/role_repository.dart';
-import '../domain/repositories/chat_repository.dart';
-import '../domain/repositories/settings_repository.dart';
-import '../domain/usecases/generate_completion.dart';
-import '../domain/usecases/generate_completion_stream.dart';
+import '../features/chat/domain/entities/session_entity.dart';
+import '../features/chat/domain/repositories/llm_repository.dart';
+import '../features/role/domain/repositories/role_repository.dart';
+import '../features/chat/domain/repositories/chat_repository.dart';
+import '../features/settings/domain/repositories/settings_repository.dart';
+import '../features/chat/domain/usecases/generate_completion.dart';
+import '../features/chat/domain/usecases/generate_completion_stream.dart';
 
 final getIt = GetIt.instance;
 final Logger _logger = Logger('Network');

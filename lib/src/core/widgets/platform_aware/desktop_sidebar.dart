@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
-import 'package:mtp/src/presentation/widgets/data_management_sheet.dart';
-import 'package:mtp/src/presentation/providers/settings/settings_provider.dart';
+import 'package:mtp/src/core/widgets/data_management_sheet.dart';
+import 'package:mtp/src/features/settings/presentation/providers/settings_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 

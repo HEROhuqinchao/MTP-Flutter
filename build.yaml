@@ -1,6 +1,6 @@
 targets:
   $default:
-    bulders:
+    builders:
       drift_dev:
         options:
-          write_from_josn_string_constructor: true
+          write_from_json_string_constructor: true

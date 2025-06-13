@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/widgets/platform_aware/mobile_drawer.dart';
-import 'package:mtp/src/presentation/providers/chat/chat_provider.dart';
+import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
 
 class MobileLayout extends ConsumerWidget {
   final Widget child;

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../src/domain/repositories/chat_repository.dart';
-import '../../../src/domain/repositories/role_repository.dart';
-import '../../../src/domain/repositories/settings_repository.dart';
-import '../../../src/domain/repositories/llm_repository.dart';
+import '../../features/chat/domain/repositories/chat_repository.dart';
+import '../../features/role/domain/repositories/role_repository.dart';
+import '../../features/settings/domain/repositories/settings_repository.dart';
+import '../../features/chat/domain/repositories/llm_repository.dart';
 import '../dependency_injection.dart';
 
 // 仓库提供者 - 使用依赖注入获取仓库实例

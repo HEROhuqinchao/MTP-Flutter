@@ -6,10 +6,10 @@ import 'package:mtp/src/core/layouts/desktop_layout.dart';
 import 'package:mtp/src/core/layouts/mobile_landscape_layout.dart';
 import 'package:mtp/src/core/layouts/mobile_layout.dart';
 import 'package:mtp/src/core/layouts/responsive_layout.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/chat_detail_screen.dart';
-import 'package:mtp/src/presentation/pages/chat_screen/widgets/chat_list.dart';
-import 'package:mtp/src/presentation/pages/settings_screen/settings_screen.dart';
-import 'package:mtp/src/presentation/widgets/chat_empty_screen.dart';
+import 'package:mtp/src/features/chat/presentation/pages/chat_detail_screen.dart';
+import 'package:mtp/src/features/chat/presentation/widgets/chat_list.dart';
+import 'package:mtp/src/features/settings/presentation/pages/settings_screen.dart';
+import 'package:mtp/src/features/chat/presentation/pages/chat_empty_screen.dart';
 
 final router = GoRouter(initialLocation: '/chat', routes: [_routes()]);
 
