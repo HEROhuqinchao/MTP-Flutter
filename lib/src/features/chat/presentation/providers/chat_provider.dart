@@ -1,93 +1,51 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mtp/src/di/providers/repository_providers.dart';
+import 'package:mtp/src/features/chat/data/services/ai_response_service_impl.dart';
+import 'package:mtp/src/features/chat/data/services/session_service_impl.dart';
+import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
+import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
+import 'package:mtp/src/features/chat/domain/repositories/chat_repository.dart';
+import 'package:mtp/src/features/chat/domain/repositories/llm_repository.dart';
+import 'package:mtp/src/features/chat/domain/services/ai_response_service.dart';
+import 'package:mtp/src/features/chat/domain/services/session_service.dart';
+import 'package:mtp/src/features/chat/presentation/providers/chat_state.dart';
+import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
 import 'package:mtp/src/features/role/domain/repositories/role_repository.dart';
+import 'package:mtp/src/features/settings/presentation/providers/settings_provider.dart';
+import 'package:mtp/src/shared/domain/entities/chat_model_entity.dart';
+import 'package:mtp/src/shared/domain/entities/completion_request_entity.dart';
+import 'package:mtp/src/utils/logger.dart';
 import 'package:uuid/uuid.dart';
-import '../../domain/entities/chat_message_entity.dart';
-import '../../../../shared/domain/entities/completion_request_entity.dart'
-    as completion;
-import '../../../settings/domain/entities/chat_model_entity.dart';
-import '../../domain/entities/session_entity.dart';
-import '../../../role/domain/entities/role_entity.dart';
-import '../../domain/repositories/chat_repository.dart';
-import '../../domain/repositories/llm_repository.dart';
-import '../../../../di/providers/repository_providers.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
-import 'chat_state.dart';
 
-// AI回复服务接口 - 用于解耦
-abstract class AIResponseService {
-  Future<Stream<String>> generateResponse({
-    required List<ChatMessageEntity> messages,
-    required String modelName,
-    required double temperature,
-  });
-}
+// // 角色服务接口 - 用于解耦
+// abstract class RoleService {
+//   Future<RoleEntity?> getRoleById(String roleId);
+//   Future<void> updateRoleLastMessage(RoleEntity role, String message);
+// }
 
-// 实现AI回复服务
-class DefaultAIResponseService implements AIResponseService {
-  final LlmRepository _llmRepository;
-  final ChatModelEntity _model;
+// // 实现角色服务
+// class DefaultRoleService implements RoleService {
+//   final RoleRepository _roleRepository;
 
-  DefaultAIResponseService(this._llmRepository, this._model);
+//   DefaultRoleService(this._roleRepository);
 
-  @override
-  Future<Stream<String>> generateResponse({
-    required List<ChatMessageEntity> messages,
-    required String modelName,
-    required double temperature,
-  }) async {
-    final requestMessages =
-        messages
-            .map(
-              (msg) => completion.LLMMessageEntity(
-                role:
-                    msg.isSystem
-                        ? 'system'
-                        : (msg.isFromUser ? 'user' : 'assistant'),
-                content: msg.content,
-              ),
-            )
-            .toList();
+//   @override
+//   Future<RoleEntity?> getRoleById(String roleId) async {
+//     return await _roleRepository.getRoleById(roleId);
+//   }
 
-    final request = completion.CompletionRequestEntity(
-      messages: requestMessages,
-      temperature: temperature,
-      maxTokens: 800,
-      model: modelName,
-    );
+//   @override
+//   Future<void> updateRoleLastMessage(RoleEntity role, String message) async {
+//     final updatedRole = role.copyWith(lastMessage: message);
+//     await _roleRepository.updateRole(updatedRole);
+//   }
+// }
 
-    return await _llmRepository.generateCompletionStream(request, _model);
-  }
-}
-
-// 角色服务接口 - 用于解耦
-abstract class RoleService {
-  Future<RoleEntity?> getRoleById(String roleId);
-  Future<void> updateRoleLastMessage(RoleEntity role, String message);
-}
-
-// 实现角色服务
-class DefaultRoleService implements RoleService {
-  final RoleRepository _roleRepository;
-
-  DefaultRoleService(this._roleRepository);
-
-  @override
-  Future<RoleEntity?> getRoleById(String roleId) async {
-    return await _roleRepository.getRoleById(roleId);
-  }
-
-  @override
-  Future<void> updateRoleLastMessage(RoleEntity role, String message) async {
-    final updatedRole = role.copyWith(lastMessage: message);
-    await _roleRepository.updateRole(updatedRole);
-  }
-}
-
-// 会话状态管理提供者 - 通过工厂方法提供服务实例
+/// 会话状态管理提供者
 final chatStateProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
   final chatRepository = ref.watch(chatRepositoryProvider);
 
-  // 创建AI响应服务
+  // AI响应服务
   AIResponseService? aiService;
 
   try {
@@ -97,36 +55,26 @@ final chatStateProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
     // 如果有选择的模型，使用它创建服务
     if (model != null) {
       final llmRepository = ref.read(llmRepositoryProvider);
-      aiService = DefaultAIResponseService(llmRepository, model);
+      aiService = AIResponseServiceImpl(llmRepository, model);
     }
-    // 如果没有选择的模型，尝试获取设置中的任何可用模型
-    // else {
-    //   final settings = ref.read(settingsProvider);
-    //   if (settings != null && settings.models.isNotEmpty) {
-    //     // 使用第一个可用模型
-    //     final availableModel = settings.models.first;
-    //     final llmRepository = ref.read(llmRepositoryProvider);
-    //     aiService = DefaultAIResponseService(llmRepository, availableModel);
-    //   }
-    // }
   } catch (e) {
-    print('创建AI服务失败: $e');
-    // 错误已记录，aiService将保持为null
+    localLogger.shout('创建AI服务失败: $e');
   }
 
-  // 创建角色服务
+  // 创建会话服务
   final roleRepository = ref.read(roleRepositoryProvider);
-  final roleService = DefaultRoleService(roleRepository);
+  // TODO: 使用 Session 接管 Role服务为核心服务，breaking update
+  final sessionService = SessionServiceImpl();
 
   return ChatNotifier(
     chatRepository: chatRepository,
     aiService: aiService,
-    roleService: roleService,
+    sessionService: sessionService,
   );
 });
 
 // 过滤后的会话列表提供者
-final filteredSessionsProvider = Provider<List<SessionEntity>>((ref) {
+final filteredSessionsProvider = Provider<List<SessionDetailsEntity>>((ref) {
   final state = ref.watch(chatStateProvider);
   final query = state.searchQuery.toLowerCase();
 
@@ -143,7 +91,7 @@ final filteredSessionsProvider = Provider<List<SessionEntity>>((ref) {
 });
 
 // 当前选择的会话提供者
-final currentSessionProvider = Provider<SessionEntity?>((ref) {
+final currentSessionProvider = Provider<SessionDetailsEntity?>((ref) {
   final state = ref.watch(chatStateProvider);
   return state.currentSession;
 });
@@ -152,20 +100,20 @@ final currentSessionProvider = Provider<SessionEntity?>((ref) {
 class ChatNotifier extends StateNotifier<ChatState> {
   final ChatRepository _chatRepository;
   final AIResponseService? _aiService; // 可能为空，表示未配置模型
-  final RoleService _roleService;
+  final SessionService _sessionService;
   final uuid = Uuid();
 
   ChatNotifier({
     required ChatRepository chatRepository,
-    required RoleService roleService,
+    required SessionService sessionService,
     AIResponseService? aiService,
   }) : _chatRepository = chatRepository,
-       _roleService = roleService,
+       _sessionService = sessionService,
        _aiService = aiService,
        super(const ChatState()) {
     // 初始化时加载会话列表
     loadSessions();
-    print('ChatNotifier初始化，加载会话列表');
+    localLogger.info('ChatNotifier初始化，加载会话列表');
   }
 
   // 加载所有会话
@@ -175,49 +123,48 @@ class ChatNotifier extends StateNotifier<ChatState> {
     try {
       final sessions = await _chatRepository.getAllSessions();
 
-      // 处理每个会话的消息，为AI消息添加角色信息
-      final enrichedSessions = await Future.wait(
-        sessions.map((session) async {
-          // 如果会话没有消息，直接返回原始会话
-          if (session.messages.isEmpty) return session;
+      // // 处理每个会话的消息，为AI消息添加角色信息
+      // final enrichedSessions = await Future.wait(
+      //   sessions.map((session) async {
+      //     // 如果会话没有消息，直接返回原始会话
+      //     if (session.messages.isEmpty) return session;
 
-          // 获取会话对应的角色
-          final role = await _roleService.getRoleById(session.roleId);
-          if (role == null) return session;
+      //     // 获取会话对应的角色
+      //     final role = await _sessionService.getRoleById(session.roleId);
+      //     if (role == null) return session;
 
-          // 为每条AI消息添加角色信息
-          final enrichedMessages =
-              session.messages.map((message) {
-                // 只处理非用户消息且缺少发送者信息的消息
-                if (!message.isFromUser &&
-                    (message.senderAvatar == null ||
-                        message.senderAvatar!.isEmpty)) {
-                  return message.copyWith(
-                    senderName: role.name,
-                    senderAvatar:
-                        role.avatars.isNotEmpty ? role.avatars.first : '',
-                  );
-                }
-                return message;
-              }).toList();
+      //     // 为每条AI消息添加角色信息
+      //     final enrichedMessages =
+      //         session.messages.map((message) {
+      //           // 只处理非用户消息且缺少发送者信息的消息
+      //           if (!message.isFromUser &&
+      //               (message.senderAvatar == null ||
+      //                   message.senderAvatar!.isEmpty)) {
+      //             return message.copyWith(
+      //               senderName: role.name,
+      //               senderAvatar:
+      //                   role.avatars.isNotEmpty ? role.avatars.first : '',
+      //             );
+      //           }
+      //           return message;
+      //         }).toList();
 
-          // 返回更新了消息的会话
-          return session.copyWith(messages: enrichedMessages);
-        }),
-      );
+      //     // 返回更新了消息的会话
+      //     return session.copyWith(messages: enrichedMessages);
+      //   }),
+      // );
 
       state = state.copyWith(
-        sessions: enrichedSessions,
+        sessions: sessions,
         isLoading: false,
         currentSession:
-            enrichedSessions.isNotEmpty &&
-                    enrichedSessions.length > state.selectedSessionIndex
-                ? enrichedSessions[state.selectedSessionIndex]
+            sessions.isNotEmpty && sessions.length > state.selectedSessionIndex
+                ? sessions[state.selectedSessionIndex]
                 : null,
       );
     } catch (e) {
       // 详细记录错误
-      print('加载会话失败: $e');
+      localLogger.shout('加载会话失败: $e');
       state = state.copyWith(
         isLoading: false,
         errorMessage: '加载会话失败: ${e.toString()}',
@@ -249,9 +196,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
 
     final message = ChatMessageEntity(
-      id: uuid.v4(),
       content: content,
-      timestamp: DateTime.now(),
+      createdAt: DateTime.now(),
       isFromUser: true,
       isRead: true,
     );
@@ -286,7 +232,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   // 生成AI回复
   Future<void> generateAiResponse(
     String sessionId,
-    SessionEntity session,
+    SessionDetailsEntity session,
   ) async {
     try {
       // 检查AI服务是否可用
@@ -296,7 +242,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         return; // 早期返回，不继续执行
       }
 
-      final role = await _roleService.getRoleById(session.roleId);
+      final role = await _sessionService.getRoleById(session.roleId);
       String avatarPath = '';
       if (role != null && role.avatars.isNotEmpty) {
         avatarPath = role.avatars.first;
@@ -419,12 +365,12 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   // 准备请求消息（包括系统提示和历史消息）
   Future<List<ChatMessageEntity>> _prepareRequestMessages(
-    SessionEntity session,
+    SessionDetailsEntity session,
   ) async {
     final messages = <ChatMessageEntity>[];
 
     // 获取角色信息 - 通过服务而非Provider
-    final role = await _roleService.getRoleById(session.roleId);
+    final role = await _sessionService.getRoleById(session.roleId);
 
     // 如果有角色提示词，添加系统消息
     if (role != null && role.prompt.isNotEmpty) {
@@ -487,7 +433,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     String messageId,
     String content,
     ChatMessageEntity waitingMessage,
-    SessionEntity sessionWithWaiting,
+    SessionDetailsEntity sessionWithWaiting,
   ) {
     // 创建更新的AI消息
     final aiMessage = ChatMessageEntity(
@@ -526,11 +472,11 @@ class ChatNotifier extends StateNotifier<ChatState> {
   // 完成AI响应
   Future<void> _finishAiResponse(
     String sessionId,
-    SessionEntity originalSession,
+    SessionDetailsEntity originalSession,
     String messageId,
     String content,
   ) async {
-    final role = await _roleService.getRoleById(originalSession.roleId);
+    final role = await _sessionService.getRoleById(originalSession.roleId);
     String avatarPath = '';
     if (role != null && role.avatars.isNotEmpty) {
       avatarPath = role.avatars.first;
@@ -568,9 +514,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
       await _chatRepository.addMessageToSession(sessionId, finalAiMessage);
 
       // 更新角色的最后一条消息 - 通过服务而非Provider
-      final role = await _roleService.getRoleById(originalSession.roleId);
+      final role = await _sessionService.getRoleById(originalSession.roleId);
       if (role != null) {
-        await _roleService.updateRoleLastMessage(role, content);
+        await _sessionService.updateRoleLastMessage(role, content);
       }
     } catch (e) {
       print('保存AI回复时出错: $e');
@@ -587,7 +533,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   Future<void> createSession(String title, String roleId) async {
     final String newSessionId = uuid.v4();
 
-    final session = SessionEntity(
+    final session = SessionDetailsEntity(
       id: newSessionId, // 新会话，ID为空
       roleId: roleId,
       title: title,
@@ -672,7 +618,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 
   // 导入单个会话
-  Future<void> importSession(SessionEntity session) async {
+  Future<void> importSession(SessionDetailsEntity session) async {
     try {
       // 检查会话是否已存在
       final existingIndex = state.sessions.indexWhere(

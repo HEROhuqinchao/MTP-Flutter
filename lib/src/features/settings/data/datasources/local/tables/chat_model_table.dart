@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
-import '../../../models/settings.dart';
+import 'package:uuid/uuid.dart';
+import 'settings_table.dart';
 
 class ChatModels extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text().clientDefault(() => const Uuid().v4())();
   TextColumn get settingsId =>
       text().references(Settings, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text()();
@@ -10,4 +11,7 @@ class ChatModels extends Table {
   TextColumn get apiKey => text()();
   RealColumn get temparture => real()();
   BoolColumn get isSelected => boolean()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

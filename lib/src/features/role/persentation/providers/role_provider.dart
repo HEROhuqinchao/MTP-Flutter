@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/role_entity.dart';
-import '../../domain/repositories/role_repository.dart';
-import '../../../../di/providers/repository_providers.dart';
+import 'package:mtp/src/di/providers/repository_providers.dart';
+import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
+import 'package:mtp/src/features/role/domain/repositories/role_repository.dart';
+import 'package:mtp/src/utils/logger.dart';
 import 'role_state.dart';
-import '../../../../utils/logger.dart';
 
-// 角色状态提供者
+/// 角色状态提供者
 final roleStateProvider = StateNotifierProvider<RoleNotifier, RoleState>((ref) {
   final roleRepository = ref.watch(roleRepositoryProvider);
   return RoleNotifier(roleRepository);
 });
 
-// 角色状态管理器
+/// 角色状态管理器
 class RoleNotifier extends StateNotifier<RoleState> {
   final RoleRepository _roleRepository;
 
@@ -20,7 +20,7 @@ class RoleNotifier extends StateNotifier<RoleState> {
     loadRoles();
   }
 
-  // 加载所有角色
+  /// 加载所有角色
   Future<void> loadRoles() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -31,14 +31,12 @@ class RoleNotifier extends StateNotifier<RoleState> {
         isLoading: false,
         selectedRole: roles.isNotEmpty ? roles.first : null,
       );
-      // 为每个角色检查并创建默认会话
-      // await _ensureDefaultSessionsForRoles(roles);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: '加载角色失败: $e');
     }
   }
 
-  // 根据ID获取角色
+  /// 根据ID获取角色
   Future<RoleEntity?> getRoleById(String roleId) async {
     try {
       // 先尝试从本地状态中查找
@@ -59,7 +57,7 @@ class RoleNotifier extends StateNotifier<RoleState> {
     }
   }
 
-  // 添加角色
+  /// 添加角色
   Future<void> addRole(RoleEntity role) async {
     try {
       await _roleRepository.addRole(role);
@@ -69,7 +67,7 @@ class RoleNotifier extends StateNotifier<RoleState> {
     }
   }
 
-  // 更新角色
+  /// 更新角色
   Future<void> updateRole(RoleEntity role) async {
     try {
       await _roleRepository.updateRole(role);
@@ -79,7 +77,7 @@ class RoleNotifier extends StateNotifier<RoleState> {
     }
   }
 
-  // 删除角色
+  /// 删除角色
   Future<void> deleteRole(String roleId) async {
     try {
       await _roleRepository.deleteRole(roleId);

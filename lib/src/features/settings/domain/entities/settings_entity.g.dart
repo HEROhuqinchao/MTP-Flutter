@@ -8,7 +8,7 @@ part of 'settings_entity.dart';
 
 _SettingsEntity _$SettingsEntityFromJson(Map<String, dynamic> json) =>
     _SettingsEntity(
-      id: json['id'] as String?,
+      id: json['id'] as String,
       username: json['username'] as String,
       userAvatar: json['userAvatar'] as String,
       theme: json['theme'] as String,

@@ -11,20 +11,21 @@ _SessionDetailsEntity _$SessionDetailsEntityFromJson(
 ) => _SessionDetailsEntity(
   id: json['id'] as String,
   title: json['title'] as String,
-  type: json['type'] as String,
+  type: (json['type'] as num).toInt(),
   createdAt: DateTime.parse(json['createdAt'] as String),
   isPinned: json['isPinned'] as bool,
+  avatar: json['avatar'] as String?,
   lastMessageAt:
       json['lastMessageAt'] == null
           ? null
           : DateTime.parse(json['lastMessageAt'] as String),
-  roleIds: (json['roleIds'] as List<dynamic>).map((e) => e as String).toList(),
   lastMessage:
       json['lastMessage'] == null
           ? null
           : ChatMessageEntity.fromJson(
             json['lastMessage'] as Map<String, dynamic>,
           ),
+  roleIds: (json['roleIds'] as List<dynamic>).map((e) => e as String).toList(),
 );
 
 Map<String, dynamic> _$SessionDetailsEntityToJson(
@@ -35,7 +36,8 @@ Map<String, dynamic> _$SessionDetailsEntityToJson(
   'type': instance.type,
   'createdAt': instance.createdAt.toIso8601String(),
   'isPinned': instance.isPinned,
+  'avatar': instance.avatar,
   'lastMessageAt': instance.lastMessageAt?.toIso8601String(),
-  'roleIds': instance.roleIds,
   'lastMessage': instance.lastMessage,
+  'roleIds': instance.roleIds,
 };

@@ -14,13 +14,16 @@ abstract class SessionDetailsEntity with _$SessionDetailsEntity {
     required String title,
 
     /// 会话类型，0: 私聊，1: 群聊
-    required String type,
+    required int type,
 
     /// 会话创建时间
     required DateTime createdAt,
 
     /// 是否置顶
     required bool isPinned,
+
+    /// 会话头像
+    String? avatar,
 
     /// 最后一次消息时间
     DateTime? lastMessageAt,

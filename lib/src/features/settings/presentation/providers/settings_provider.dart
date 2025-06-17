@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/settings_entity.dart';
-import '../../domain/entities/chat_model_entity.dart';
+import '../../../../shared/domain/entities/chat_model_entity.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../../../di/providers/repository_providers.dart';
 import 'package:flutter/material.dart';

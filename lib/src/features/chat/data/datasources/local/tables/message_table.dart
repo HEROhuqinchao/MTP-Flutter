@@ -9,6 +9,9 @@ class ChatMessages extends Table {
   TextColumn get sessionId =>
       text().references(Sessions, #id, onDelete: KeyAction.cascade)();
 
+  /// 消息类型, 'user', 'agent'
+  TextColumn get type => text()();
+
   /// 消息发送者ID
   TextColumn get sender => text()();
 

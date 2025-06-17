@@ -1,30 +1,31 @@
+import 'dart:convert';
+
+import 'package:drift/drift.dart';
+import 'package:mtp/src/features/role/data/datasources/local/dao/roles_dao.dart';
+import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
 import 'package:mtp/src/utils/logger.dart';
 
 import '../../domain/entities/role_entity.dart';
 import '../../domain/repositories/role_repository.dart';
-import '../datasources/local/role_local_datasource.dart';
 import '../datasources/remote/role_remote_datasource.dart';
-import '../datasources/local/tables/role.dart';
 
 class RoleRepositoryImpl implements RoleRepository {
-  final RoleLocalDatasource localDatasource;
+  final RolesDao dao;
   final RoleRemoteDatasource remoteDatasource;
 
-  RoleRepositoryImpl(this.localDatasource, this.remoteDatasource);
+  RoleRepositoryImpl(this.dao, this.remoteDatasource);
 
   @override
   Future<List<RoleEntity>> initialize() async {
-    await localDatasource.initialize();
-
     List<Role> addedRoles = [];
 
     // 检查是否首次运行，由仓库决定是否加载初始数据
-    if (await localDatasource.isEmpty()) {
+    if (await dao.isEmpty()) {
       try {
-        List<Role> roles;
+        List<RolesCompanion> roles;
         try {
           // 先尝试从本地获取数据
-          roles = await localDatasource.fetchDefaultRoles();
+          roles = await dao.fetchDefaultRoles();
         } catch (e) {
           localLogger.warning('从本地获取数据失败，尝试从远程获取数据');
           // 从远程获取数据
@@ -35,8 +36,8 @@ class RoleRepositoryImpl implements RoleRepository {
         // 保存到本地
         for (final role in roles) {
           try {
-            await localDatasource.addRole(role);
-            addedRoles.add(role);
+            await dao.addRole(role);
+            addedRoles = await dao.getAllRoles();
             localLogger.fine('成功添加角色: ${role.name}');
           } catch (e) {
             localLogger.shout('添加单个角色失败: ${role.name}, 错误: $e');
@@ -56,11 +57,10 @@ class RoleRepositoryImpl implements RoleRepository {
     return addedRoles
         .map(
           (role) => RoleEntity(
-            id: role.key,
+            id: role.id,
             name: role.name,
-            avatars: role.avatars,
-            prompt: role.prompt,
-            lastMessage: role.lastMessage,
+            avatars: jsonDecode(role.avatars),
+            prompt: role.prompt ?? '请你扮演${role.name}',
           ),
         )
         .toList();
@@ -69,46 +69,42 @@ class RoleRepositoryImpl implements RoleRepository {
   // 备用角色加载
   Future<List<Role>> _loadFallbackRoles() async {
     final fallbackRoles = [
-      Role(
-        name: "助手",
-        avatars: ["assets/default_assist_avatar.png"],
-        prompt: "你是一个有用的AI助手。",
-        lastMessage: "",
+      RolesCompanion(
+        name: Value("助手"),
+        avatars: Value("[\"assets/default_assist_avatar.png\"]"),
+        prompt: Value("你是一个有用的AI助手。"),
       ),
-      // 添加更多默认角色
+      //TODO: 添加更多默认角色
     ];
 
     for (final role in fallbackRoles) {
-      await localDatasource.addRole(role);
+      await dao.addRole(role);
     }
 
-    return fallbackRoles;
+    return await dao.getAllRoles();
   }
 
   @override
   Future<void> addRole(RoleEntity role) async {
-    await localDatasource.addRole(
-      Role(
-        key: role.id,
-        name: role.name,
-        avatars: role.avatars,
-        prompt: role.prompt,
-        lastMessage: role.lastMessage,
+    await dao.addRole(
+      RolesCompanion(
+        name: Value(role.name),
+        avatars: Value(jsonEncode(role.avatars)),
+        prompt: Value(role.prompt),
       ),
     );
   }
 
   @override
   Future<List<RoleEntity>> getAllRoles() async {
-    final roles = await localDatasource.getAllRoles();
+    final roles = await dao.getAllRoles();
     return roles
         .map(
           (role) => RoleEntity(
-            id: role.key,
+            id: role.id,
             name: role.name,
-            avatars: role.avatars,
+            avatars: jsonDecode(role.avatars),
             prompt: role.prompt,
-            lastMessage: role.lastMessage,
           ),
         )
         .toList();
@@ -116,34 +112,32 @@ class RoleRepositoryImpl implements RoleRepository {
 
   @override
   Future<void> deleteRole(String id) async {
-    await localDatasource.deleteRole(id);
+    await dao.deleteRole(id);
   }
 
   @override
   Future<RoleEntity?> getRoleById(String id) async {
-    final role = await localDatasource.getRoleById(id);
+    final role = await dao.getRoleById(id);
     if (role == null) return null;
 
     return RoleEntity(
-      id: role.key,
+      id: role.id,
       name: role.name,
-      avatars: role.avatars,
+      avatars: jsonDecode(role.avatars),
       prompt: role.prompt,
-      lastMessage: role.lastMessage,
     );
   }
 
   @override
   Future<List<RoleEntity>> searchRolesByName(String query) async {
-    final roles = await localDatasource.searchRolesByName(query);
+    final roles = await dao.searchRolesByName(query);
     return roles
         .map(
           (role) => RoleEntity(
-            id: role.key,
+            id: role.id,
             name: role.name,
-            avatars: role.avatars,
+            avatars: jsonDecode(role.avatars),
             prompt: role.prompt,
-            lastMessage: role.lastMessage,
           ),
         )
         .toList();
@@ -151,18 +145,12 @@ class RoleRepositoryImpl implements RoleRepository {
 
   @override
   Future<void> updateRole(RoleEntity role) async {
-    if (role.id == null) {
-      throw Exception('无法更新没有ID的角色');
-    }
-
-    final roleModel = Role(
-      key: role.id,
-      name: role.name,
-      avatars: role.avatars,
-      prompt: role.prompt,
-      lastMessage: role.lastMessage,
+    final roleModel = RolesCompanion(
+      name: Value(role.name),
+      avatars: Value(jsonEncode(role.avatars)),
+      prompt: Value(role.prompt),
     );
 
-    await localDatasource.updateRole(roleModel);
+    await dao.updateRole(roleModel);
   }
 }

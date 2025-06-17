@@ -26,6 +26,15 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _avatarMeta = const VerificationMeta('avatar');
+  @override
+  late final GeneratedColumn<String> avatar = GeneratedColumn<String>(
+    'avatar',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<int> type = GeneratedColumn<int>(
@@ -55,10 +64,9 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
       GeneratedColumn<DateTime>(
         'last_message_at',
         aliasedName,
-        false,
+        true,
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
-        defaultValue: currentDateAndTime,
       );
   static const VerificationMeta _isPinnedMeta = const VerificationMeta(
     'isPinned',
@@ -78,6 +86,7 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   List<GeneratedColumn> get $columns => [
     id,
     title,
+    avatar,
     type,
     createdAt,
     lastMessageAt,
@@ -107,6 +116,12 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
       );
     } else if (isInserting) {
       context.missing(_titleMeta);
+    }
+    if (data.containsKey('avatar')) {
+      context.handle(
+        _avatarMeta,
+        avatar.isAcceptableOrUnknown(data['avatar']!, _avatarMeta),
+      );
     }
     if (data.containsKey('type')) {
       context.handle(
@@ -158,6 +173,10 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
             DriftSqlType.string,
             data['${effectivePrefix}title'],
           )!,
+      avatar: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatar'],
+      ),
       type:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -168,11 +187,10 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
             DriftSqlType.dateTime,
             data['${effectivePrefix}created_at'],
           )!,
-      lastMessageAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}last_message_at'],
-          )!,
+      lastMessageAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_message_at'],
+      ),
       isPinned:
           attachedDatabase.typeMapping.read(
             DriftSqlType.bool,
@@ -194,6 +212,9 @@ class Session extends DataClass implements Insertable<Session> {
   /// 会话标题
   final String title;
 
+  /// 会话头像
+  final String? avatar;
+
   /// 会话类型 0: 私聊 1: 群聊
   final int type;
 
@@ -201,16 +222,17 @@ class Session extends DataClass implements Insertable<Session> {
   final DateTime createdAt;
 
   /// 最后一条消息更新时间
-  final DateTime lastMessageAt;
+  final DateTime? lastMessageAt;
 
   /// 会话是否被置顶
   final bool isPinned;
   const Session({
     required this.id,
     required this.title,
+    this.avatar,
     required this.type,
     required this.createdAt,
-    required this.lastMessageAt,
+    this.lastMessageAt,
     required this.isPinned,
   });
   @override
@@ -218,9 +240,14 @@ class Session extends DataClass implements Insertable<Session> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['title'] = Variable<String>(title);
+    if (!nullToAbsent || avatar != null) {
+      map['avatar'] = Variable<String>(avatar);
+    }
     map['type'] = Variable<int>(type);
     map['created_at'] = Variable<DateTime>(createdAt);
-    map['last_message_at'] = Variable<DateTime>(lastMessageAt);
+    if (!nullToAbsent || lastMessageAt != null) {
+      map['last_message_at'] = Variable<DateTime>(lastMessageAt);
+    }
     map['is_pinned'] = Variable<bool>(isPinned);
     return map;
   }
@@ -229,9 +256,14 @@ class Session extends DataClass implements Insertable<Session> {
     return SessionsCompanion(
       id: Value(id),
       title: Value(title),
+      avatar:
+          avatar == null && nullToAbsent ? const Value.absent() : Value(avatar),
       type: Value(type),
       createdAt: Value(createdAt),
-      lastMessageAt: Value(lastMessageAt),
+      lastMessageAt:
+          lastMessageAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lastMessageAt),
       isPinned: Value(isPinned),
     );
   }
@@ -244,9 +276,10 @@ class Session extends DataClass implements Insertable<Session> {
     return Session(
       id: serializer.fromJson<String>(json['id']),
       title: serializer.fromJson<String>(json['title']),
+      avatar: serializer.fromJson<String?>(json['avatar']),
       type: serializer.fromJson<int>(json['type']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      lastMessageAt: serializer.fromJson<DateTime>(json['lastMessageAt']),
+      lastMessageAt: serializer.fromJson<DateTime?>(json['lastMessageAt']),
       isPinned: serializer.fromJson<bool>(json['isPinned']),
     );
   }
@@ -263,9 +296,10 @@ class Session extends DataClass implements Insertable<Session> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'title': serializer.toJson<String>(title),
+      'avatar': serializer.toJson<String?>(avatar),
       'type': serializer.toJson<int>(type),
       'createdAt': serializer.toJson<DateTime>(createdAt),
-      'lastMessageAt': serializer.toJson<DateTime>(lastMessageAt),
+      'lastMessageAt': serializer.toJson<DateTime?>(lastMessageAt),
       'isPinned': serializer.toJson<bool>(isPinned),
     };
   }
@@ -273,22 +307,26 @@ class Session extends DataClass implements Insertable<Session> {
   Session copyWith({
     String? id,
     String? title,
+    Value<String?> avatar = const Value.absent(),
     int? type,
     DateTime? createdAt,
-    DateTime? lastMessageAt,
+    Value<DateTime?> lastMessageAt = const Value.absent(),
     bool? isPinned,
   }) => Session(
     id: id ?? this.id,
     title: title ?? this.title,
+    avatar: avatar.present ? avatar.value : this.avatar,
     type: type ?? this.type,
     createdAt: createdAt ?? this.createdAt,
-    lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+    lastMessageAt:
+        lastMessageAt.present ? lastMessageAt.value : this.lastMessageAt,
     isPinned: isPinned ?? this.isPinned,
   );
   Session copyWithCompanion(SessionsCompanion data) {
     return Session(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
+      avatar: data.avatar.present ? data.avatar.value : this.avatar,
       type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       lastMessageAt:
@@ -304,6 +342,7 @@ class Session extends DataClass implements Insertable<Session> {
     return (StringBuffer('Session(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('avatar: $avatar, ')
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastMessageAt: $lastMessageAt, ')
@@ -314,13 +353,14 @@ class Session extends DataClass implements Insertable<Session> {
 
   @override
   int get hashCode =>
-      Object.hash(id, title, type, createdAt, lastMessageAt, isPinned);
+      Object.hash(id, title, avatar, type, createdAt, lastMessageAt, isPinned);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Session &&
           other.id == this.id &&
           other.title == this.title &&
+          other.avatar == this.avatar &&
           other.type == this.type &&
           other.createdAt == this.createdAt &&
           other.lastMessageAt == this.lastMessageAt &&
@@ -330,14 +370,16 @@ class Session extends DataClass implements Insertable<Session> {
 class SessionsCompanion extends UpdateCompanion<Session> {
   final Value<String> id;
   final Value<String> title;
+  final Value<String?> avatar;
   final Value<int> type;
   final Value<DateTime> createdAt;
-  final Value<DateTime> lastMessageAt;
+  final Value<DateTime?> lastMessageAt;
   final Value<bool> isPinned;
   final Value<int> rowid;
   const SessionsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
+    this.avatar = const Value.absent(),
     this.type = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastMessageAt = const Value.absent(),
@@ -347,6 +389,7 @@ class SessionsCompanion extends UpdateCompanion<Session> {
   SessionsCompanion.insert({
     required String id,
     required String title,
+    this.avatar = const Value.absent(),
     required int type,
     this.createdAt = const Value.absent(),
     this.lastMessageAt = const Value.absent(),
@@ -359,6 +402,7 @@ class SessionsCompanion extends UpdateCompanion<Session> {
   static Insertable<Session> custom({
     Expression<String>? id,
     Expression<String>? title,
+    Expression<String>? avatar,
     Expression<int>? type,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastMessageAt,
@@ -368,6 +412,7 @@ class SessionsCompanion extends UpdateCompanion<Session> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
+      if (avatar != null) 'avatar': avatar,
       if (type != null) 'type': type,
       if (createdAt != null) 'created_at': createdAt,
       if (lastMessageAt != null) 'last_message_at': lastMessageAt,
@@ -379,15 +424,17 @@ class SessionsCompanion extends UpdateCompanion<Session> {
   SessionsCompanion copyWith({
     Value<String>? id,
     Value<String>? title,
+    Value<String?>? avatar,
     Value<int>? type,
     Value<DateTime>? createdAt,
-    Value<DateTime>? lastMessageAt,
+    Value<DateTime?>? lastMessageAt,
     Value<bool>? isPinned,
     Value<int>? rowid,
   }) {
     return SessionsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
+      avatar: avatar ?? this.avatar,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
@@ -404,6 +451,9 @@ class SessionsCompanion extends UpdateCompanion<Session> {
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
+    }
+    if (avatar.present) {
+      map['avatar'] = Variable<String>(avatar.value);
     }
     if (type.present) {
       map['type'] = Variable<int>(type.value);
@@ -428,6 +478,7 @@ class SessionsCompanion extends UpdateCompanion<Session> {
     return (StringBuffer('SessionsCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
+          ..write('avatar: $avatar, ')
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastMessageAt: $lastMessageAt, ')
@@ -470,6 +521,15 @@ class $ChatMessagesTable extends ChatMessages
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES sessions (id) ON DELETE CASCADE',
     ),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _senderMeta = const VerificationMeta('sender');
   @override
@@ -518,6 +578,7 @@ class $ChatMessagesTable extends ChatMessages
   List<GeneratedColumn> get $columns => [
     id,
     sessionId,
+    type,
     sender,
     createdAt,
     content,
@@ -545,6 +606,14 @@ class $ChatMessagesTable extends ChatMessages
       );
     } else if (isInserting) {
       context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
     }
     if (data.containsKey('sender')) {
       context.handle(
@@ -595,6 +664,11 @@ class $ChatMessagesTable extends ChatMessages
             DriftSqlType.string,
             data['${effectivePrefix}session_id'],
           )!,
+      type:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}type'],
+          )!,
       sender:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -630,6 +704,9 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
   /// 消息对应的会话ID
   final String sessionId;
 
+  /// 消息类型, 'user', 'agent'
+  final String type;
+
   /// 消息发送者ID
   final String sender;
 
@@ -644,6 +721,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
   const ChatMessage({
     required this.id,
     required this.sessionId,
+    required this.type,
     required this.sender,
     required this.createdAt,
     required this.content,
@@ -654,6 +732,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['session_id'] = Variable<String>(sessionId);
+    map['type'] = Variable<String>(type);
     map['sender'] = Variable<String>(sender);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['content'] = Variable<String>(content);
@@ -667,6 +746,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     return ChatMessagesCompanion(
       id: Value(id),
       sessionId: Value(sessionId),
+      type: Value(type),
       sender: Value(sender),
       createdAt: Value(createdAt),
       content: Value(content),
@@ -683,6 +763,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     return ChatMessage(
       id: serializer.fromJson<int>(json['id']),
       sessionId: serializer.fromJson<String>(json['sessionId']),
+      type: serializer.fromJson<String>(json['type']),
       sender: serializer.fromJson<String>(json['sender']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       content: serializer.fromJson<String>(json['content']),
@@ -702,6 +783,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'sessionId': serializer.toJson<String>(sessionId),
+      'type': serializer.toJson<String>(type),
       'sender': serializer.toJson<String>(sender),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'content': serializer.toJson<String>(content),
@@ -712,6 +794,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
   ChatMessage copyWith({
     int? id,
     String? sessionId,
+    String? type,
     String? sender,
     DateTime? createdAt,
     String? content,
@@ -719,6 +802,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
   }) => ChatMessage(
     id: id ?? this.id,
     sessionId: sessionId ?? this.sessionId,
+    type: type ?? this.type,
     sender: sender ?? this.sender,
     createdAt: createdAt ?? this.createdAt,
     content: content ?? this.content,
@@ -728,6 +812,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     return ChatMessage(
       id: data.id.present ? data.id.value : this.id,
       sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      type: data.type.present ? data.type.value : this.type,
       sender: data.sender.present ? data.sender.value : this.sender,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       content: data.content.present ? data.content.value : this.content,
@@ -740,6 +825,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
     return (StringBuffer('ChatMessage(')
           ..write('id: $id, ')
           ..write('sessionId: $sessionId, ')
+          ..write('type: $type, ')
           ..write('sender: $sender, ')
           ..write('createdAt: $createdAt, ')
           ..write('content: $content, ')
@@ -750,13 +836,14 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
 
   @override
   int get hashCode =>
-      Object.hash(id, sessionId, sender, createdAt, content, isRead);
+      Object.hash(id, sessionId, type, sender, createdAt, content, isRead);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ChatMessage &&
           other.id == this.id &&
           other.sessionId == this.sessionId &&
+          other.type == this.type &&
           other.sender == this.sender &&
           other.createdAt == this.createdAt &&
           other.content == this.content &&
@@ -766,6 +853,7 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
 class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   final Value<int> id;
   final Value<String> sessionId;
+  final Value<String> type;
   final Value<String> sender;
   final Value<DateTime> createdAt;
   final Value<String> content;
@@ -773,6 +861,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   const ChatMessagesCompanion({
     this.id = const Value.absent(),
     this.sessionId = const Value.absent(),
+    this.type = const Value.absent(),
     this.sender = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.content = const Value.absent(),
@@ -781,17 +870,20 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   ChatMessagesCompanion.insert({
     this.id = const Value.absent(),
     required String sessionId,
+    required String type,
     required String sender,
     required DateTime createdAt,
     required String content,
     this.isRead = const Value.absent(),
   }) : sessionId = Value(sessionId),
+       type = Value(type),
        sender = Value(sender),
        createdAt = Value(createdAt),
        content = Value(content);
   static Insertable<ChatMessage> custom({
     Expression<int>? id,
     Expression<String>? sessionId,
+    Expression<String>? type,
     Expression<String>? sender,
     Expression<DateTime>? createdAt,
     Expression<String>? content,
@@ -800,6 +892,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (sessionId != null) 'session_id': sessionId,
+      if (type != null) 'type': type,
       if (sender != null) 'sender': sender,
       if (createdAt != null) 'created_at': createdAt,
       if (content != null) 'content': content,
@@ -810,6 +903,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
   ChatMessagesCompanion copyWith({
     Value<int>? id,
     Value<String>? sessionId,
+    Value<String>? type,
     Value<String>? sender,
     Value<DateTime>? createdAt,
     Value<String>? content,
@@ -818,6 +912,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     return ChatMessagesCompanion(
       id: id ?? this.id,
       sessionId: sessionId ?? this.sessionId,
+      type: type ?? this.type,
       sender: sender ?? this.sender,
       createdAt: createdAt ?? this.createdAt,
       content: content ?? this.content,
@@ -833,6 +928,9 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     }
     if (sessionId.present) {
       map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
     }
     if (sender.present) {
       map['sender'] = Variable<String>(sender.value);
@@ -854,6 +952,7 @@ class ChatMessagesCompanion extends UpdateCompanion<ChatMessage> {
     return (StringBuffer('ChatMessagesCompanion(')
           ..write('id: $id, ')
           ..write('sessionId: $sessionId, ')
+          ..write('type: $type, ')
           ..write('sender: $sender, ')
           ..write('createdAt: $createdAt, ')
           ..write('content: $content, ')
@@ -875,7 +974,8 @@ class $RolesTable extends Roles with TableInfo<$RolesTable, Role> {
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    clientDefault: () => const Uuid().v4(),
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -939,8 +1039,6 @@ class $RolesTable extends Roles with TableInfo<$RolesTable, Role> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -1162,14 +1260,13 @@ class RolesCompanion extends UpdateCompanion<Role> {
     this.rowid = const Value.absent(),
   });
   RolesCompanion.insert({
-    required String id,
+    this.id = const Value.absent(),
     required String name,
     required String avatars,
     this.description = const Value.absent(),
     this.prompt = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       name = Value(name),
+  }) : name = Value(name),
        avatars = Value(avatars);
   static Insertable<Role> custom({
     Expression<String>? id,
@@ -1543,7 +1640,8 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    clientDefault: () => const Uuid().v4(),
   );
   static const VerificationMeta _usernameMeta = const VerificationMeta(
     'username',
@@ -1592,8 +1690,6 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('username')) {
       context.handle(
@@ -1775,13 +1871,12 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.rowid = const Value.absent(),
   });
   SettingsCompanion.insert({
-    required String id,
+    this.id = const Value.absent(),
     required String username,
     required String userAvatar,
     required String theme,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       username = Value(username),
+  }) : username = Value(username),
        userAvatar = Value(userAvatar),
        theme = Value(theme);
   static Insertable<Setting> custom({
@@ -1858,16 +1953,13 @@ class $ChatModelsTable extends ChatModels
   $ChatModelsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
     aliasedName,
     false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
+    type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    clientDefault: () => const Uuid().v4(),
   );
   static const VerificationMeta _settingsIdMeta = const VerificationMeta(
     'settingsId',
@@ -2021,7 +2113,7 @@ class $ChatModelsTable extends ChatModels
     return ChatModel(
       id:
           attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
+            DriftSqlType.string,
             data['${effectivePrefix}id'],
           )!,
       settingsId:
@@ -2064,7 +2156,7 @@ class $ChatModelsTable extends ChatModels
 }
 
 class ChatModel extends DataClass implements Insertable<ChatModel> {
-  final int id;
+  final String id;
   final String settingsId;
   final String name;
   final String endpoint;
@@ -2083,7 +2175,7 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    map['id'] = Variable<String>(id);
     map['settings_id'] = Variable<String>(settingsId);
     map['name'] = Variable<String>(name);
     map['endpoint'] = Variable<String>(endpoint);
@@ -2111,7 +2203,7 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ChatModel(
-      id: serializer.fromJson<int>(json['id']),
+      id: serializer.fromJson<String>(json['id']),
       settingsId: serializer.fromJson<String>(json['settingsId']),
       name: serializer.fromJson<String>(json['name']),
       endpoint: serializer.fromJson<String>(json['endpoint']),
@@ -2131,7 +2223,7 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<String>(id),
       'settingsId': serializer.toJson<String>(settingsId),
       'name': serializer.toJson<String>(name),
       'endpoint': serializer.toJson<String>(endpoint),
@@ -2142,7 +2234,7 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   }
 
   ChatModel copyWith({
-    int? id,
+    String? id,
     String? settingsId,
     String? name,
     String? endpoint,
@@ -2211,13 +2303,14 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
 }
 
 class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
-  final Value<int> id;
+  final Value<String> id;
   final Value<String> settingsId;
   final Value<String> name;
   final Value<String> endpoint;
   final Value<String> apiKey;
   final Value<double> temparture;
   final Value<bool> isSelected;
+  final Value<int> rowid;
   const ChatModelsCompanion({
     this.id = const Value.absent(),
     this.settingsId = const Value.absent(),
@@ -2226,6 +2319,7 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
     this.apiKey = const Value.absent(),
     this.temparture = const Value.absent(),
     this.isSelected = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   ChatModelsCompanion.insert({
     this.id = const Value.absent(),
@@ -2235,6 +2329,7 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
     required String apiKey,
     required double temparture,
     required bool isSelected,
+    this.rowid = const Value.absent(),
   }) : settingsId = Value(settingsId),
        name = Value(name),
        endpoint = Value(endpoint),
@@ -2242,13 +2337,14 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
        temparture = Value(temparture),
        isSelected = Value(isSelected);
   static Insertable<ChatModel> custom({
-    Expression<int>? id,
+    Expression<String>? id,
     Expression<String>? settingsId,
     Expression<String>? name,
     Expression<String>? endpoint,
     Expression<String>? apiKey,
     Expression<double>? temparture,
     Expression<bool>? isSelected,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2258,17 +2354,19 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
       if (apiKey != null) 'api_key': apiKey,
       if (temparture != null) 'temparture': temparture,
       if (isSelected != null) 'is_selected': isSelected,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   ChatModelsCompanion copyWith({
-    Value<int>? id,
+    Value<String>? id,
     Value<String>? settingsId,
     Value<String>? name,
     Value<String>? endpoint,
     Value<String>? apiKey,
     Value<double>? temparture,
     Value<bool>? isSelected,
+    Value<int>? rowid,
   }) {
     return ChatModelsCompanion(
       id: id ?? this.id,
@@ -2278,6 +2376,7 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
       apiKey: apiKey ?? this.apiKey,
       temparture: temparture ?? this.temparture,
       isSelected: isSelected ?? this.isSelected,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -2285,7 +2384,7 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<String>(id.value);
     }
     if (settingsId.present) {
       map['settings_id'] = Variable<String>(settingsId.value);
@@ -2305,6 +2404,9 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
     if (isSelected.present) {
       map['is_selected'] = Variable<bool>(isSelected.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -2317,7 +2419,8 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
           ..write('endpoint: $endpoint, ')
           ..write('apiKey: $apiKey, ')
           ..write('temparture: $temparture, ')
-          ..write('isSelected: $isSelected')
+          ..write('isSelected: $isSelected, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -2333,6 +2436,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SettingsTable settings = $SettingsTable(this);
   late final $ChatModelsTable chatModels = $ChatModelsTable(this);
   late final SessionsDao sessionsDao = SessionsDao(this as AppDatabase);
+  late final RolesDao rolesDao = RolesDao(this as AppDatabase);
+  late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2382,9 +2487,10 @@ typedef $$SessionsTableCreateCompanionBuilder =
     SessionsCompanion Function({
       required String id,
       required String title,
+      Value<String?> avatar,
       required int type,
       Value<DateTime> createdAt,
-      Value<DateTime> lastMessageAt,
+      Value<DateTime?> lastMessageAt,
       required bool isPinned,
       Value<int> rowid,
     });
@@ -2392,9 +2498,10 @@ typedef $$SessionsTableUpdateCompanionBuilder =
     SessionsCompanion Function({
       Value<String> id,
       Value<String> title,
+      Value<String?> avatar,
       Value<int> type,
       Value<DateTime> createdAt,
-      Value<DateTime> lastMessageAt,
+      Value<DateTime?> lastMessageAt,
       Value<bool> isPinned,
       Value<int> rowid,
     });
@@ -2456,6 +2563,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avatar => $composableBuilder(
+    column: $table.avatar,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2549,6 +2661,11 @@ class $$SessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get avatar => $composableBuilder(
+    column: $table.avatar,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get type => $composableBuilder(
     column: $table.type,
     builder: (column) => ColumnOrderings(column),
@@ -2584,6 +2701,9 @@ class $$SessionsTableAnnotationComposer
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get avatar =>
+      $composableBuilder(column: $table.avatar, builder: (column) => column);
 
   GeneratedColumn<int> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
@@ -2680,14 +2800,16 @@ class $$SessionsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
+                Value<String?> avatar = const Value.absent(),
                 Value<int> type = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> lastMessageAt = const Value.absent(),
+                Value<DateTime?> lastMessageAt = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion(
                 id: id,
                 title: title,
+                avatar: avatar,
                 type: type,
                 createdAt: createdAt,
                 lastMessageAt: lastMessageAt,
@@ -2698,14 +2820,16 @@ class $$SessionsTableTableManager
               ({
                 required String id,
                 required String title,
+                Value<String?> avatar = const Value.absent(),
                 required int type,
                 Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> lastMessageAt = const Value.absent(),
+                Value<DateTime?> lastMessageAt = const Value.absent(),
                 required bool isPinned,
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion.insert(
                 id: id,
                 title: title,
+                avatar: avatar,
                 type: type,
                 createdAt: createdAt,
                 lastMessageAt: lastMessageAt,
@@ -2805,6 +2929,7 @@ typedef $$ChatMessagesTableCreateCompanionBuilder =
     ChatMessagesCompanion Function({
       Value<int> id,
       required String sessionId,
+      required String type,
       required String sender,
       required DateTime createdAt,
       required String content,
@@ -2814,6 +2939,7 @@ typedef $$ChatMessagesTableUpdateCompanionBuilder =
     ChatMessagesCompanion Function({
       Value<int> id,
       Value<String> sessionId,
+      Value<String> type,
       Value<String> sender,
       Value<DateTime> createdAt,
       Value<String> content,
@@ -2855,6 +2981,11 @@ class $$ChatMessagesTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2916,6 +3047,11 @@ class $$ChatMessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get sender => $composableBuilder(
     column: $table.sender,
     builder: (column) => ColumnOrderings(column),
@@ -2971,6 +3107,9 @@ class $$ChatMessagesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
   GeneratedColumn<String> get sender =>
       $composableBuilder(column: $table.sender, builder: (column) => column);
@@ -3039,6 +3178,7 @@ class $$ChatMessagesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> sessionId = const Value.absent(),
+                Value<String> type = const Value.absent(),
                 Value<String> sender = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String> content = const Value.absent(),
@@ -3046,6 +3186,7 @@ class $$ChatMessagesTableTableManager
               }) => ChatMessagesCompanion(
                 id: id,
                 sessionId: sessionId,
+                type: type,
                 sender: sender,
                 createdAt: createdAt,
                 content: content,
@@ -3055,6 +3196,7 @@ class $$ChatMessagesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String sessionId,
+                required String type,
                 required String sender,
                 required DateTime createdAt,
                 required String content,
@@ -3062,6 +3204,7 @@ class $$ChatMessagesTableTableManager
               }) => ChatMessagesCompanion.insert(
                 id: id,
                 sessionId: sessionId,
+                type: type,
                 sender: sender,
                 createdAt: createdAt,
                 content: content,
@@ -3138,7 +3281,7 @@ typedef $$ChatMessagesTableProcessedTableManager =
     >;
 typedef $$RolesTableCreateCompanionBuilder =
     RolesCompanion Function({
-      required String id,
+      Value<String> id,
       required String name,
       required String avatars,
       Value<String?> description,
@@ -3368,7 +3511,7 @@ class $$RolesTableTableManager
               ),
           createCompanionCallback:
               ({
-                required String id,
+                Value<String> id = const Value.absent(),
                 required String name,
                 required String avatars,
                 Value<String?> description = const Value.absent(),
@@ -3812,7 +3955,7 @@ typedef $$SessionRolesTableProcessedTableManager =
     >;
 typedef $$SettingsTableCreateCompanionBuilder =
     SettingsCompanion Function({
-      required String id,
+      Value<String> id,
       required String username,
       required String userAvatar,
       required String theme,
@@ -4026,7 +4169,7 @@ class $$SettingsTableTableManager
               ),
           createCompanionCallback:
               ({
-                required String id,
+                Value<String> id = const Value.absent(),
                 required String username,
                 required String userAvatar,
                 required String theme,
@@ -4101,23 +4244,25 @@ typedef $$SettingsTableProcessedTableManager =
     >;
 typedef $$ChatModelsTableCreateCompanionBuilder =
     ChatModelsCompanion Function({
-      Value<int> id,
+      Value<String> id,
       required String settingsId,
       required String name,
       required String endpoint,
       required String apiKey,
       required double temparture,
       required bool isSelected,
+      Value<int> rowid,
     });
 typedef $$ChatModelsTableUpdateCompanionBuilder =
     ChatModelsCompanion Function({
-      Value<int> id,
+      Value<String> id,
       Value<String> settingsId,
       Value<String> name,
       Value<String> endpoint,
       Value<String> apiKey,
       Value<double> temparture,
       Value<bool> isSelected,
+      Value<int> rowid,
     });
 
 final class $$ChatModelsTableReferences
@@ -4153,7 +4298,7 @@ class $$ChatModelsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
@@ -4216,7 +4361,7 @@ class $$ChatModelsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
@@ -4279,7 +4424,7 @@ class $$ChatModelsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
@@ -4353,13 +4498,14 @@ class $$ChatModelsTableTableManager
               () => $$ChatModelsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                Value<String> id = const Value.absent(),
                 Value<String> settingsId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> endpoint = const Value.absent(),
                 Value<String> apiKey = const Value.absent(),
                 Value<double> temparture = const Value.absent(),
                 Value<bool> isSelected = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => ChatModelsCompanion(
                 id: id,
                 settingsId: settingsId,
@@ -4368,16 +4514,18 @@ class $$ChatModelsTableTableManager
                 apiKey: apiKey,
                 temparture: temparture,
                 isSelected: isSelected,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                Value<String> id = const Value.absent(),
                 required String settingsId,
                 required String name,
                 required String endpoint,
                 required String apiKey,
                 required double temparture,
                 required bool isSelected,
+                Value<int> rowid = const Value.absent(),
               }) => ChatModelsCompanion.insert(
                 id: id,
                 settingsId: settingsId,
@@ -4386,6 +4534,7 @@ class $$ChatModelsTableTableManager
                 apiKey: apiKey,
                 temparture: temparture,
                 isSelected: isSelected,
+                rowid: rowid,
               ),
           withReferenceMapper:
               (p0) =>

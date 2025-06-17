@@ -1,4 +1,4 @@
-import '../../../settings/domain/entities/chat_model_entity.dart';
+import '../../../../shared/domain/entities/chat_model_entity.dart';
 import '../../../../shared/domain/entities/completion_request_entity.dart';
 import '../../../../shared/domain/entities/completion_response_entity.dart';
 

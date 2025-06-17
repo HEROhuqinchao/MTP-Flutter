@@ -8,7 +8,7 @@ part of 'chat_model_entity.dart';
 
 _ChatModelEntity _$ChatModelEntityFromJson(Map<String, dynamic> json) =>
     _ChatModelEntity(
-      id: json['id'] as String?,
+      id: json['id'] as String,
       name: json['name'] as String,
       endpoint: json['endpoint'] as String,
       temparture: (json['temparture'] as num).toDouble(),

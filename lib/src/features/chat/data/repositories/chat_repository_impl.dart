@@ -1,6 +1,11 @@
+import 'package:drift/drift.dart';
 import 'package:mtp/src/features/chat/data/datasources/local/dao/sessions_dao.dart';
+import 'package:mtp/src/features/chat/data/mappers/message_mapper.dart';
+import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
+import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
 import 'package:mtp/src/features/chat/domain/repositories/chat_repository.dart';
-
+import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
+import 'package:mtp/src/features/chat/data/mappers/session_mapper.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   final SessionsDao dao;
@@ -10,193 +15,84 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<void> addMessageToSession(
     String sessionId,
-    MessageEntity message,
+    ChatMessageEntity message,
   ) async {
-    final messageModel = ChatMessage(
-      role: message.isFromUser ? 'user' : 'assistant',
-      content: message.content,
-    );
-
-    await localDatasource.addMessageToSession(sessionId, messageModel);
-  }
-
-  @override
-  Future<void> addSession(SessionEntity session) async {
-    final messageModels =
-        session.messages
-            .map(
-              (m) => ChatMessage(
-                role: m.isFromUser ? 'user' : 'assistant',
-                content: m.content,
-                isRead: m.isRead,
-              ),
-            )
-            .toList();
-
-    final sessionModel = Session(
-      key: session.id,
-      roleId: session.roleId,
-      title: session.title,
-      messages: messageModels,
-      createdAt: session.createdAt,
-      updatedAt: session.updatedAt,
-      isPinned: session.isPinned,
-    );
-
-    await localDatasource.addSession(sessionModel);
-  }
-
-  @override
-  Future<void> deleteSession(String id) async {
-    await localDatasource.deleteSession(id);
-  }
-
-  @override
-  Future<List<SessionEntity>> getAllSessions() async {
-    final sessions = await localDatasource.getAllSessions();
-    return sessions.map((session) {
-      final messageEntities =
-          session.messages
-              .map(
-                (msg) => MessageEntity(
-                  id:
-                      msg.key ??
-                      '', // Using message key as ID or empty string if null
-                  content: msg.content,
-                  isRead: msg.isRead ?? false,
-                  timestamp:
-                      DateTime.now(), // Default to current time if not available in msg
-                  isFromUser: msg.role == 'user',
-                ),
-              )
-              .toList();
-
-      return SessionEntity(
-        id: session.key,
-        roleId: session.roleId,
-        title: session.title,
-        messages: messageEntities,
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt,
-        isPinned: session.isPinned,
+    try {
+      final companion = ChatMessagesCompanion(
+        sessionId: Value(sessionId),
+        sender: Value(message.senderId),
+        content: Value(message.content),
+        createdAt: Value(message.createdAt),
       );
-    }).toList();
-  }
 
-  @override
-  Future<List<MessageEntity>> getMessagesFromSession(String sessionId) async {
-    final messages = await localDatasource.getMessagesFromSession(sessionId);
-    return messages
-        .map(
-          (msg) => MessageEntity(
-            id:
-                msg.key ??
-                '', // Using message key as ID or empty string if null
-            content: msg.content,
-            isRead: msg.isRead ?? false,
-            timestamp:
-                DateTime.now(), // Default to current time if not available
-            isFromUser: msg.role == 'user',
-          ),
-        )
-        .toList();
-  }
-
-  @override
-  Future<SessionEntity?> getSessionById(String id) async {
-    final session = await localDatasource.getSessionById(id);
-    if (session == null) return null;
-
-    final messageEntities =
-        session.messages
-            .map(
-              (msg) => MessageEntity(
-                id:
-                    msg.key ??
-                    '', // Using message key as ID or empty string if null
-                content: msg.content,
-                timestamp:
-                    DateTime.now(), // Default to current time if not available
-                isFromUser: msg.role == 'user',
-              ),
-            )
-            .toList();
-
-    return SessionEntity(
-      id: session.key,
-      roleId: session.roleId,
-      title: session.title,
-      messages: messageEntities,
-      createdAt: session.createdAt,
-      updatedAt: session.updatedAt,
-    );
-  }
-
-  @override
-  Future<List<SessionEntity>> getSessionsByRoleId(String roleId) async {
-    final sessions = await localDatasource.getSessionsByRoleId(roleId);
-    return sessions.map((session) {
-      final messageEntities =
-          session.messages
-              .map(
-                (msg) => MessageEntity(
-                  id:
-                      msg.key ??
-                      '', // Using message key as ID or empty string if null
-                  content: msg.content,
-                  timestamp:
-                      DateTime.now(), // Default to current time if not available
-                  isFromUser: msg.role == 'user',
-                ),
-              )
-              .toList();
-
-      return SessionEntity(
-        id: session.key,
-        roleId: session.roleId,
-        title: session.title,
-        messages: messageEntities,
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt,
-      );
-    }).toList();
-  }
-
-  @override
-  Future<void> updateSession(SessionEntity session) async {
-    if (session.id == null) {
-      throw Exception('无法更新没有ID的会话');
+      await dao.insertMessage(companion);
+    } on Exception catch (e) {
+      throw Exception('❗ 添加消息至会话失败: $e');
     }
-
-    final messageModels =
-        session.messages
-            .map(
-              (m) => ChatMessage(
-                role: m.isFromUser ? 'user' : 'assistant',
-                content: m.content,
-              ),
-            )
-            .toList();
-
-    final sessionModel = Session(
-      roleId: session.roleId,
-      title: session.title,
-      messages: messageModels,
-      createdAt: session.createdAt,
-      updatedAt: session.updatedAt,
-      isPinned: session.isPinned,
-    )..key = session.id;
-
-    await localDatasource.updateSession(sessionModel);
   }
 
   @override
-  Future<void> clearAllSessions() async {
-    await localDatasource.clearAllSessions();
+  Future<void> addSession(SessionDetailsEntity session) async {
+    await dao.addSession(
+      SessionsCompanion(
+        id: Value(session.id),
+        title: Value(session.title),
+        avatar: Value(session.avatar),
+        type: Value(session.type),
+        createdAt: Value(session.createdAt),
+        lastMessageAt: Value(session.lastMessageAt),
+        isPinned: Value(session.isPinned),
+      ),
+    );
   }
 
   @override
   Future<void> clearAllMessages() async {
-    await localDatasource.clearAllMessages();
+    await dao.clearAllMessages();
+  }
+
+  @override
+  Future<void> clearAllSessions() async {
+    await dao.clearAllSessions();
+  }
+
+  @override
+  Future<void> deleteSession(String id) async {
+    await dao.deleteSession(id);
+  }
+
+  @override
+  Future<List<SessionDetailsEntity>> getAllSessions() async {
+    final sessions = await dao.getAllSessionsWithDetails();
+    return sessions.map((session) => session.toEntity()).toList();
+  }
+
+  @override
+  Future<List<ChatMessageEntity>> getMessagesFromSession(
+    String sessionId,
+    int limit,
+  ) async {
+    final messages = await dao.getMessagesFromSession(sessionId, limit);
+    return messages.map((message) => message.toEntity()).toList();
+  }
+
+  @override
+  Future<SessionDetailsEntity?> getSessionById(String id) async {
+    return (await dao.getSessionDetails(id))?.toEntity();
+  }
+
+  @override
+  Future<void> updateSession(SessionDetailsEntity session) async {
+    await dao.updateSessionAndRoles(
+      session: Session(
+        id: session.id,
+        title: session.title,
+        type: session.type,
+        createdAt: session.createdAt,
+        lastMessageAt: session.lastMessageAt,
+        isPinned: session.isPinned,
+      ),
+      roleIds: session.roleIds,
+    );
   }
 }

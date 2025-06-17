@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
 import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
-import 'package:mtp/src/features/chat/domain/entities/session_entity.dart';
 import 'package:mtp/src/features/settings/domain/entities/settings_entity.dart';
 import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
 import 'package:mtp/src/features/role/persentation/providers/role_provider.dart';
@@ -253,7 +253,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
   Future<Map<String, dynamic>> _collectDataForExport() async {
     // 收集所有需要导出的数据
     final settings = ref.read(settingsProvider);
-    final chatState = ref.read(chatStateProvider);
+    final chatState = ref.read(sessionStateProvider);
     final roleState = ref.read(roleStateProvider);
 
     return {
@@ -458,9 +458,9 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
 
     // 导入会话
     if (data['sessions'] != null && data['sessions'] is List) {
-      final chatNotifier = ref.read(chatStateProvider.notifier);
+      final chatNotifier = ref.read(sessionStateProvider.notifier);
       for (final sessionJson in data['sessions']) {
-        final session = SessionEntity.fromJson(sessionJson);
+        final session = SessionDetailsEntity.fromJson(sessionJson);
         await chatNotifier.importSession(session);
       }
     }
@@ -524,7 +524,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
       final androidInfo = await deviceInfo.androidInfo;
       return androidInfo.version.sdkInt;
     } catch (e) {
-      print('获取Android SDK版本失败: $e');
+      localLogger.shout('获取Android SDK版本失败: $e');
       // 如果无法获取，返回一个足够高的版本号让应用默认使用SAF
       return 33; // 默认视为Android 13+
     }

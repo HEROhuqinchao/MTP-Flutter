@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:mtp/src/features/chat/data/datasources/local/tables/session_table.dart';
-import 'package:mtp/src/features/role/data/datasources/local/tables/role.dart';
+import 'package:mtp/src/features/role/data/datasources/local/tables/role_table.dart';
 
 class SessionRoles extends Table {
   /// 会话ID

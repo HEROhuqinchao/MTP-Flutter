@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/chat/domain/repositories/chat_repository.dart';
-import '../../features/role/domain/repositories/role_repository.dart';
-import '../../features/settings/domain/repositories/settings_repository.dart';
-import '../../features/chat/domain/repositories/llm_repository.dart';
-import '../dependency_injection.dart';
+import 'package:mtp/src/di/dependency_injection.dart';
+import 'package:mtp/src/features/chat/domain/repositories/chat_repository.dart';
+import 'package:mtp/src/features/chat/domain/repositories/llm_repository.dart';
+import 'package:mtp/src/features/role/domain/repositories/role_repository.dart';
+import 'package:mtp/src/features/settings/domain/repositories/settings_repository.dart';
 
-// 仓库提供者 - 使用依赖注入获取仓库实例
+/// 仓库提供者
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return getIt<ChatRepository>();
 });

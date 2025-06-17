@@ -13,7 +13,7 @@ class MobileLandscapeLayout extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 监视错误消息
     final errorMessage = ref.watch(
-      chatStateProvider.select((s) => s.errorMessage),
+      sessionStateProvider.select((s) => s.errorMessage),
     );
 
     // 如果有错误消息，显示提示
@@ -29,7 +29,7 @@ class MobileLandscapeLayout extends ConsumerWidget {
           position: Alignment.bottomRight,
         ).show(context);
         // 清除错误消息
-        ref.read(chatStateProvider.notifier).clearErrorMessage();
+        ref.read(sessionStateProvider.notifier).clearErrorMessage();
       });
     }
     return SafeArea(

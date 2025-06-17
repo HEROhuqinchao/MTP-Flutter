@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/domain/entities/completion_request_entity.dart';
-import '../../../../shared/domain/entities/completion_response_entity.dart';
-import '../../../../di/providers/repository_providers.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
+import 'package:mtp/src/di/providers/repository_providers.dart';
+import 'package:mtp/src/features/settings/presentation/providers/settings_provider.dart';
+import 'package:mtp/src/shared/domain/entities/completion_request_entity.dart';
+import 'package:mtp/src/shared/domain/entities/completion_response_entity.dart';
 
-// 消息生成提供者 - 用于发起生成请求
+/// 消息生成提供者 - 用于发起生成请求
 final llmGenerateProvider =
     FutureProvider.family<CompletionResponseEntity, CompletionRequestEntity>((
       ref,

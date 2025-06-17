@@ -1,5 +1,5 @@
 import '../entities/settings_entity.dart';
-import '../entities/chat_model_entity.dart';
+import '../../../../shared/domain/entities/chat_model_entity.dart';
 
 abstract class SettingsRepository {
   Future<SettingsEntity> getSettings();

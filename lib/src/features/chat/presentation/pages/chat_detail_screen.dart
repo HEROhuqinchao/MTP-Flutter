@@ -9,8 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/utils/immersive_mode.dart';
 import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
+import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
 import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
-import 'package:mtp/src/features/chat/domain/entities/session_entity.dart';
 import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
 import 'package:mtp/src/features/role/persentation/providers/role_provider.dart';
 import 'package:mtp/src/core/widgets/simple_icon_button.dart';
@@ -143,23 +143,26 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   // 角色管理抽屉
   Widget _buildRoleManagementDrawer(
     BuildContext context,
-    String? currentRoleId,
+    String currentRoleId,
   ) {
     final theme = Theme.of(context);
     final roleState = ref.watch(roleStateProvider);
 
     // 获取当前角色
-    final currentRole =
-        currentRoleId != null && roleState.roles.isNotEmpty
-            ? roleState.roles.firstWhere(
-              (r) => r.id == currentRoleId,
-              orElse: () => roleState.roles.first,
-            )
-            : null;
+    final currentRole = roleState.roles.firstWhere(
+      (r) => r.id == currentRoleId,
+      orElse: () => roleState.roles.first,
+    );
+    // currentRoleId != null && roleState.roles.isNotEmpty
+    //     ? roleState.roles.firstWhere(
+    //       (r) => r.id == currentRoleId,
+    //       orElse: () => roleState.roles.first,
+    //     )
+    //     : null;
 
-    if (currentRole == null) {
-      return const Drawer(child: Center(child: Text("没有找到当前角色信息")));
-    }
+    // if (currentRole == null) {
+    //   return const Drawer(child: Center(child: Text("没有找到当前角色信息")));
+    // }
 
     ImageProvider<Object>? currentRoleAvatar =
         currentRole.avatars.isNotEmpty
@@ -263,9 +266,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              currentRole.prompt.isEmpty
+                              currentRole.prompt == null
                                   ? "未设置提示词"
-                                  : currentRole.prompt,
+                                  : currentRole.prompt!,
                               style: theme.textTheme.bodyMedium,
                             ),
                           ],
@@ -292,7 +295,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              currentRole.lastMessage.isEmpty
+                              currentSession.lastMessage.isEmpty
                                   ? "暂无消息记录"
                                   : currentRole.lastMessage,
                               style: theme.textTheme.bodyMedium,
@@ -328,7 +331,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: theme.colorScheme.error,
                           side: BorderSide(
-                            color: theme.colorScheme.error.withOpacity(0.5),
+                            color: theme.colorScheme.error.withAlpha(
+                              alpha: 0.5,
+                            ),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
@@ -355,31 +360,29 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           icon: const Icon(Icons.delete_outline),
                           label: const Text("删除角色"),
                           onPressed: () {
-                            if (currentRole.id != null) {
-                              final currentSession = ref.watch(
-                                currentSessionProvider,
+                            final currentSession = ref.watch(
+                              currentSessionProvider,
+                            );
+                            if (currentSession != null) {
+                              _showDeleteRoleConfirmation(
+                                context,
+                                currentRole.id!,
+                                currentSession.id!,
                               );
-                              if (currentSession != null) {
-                                _showDeleteRoleConfirmation(
-                                  context,
-                                  currentRole.id!,
-                                  currentSession.id!,
-                                );
-                              } else {
-                                ElegantNotification.error(
-                                  title: Text('发生错误'),
-                                  description: Text('无法删除：找不到当前会话'),
-                                  icon: Icon(Ionicons.sad),
-                                  position:
-                                      isMobile
-                                          ? Alignment.topCenter
-                                          : Alignment.bottomRight,
-                                  animation:
-                                      isMobile
-                                          ? AnimationType.fromTop
-                                          : AnimationType.fromRight,
-                                );
-                              }
+                            } else {
+                              ElegantNotification.error(
+                                title: Text('发生错误'),
+                                description: Text('无法删除：找不到当前会话'),
+                                icon: Icon(Ionicons.sad),
+                                position:
+                                    isMobile
+                                        ? Alignment.topCenter
+                                        : Alignment.bottomRight,
+                                animation:
+                                    isMobile
+                                        ? AnimationType.fromTop
+                                        : AnimationType.fromRight,
+                              );
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -633,7 +636,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   GoRouter.of(context).pop(); // 关闭确认对话框
                   GoRouter.of(context).pop(); // 关闭角色管理抽屉
                   ref.read(roleStateProvider.notifier).deleteRole(roleId);
-                  ref.read(chatStateProvider.notifier).deleteSession(sessionId);
+                  ref
+                      .read(sessionStateProvider.notifier)
+                      .deleteSession(sessionId);
                 },
                 child: const Text("删除", style: TextStyle(color: Colors.red)),
               ),
@@ -674,17 +679,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   // 清除聊天历史记录的方法
-  void _clearChatHistory(SessionEntity session) {
-    if (session.id == null) return;
-
+  void _clearChatHistory(SessionDetailsEntity session) {
     // 创建一个新会话，保留原有信息但清空消息
-    final clearedSession = session.copyWith(
-      messages: [],
-      updatedAt: DateTime.now(),
-    );
+    final clearedSession = session.copyWith(roleIds: [], lastMessageAt: null);
 
     // 更新会话
-    ref.read(chatStateProvider.notifier).importSession(clearedSession);
+    ref.read(sessionStateProvider.notifier).importSession(clearedSession);
 
     // 显示提示
     ElegantNotification.success(
@@ -729,7 +729,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         color: headerColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 1),
             blurRadius: 3,
           ),
@@ -740,7 +740,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           if (isMobile)
             IconButton(
               onPressed: () {
-                ref.read(chatStateProvider.notifier).selectSession(-1);
+                ref.read(sessionStateProvider.notifier).selectSession(-1);
                 GoRouter.of(context).go('/chat');
               },
               icon: Icon(Ionicons.chevron_back),
@@ -828,17 +828,23 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           Icon(
             Ionicons.chatbubble,
             size: 80,
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
             '没有消息',
-            style: TextStyle(fontSize: 18, color: Colors.grey.withOpacity(0.8)),
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             '发送一条消息开始对话',
-            style: TextStyle(fontSize: 14, color: Colors.grey.withOpacity(0.6)),
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),
@@ -911,12 +917,15 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
             dateText,
-            style: TextStyle(fontSize: 12, color: Colors.grey.withOpacity(0.8)),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.withValues(alpha: 0.8),
+            ),
           ),
         ),
       ),
@@ -964,7 +973,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   ),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest
-                      .withOpacity(0.5),
+                      .withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,
@@ -1035,20 +1044,20 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           Icon(
             Ionicons.chatbox,
             size: 100,
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24),
           Text(
             "请选择一个会话或创建新的会话",
             style: theme.textTheme.titleLarge?.copyWith(
-              color: Colors.grey.withOpacity(0.8),
+              color: Colors.grey.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             "在左侧列表选择一个会话，或点击 + 按钮创建新会话",
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey.withOpacity(0.6),
+              color: Colors.grey.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -1065,7 +1074,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     });
 
     // 使用Provider发送消息
-    ref.read(chatStateProvider.notifier).sendMessage(text);
+    ref.read(sessionStateProvider.notifier).sendMessage(text);
 
     // 滚动到底部查看新消息
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());

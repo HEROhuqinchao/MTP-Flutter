@@ -49,7 +49,7 @@ class MessageBubble extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color:
                         isMe
-                            ? theme.colorScheme.primary.withOpacity(0.9)
+                            ? theme.colorScheme.primary.withValues(alpha: 0.9)
                             : theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12).copyWith(
                       bottomRight: isMe ? const Radius.circular(4) : null,
@@ -78,15 +78,15 @@ class MessageBubble extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            _formatTime(message.timestamp),
+                            _formatTime(message.createdAt),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color:
                                   isMe
-                                      ? theme.colorScheme.onPrimary.withOpacity(
-                                        0.7,
+                                      ? theme.colorScheme.onPrimary.withValues(
+                                        alpha: 0.7,
                                       )
                                       : theme.colorScheme.onSurfaceVariant
-                                          .withOpacity(0.7),
+                                          .withValues(alpha: 0.7),
                               fontSize: 10,
                             ),
                           ),
@@ -98,8 +98,8 @@ class MessageBubble extends ConsumerWidget {
                               color:
                                   message.isRead
                                       ? Colors.blue
-                                      : theme.colorScheme.onPrimary.withOpacity(
-                                        0.7,
+                                      : theme.colorScheme.onPrimary.withValues(
+                                        alpha: 0.7,
                                       ),
                             ),
                           ],
@@ -125,7 +125,7 @@ class MessageBubble extends ConsumerWidget {
     String? avatarPath;
     if (isMe && settings != null && settings.userAvatar.isNotEmpty) {
       avatarPath = settings.userAvatar;
-    } else if (message.senderAvatar != null) {
+    } else {
       avatarPath = message.senderAvatar;
     }
 
@@ -196,8 +196,8 @@ class MessageBubble extends ConsumerWidget {
       displayText =
           isMe
               ? 'Me'
-              : (message.senderName?.isNotEmpty == true
-                  ? message.senderName![0].toUpperCase()
+              : (message.senderName.isNotEmpty == true
+                  ? message.senderName[0].toUpperCase()
                   : '?');
     }
 

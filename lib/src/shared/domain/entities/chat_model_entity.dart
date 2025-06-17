@@ -6,7 +6,7 @@ part 'chat_model_entity.g.dart';
 @freezed
 abstract class ChatModelEntity with _$ChatModelEntity {
   const factory ChatModelEntity({
-    String? id,
+    required String id,
     required String name,
     required String endpoint,
     required double temparture,

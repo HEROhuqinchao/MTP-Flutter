@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:mtp/src/features/chat/data/datasources/local/dao/sessions_dao.dart';
+import 'package:mtp/src/features/role/data/datasources/local/dao/roles_dao.dart';
+import 'package:mtp/src/features/settings/data/datasources/local/dao/settings_dao.dart';
+import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
 import 'package:mtp/src/utils/logger.dart';
-import 'package:uuid/uuid.dart';
 
 // Data Sources
-import '../features/role/data/datasources/local/role_local_datasource.dart';
-import '../features/chat/data/datasources/local/chat_local_datasource.dart';
-import '../features/settings/data/datasources/local/settings_local_datasource.dart';
 import '../features/role/data/datasources/remote/role_remote_datasource.dart';
 import '../features/chat/data/datasources/remote/open_ai_remote_datasource.dart';
 import '../features/chat/data/datasources/remote/azure_open_ai_remote_datasource.dart';
@@ -19,7 +19,6 @@ import '../features/chat/data/repositories/chat_repository_impl.dart';
 import '../features/settings/data/repositories/settings_repository_impl.dart';
 
 // Domain
-import '../features/chat/domain/entities/session_entity.dart';
 import '../features/chat/domain/repositories/llm_repository.dart';
 import '../features/role/domain/repositories/role_repository.dart';
 import '../features/chat/domain/repositories/chat_repository.dart';
@@ -37,10 +36,11 @@ Future<void> initDependencies() async {
   // 外部依赖
   _registerExternalDependencies();
 
-  // 数据源
-  _registerDataSources();
+  final db = AppDatabase();
 
-  await _initializeDataSources();
+  // 数据源
+  _registerDataSources(db);
+  // await _initializeDataSources();
 
   // 仓库
   _registerRepositories();
@@ -51,11 +51,8 @@ Future<void> initDependencies() async {
 }
 
 // 添加初始化数据源的函数
-Future<void> _initializeDataSources() async {
-  await getIt<ChatLocalDatasource>().initialize();
-  await getIt<RoleLocalDatasource>().initialize();
-  await getIt<SettingsLocalDatasource>().initialize();
-}
+// Future<void> _initializeDataSources(AppDatabase db) async {
+// }
 
 Future<void> _initializeRepositories() async {
   await getIt<RoleRepository>().initialize();
@@ -65,41 +62,15 @@ Future<void> _initializeRepositories() async {
 Future<void> ensureDefaultSessions() async {
   try {
     final roleRepository = getIt<RoleRepository>();
-    final chatRepository = getIt<ChatRepository>();
+    final chatRepository = getIt<SessionsDao>();
 
     // 获取所有角色
     final roles = await roleRepository.getAllRoles();
     localLogger.config('获取到 ${roles.length} 个角色');
-    final allSessions = await chatRepository.getAllSessions();
-    final uuid = Uuid();
+    final rolesData = roles.map((role) => (role.id, role.name)).toList();
 
     // 为每个角色检查并创建默认会话
-    for (final role in roles) {
-      if (role.id == null) continue;
-      final roleHasSession = allSessions.any((s) => s.roleId == role.id);
-
-      if (!roleHasSession) {
-        try {
-          final sessions = await chatRepository.getSessionsByRoleId(role.id!);
-          if (sessions.isEmpty) {
-            // 创建默认会话
-            final defaultSession = SessionEntity(
-              id: uuid.v4(),
-              roleId: role.id!,
-              title: role.name,
-              messages: [],
-              createdAt: DateTime.now(),
-              updatedAt: DateTime.now(),
-            );
-
-            await chatRepository.addSession(defaultSession);
-            localLogger.config('为角色 ${role.name} 创建了默认会话');
-          }
-        } catch (e) {
-          localLogger.shout('为角色 ${role.name} 创建会话失败: $e');
-        }
-      }
-    }
+    await chatRepository.ensureRoleSessionsExist(rolesData);
   } catch (e) {
     localLogger.shout('确保默认会话时出错: $e');
   }
@@ -129,15 +100,11 @@ void _registerExternalDependencies() {
   getIt.registerSingleton<Dio>(dio);
 }
 
-void _registerDataSources() {
+void _registerDataSources(AppDatabase db) {
   // 本地数据源
-  getIt.registerLazySingleton<RoleLocalDatasource>(() => RoleLocalDatasource());
-
-  getIt.registerLazySingleton<ChatLocalDatasource>(() => ChatLocalDatasource());
-
-  getIt.registerLazySingleton<SettingsLocalDatasource>(
-    () => SettingsLocalDatasource(),
-  );
+  getIt.registerLazySingleton(() => SessionsDao(db));
+  getIt.registerLazySingleton(() => RolesDao(db));
+  getIt.registerLazySingleton(() => SettingsDao(db));
 
   // 远程数据源
   getIt.registerFactory<RoleRemoteDatasource>(
@@ -161,20 +128,17 @@ void _registerRepositories() {
 
   // 角色仓库
   getIt.registerSingleton<RoleRepository>(
-    RoleRepositoryImpl(
-      getIt<RoleLocalDatasource>(),
-      getIt<RoleRemoteDatasource>(),
-    ),
+    RoleRepositoryImpl(getIt<RolesDao>(), getIt<RoleRemoteDatasource>()),
   );
 
   // 聊天仓库
   getIt.registerSingleton<ChatRepository>(
-    ChatRepositoryImpl(getIt<ChatLocalDatasource>()),
+    ChatRepositoryImpl(getIt<SessionsDao>()),
   );
 
   // 设置仓库
   getIt.registerSingleton<SettingsRepository>(
-    SettingsRepositoryImpl(getIt<SettingsLocalDatasource>()),
+    SettingsRepositoryImpl(getIt<SettingsDao>()),
   );
 }
 

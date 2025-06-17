@@ -7,16 +7,22 @@ part 'chat_message_entity.g.dart';
 abstract class ChatMessageEntity with _$ChatMessageEntity {
   const factory ChatMessageEntity({
     /// 消息ID
-    required String id,
+    required int id,
 
     /// 消息内容
     required String content,
 
     /// 消息创建时间
-    required DateTime createAt,
+    required DateTime createdAt,
 
     /// 是否为用户自身消息
     required bool isFromUser,
+
+    /// 是否为系统消息
+    required bool isSystem,
+
+    /// 发送者 ID
+    required String senderId,
 
     /// 发送者名称
     required String senderName,

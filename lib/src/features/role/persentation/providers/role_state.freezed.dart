@@ -15,7 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RoleState {
 
- List<RoleEntity> get roles; RoleEntity? get selectedRole; bool get isLoading; String? get errorMessage;
+/// 角色列表
+ List<RoleEntity> get roles;/// 选中的角色
+ RoleEntity? get selectedRole;/// 正在加载
+ bool get isLoading;/// 错误消息
+ String? get errorMessage;
 /// Create a copy of RoleState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -95,15 +99,20 @@ class _RoleState implements RoleState {
   const _RoleState({final  List<RoleEntity> roles = const [], this.selectedRole, this.isLoading = false, this.errorMessage}): _roles = roles;
   
 
+/// 角色列表
  final  List<RoleEntity> _roles;
+/// 角色列表
 @override@JsonKey() List<RoleEntity> get roles {
   if (_roles is EqualUnmodifiableListView) return _roles;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_roles);
 }
 
+/// 选中的角色
 @override final  RoleEntity? selectedRole;
+/// 正在加载
 @override@JsonKey() final  bool isLoading;
+/// 错误消息
 @override final  String? errorMessage;
 
 /// Create a copy of RoleState

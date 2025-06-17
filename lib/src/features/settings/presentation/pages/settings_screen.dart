@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/constants/app_info.dart';
 import 'package:mtp/src/core/utils/immersive_mode.dart'; // 添加导入
-import 'package:mtp/src/features/settings/domain/entities/chat_model_entity.dart';
+import 'package:mtp/src/shared/domain/entities/chat_model_entity.dart';
 import 'package:mtp/src/features/settings/domain/entities/settings_entity.dart';
 import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
 import 'package:mtp/src/features/settings/presentation/providers/settings_provider.dart';
@@ -91,7 +91,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               color: headerColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   offset: const Offset(0, 1),
                   blurRadius: 3,
                 ),
@@ -279,7 +279,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       Positioned.fill(
                         child: ClipOval(
                           child: Container(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             child: const Center(
                               child: Icon(
                                 Icons.camera_alt,
@@ -451,7 +451,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 height: 12,
                 width: 70,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -504,7 +504,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 height: 12,
                 width: 70,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF444444).withOpacity(0.8),
+                  color: const Color(0xFF444444).withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -631,7 +631,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color:
                 isSelected
                     ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    : Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
           // 添加轻微的阴影效果增强立体感
@@ -641,7 +643,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     BoxShadow(
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.2),
+                      ).colorScheme.primary.withValues(alpha: 0.2),
                       blurRadius: 4,
                       spreadRadius: 1,
                     ),
@@ -738,7 +740,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       elevation: 0,
       color:
           model.isSelected
-              ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5)
+              ? Theme.of(context).colorScheme.primaryContainer.withAlpha(128)
               : Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 8.0),
       shape: RoundedRectangleBorder(
@@ -747,7 +749,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           color:
               model.isSelected
                   ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                  : Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -785,7 +789,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // 删除模型
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              onPressed: () => _showDeleteModelDialog(context, model.id ?? ''),
+              onPressed: () => _showDeleteModelDialog(context, model.id),
             ),
           ],
         ),
@@ -811,7 +815,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             border: Border.all(
               color: Theme.of(
                 context,
-              ).colorScheme.outlineVariant.withOpacity(0.5),
+              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
               width: 1,
             ),
           ),
@@ -851,7 +855,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                   leading: Icon(
                     Ionicons.trash,
-                    color: Theme.of(context).colorScheme.error.withOpacity(0.8),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 0.8),
                   ),
                   title: Text(
                     '清除所有对话',
@@ -890,7 +896,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 onPressed: () {
                                   // 添加删除逻辑
                                   ref
-                                      .read(chatStateProvider.notifier)
+                                      .read(sessionStateProvider.notifier)
                                       .clearAllSessions();
                                   GoRouter.of(dialogContext).pop();
 
@@ -920,7 +926,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                   leading: Icon(
                     Ionicons.trash,
-                    color: Theme.of(context).colorScheme.error.withOpacity(0.8),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 0.8),
                   ),
                   title: Text(
                     '清空所有聊天记录',
@@ -961,7 +969,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 onPressed: () {
                                   // 调用清空聊天记录方法
                                   ref
-                                      .read(chatStateProvider.notifier)
+                                      .read(sessionStateProvider.notifier)
                                       .clearAllMessages();
                                   GoRouter.of(dialogContext).pop();
 

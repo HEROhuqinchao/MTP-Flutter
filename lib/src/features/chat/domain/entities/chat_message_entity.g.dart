@@ -8,10 +8,12 @@ part of 'chat_message_entity.dart';
 
 _ChatMessageEntity _$ChatMessageEntityFromJson(Map<String, dynamic> json) =>
     _ChatMessageEntity(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       content: json['content'] as String,
-      createAt: DateTime.parse(json['createAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
       isFromUser: json['isFromUser'] as bool,
+      isSystem: json['isSystem'] as bool,
+      senderId: json['senderId'] as String,
       senderName: json['senderName'] as String,
       senderAvatar: json['senderAvatar'] as String,
       isRead: json['isRead'] as bool? ?? false,
@@ -22,8 +24,10 @@ Map<String, dynamic> _$ChatMessageEntityToJson(_ChatMessageEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
       'content': instance.content,
-      'createAt': instance.createAt.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
       'isFromUser': instance.isFromUser,
+      'isSystem': instance.isSystem,
+      'senderId': instance.senderId,
       'senderName': instance.senderName,
       'senderAvatar': instance.senderAvatar,
       'isRead': instance.isRead,

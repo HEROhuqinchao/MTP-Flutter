@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatModelEntity {
 
- String? get id; String get name; String get endpoint; double get temparture; String get apiKey; bool get isSelected;
+ String get id; String get name; String get endpoint; double get temparture; String get apiKey; bool get isSelected;
 /// Create a copy of ChatModelEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +49,7 @@ abstract mixin class $ChatModelEntityCopyWith<$Res>  {
   factory $ChatModelEntityCopyWith(ChatModelEntity value, $Res Function(ChatModelEntity) _then) = _$ChatModelEntityCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, String endpoint, double temparture, String apiKey, bool isSelected
+ String id, String name, String endpoint, double temparture, String apiKey, bool isSelected
 });
 
 
@@ -66,10 +66,10 @@ class _$ChatModelEntityCopyWithImpl<$Res>
 
 /// Create a copy of ChatModelEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? endpoint = null,Object? temparture = null,Object? apiKey = null,Object? isSelected = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? endpoint = null,Object? temparture = null,Object? apiKey = null,Object? isSelected = null,}) {
   return _then(_self.copyWith(
-id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,endpoint: null == endpoint ? _self.endpoint : endpoint // ignore: cast_nullable_to_non_nullable
 as String,temparture: null == temparture ? _self.temparture : temparture // ignore: cast_nullable_to_non_nullable
 as double,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
@@ -85,10 +85,10 @@ as bool,
 @JsonSerializable()
 
 class _ChatModelEntity implements ChatModelEntity {
-  const _ChatModelEntity({this.id, required this.name, required this.endpoint, required this.temparture, required this.apiKey, required this.isSelected});
+  const _ChatModelEntity({required this.id, required this.name, required this.endpoint, required this.temparture, required this.apiKey, required this.isSelected});
   factory _ChatModelEntity.fromJson(Map<String, dynamic> json) => _$ChatModelEntityFromJson(json);
 
-@override final  String? id;
+@override final  String id;
 @override final  String name;
 @override final  String endpoint;
 @override final  double temparture;
@@ -128,7 +128,7 @@ abstract mixin class _$ChatModelEntityCopyWith<$Res> implements $ChatModelEntity
   factory _$ChatModelEntityCopyWith(_ChatModelEntity value, $Res Function(_ChatModelEntity) _then) = __$ChatModelEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, String endpoint, double temparture, String apiKey, bool isSelected
+ String id, String name, String endpoint, double temparture, String apiKey, bool isSelected
 });
 
 
@@ -145,10 +145,10 @@ class __$ChatModelEntityCopyWithImpl<$Res>
 
 /// Create a copy of ChatModelEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? endpoint = null,Object? temparture = null,Object? apiKey = null,Object? isSelected = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? endpoint = null,Object? temparture = null,Object? apiKey = null,Object? isSelected = null,}) {
   return _then(_ChatModelEntity(
-id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,endpoint: null == endpoint ? _self.endpoint : endpoint // ignore: cast_nullable_to_non_nullable
 as String,temparture: null == temparture ? _self.temparture : temparture // ignore: cast_nullable_to_non_nullable
 as double,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable

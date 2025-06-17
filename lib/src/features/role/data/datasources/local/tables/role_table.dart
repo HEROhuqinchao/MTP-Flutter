@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 class Roles extends Table {
   /// 角色id
-  TextColumn get id => text()();
+  TextColumn get id => text().clientDefault(() => const Uuid().v4())();
 
   /// 角色名称
   TextColumn get name => text()();

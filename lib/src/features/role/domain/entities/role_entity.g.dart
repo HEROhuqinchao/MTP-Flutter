@@ -7,11 +7,10 @@ part of 'role_entity.dart';
 // **************************************************************************
 
 _RoleEntity _$RoleEntityFromJson(Map<String, dynamic> json) => _RoleEntity(
-  id: json['id'] as String?,
+  id: json['id'] as String,
   name: json['name'] as String,
   avatars: (json['avatars'] as List<dynamic>).map((e) => e as String).toList(),
-  prompt: json['prompt'] as String,
-  lastMessage: json['lastMessage'] as String,
+  prompt: json['prompt'] as String?,
 );
 
 Map<String, dynamic> _$RoleEntityToJson(_RoleEntity instance) =>
@@ -20,5 +19,4 @@ Map<String, dynamic> _$RoleEntityToJson(_RoleEntity instance) =>
       'name': instance.name,
       'avatars': instance.avatars,
       'prompt': instance.prompt,
-      'lastMessage': instance.lastMessage,
     };

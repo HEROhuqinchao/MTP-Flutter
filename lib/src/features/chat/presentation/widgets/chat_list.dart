@@ -72,7 +72,7 @@ class _ChatList extends ConsumerState<ChatList> {
   @override
   Widget build(BuildContext context) {
     // 使用Provider获取会话列表和状态
-    final chatState = ref.watch(chatStateProvider);
+    final chatState = ref.watch(sessionStateProvider);
     final filteredSessions = ref.watch(filteredSessionsProvider);
     final roleState = ref.watch(roleStateProvider);
     final selectedSessionIndex = chatState.selectedSessionIndex;
@@ -161,7 +161,7 @@ class _ChatList extends ConsumerState<ChatList> {
                                     onTap: () {
                                       // 使用Provider选择会话
                                       ref
-                                          .read(chatStateProvider.notifier)
+                                          .read(sessionStateProvider.notifier)
                                           .selectSession(originalIndex);
                                       GoRouter.of(
                                         context,
@@ -170,14 +170,14 @@ class _ChatList extends ConsumerState<ChatList> {
                                     onPin: () {
                                       // 处理置顶操作
                                       ref
-                                          .read(chatStateProvider.notifier)
-                                          .togglePinSession(session.id!);
+                                          .read(sessionStateProvider.notifier)
+                                          .togglePinSession(session.id);
                                     },
                                     onClear: () {
                                       // 处理删除操作
                                       ref
-                                          .read(chatStateProvider.notifier)
-                                          .deleteSession(session.id!);
+                                          .read(sessionStateProvider.notifier)
+                                          .deleteSession(session.id);
                                     },
                                   ),
                                 ],
@@ -213,11 +213,18 @@ class _ChatList extends ConsumerState<ChatList> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off, size: 64, color: Colors.grey.withOpacity(0.5)),
+          Icon(
+            Icons.search_off,
+            size: 64,
+            color: Colors.grey.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 16),
           Text(
             "未找到匹配\"$query\"的对话",
-            style: TextStyle(color: Colors.grey.withOpacity(0.8), fontSize: 16),
+            style: TextStyle(
+              color: Colors.grey.withValues(alpha: 0.8),
+              fontSize: 16,
+            ),
           ),
         ],
       ),
@@ -288,7 +295,7 @@ class _ChatList extends ConsumerState<ChatList> {
 
                 // 创建会话
                 await ref
-                    .read(chatStateProvider.notifier)
+                    .read(sessionStateProvider.notifier)
                     .createSession(roleNameController.text.trim(), roleId);
 
                 GoRouter.of(context).pop();
@@ -505,7 +512,7 @@ class _ChatList extends ConsumerState<ChatList> {
             radius: 20,
             backgroundColor: Theme.of(
               context,
-            ).colorScheme.primary.withOpacity(0.1),
+            ).colorScheme.primary.withValues(alpha: 0.1),
             backgroundImage:
                 settings?.userAvatar.isNotEmpty == true
                     ? settings!.userAvatar.startsWith('assets/')
@@ -624,7 +631,7 @@ class _ChatList extends ConsumerState<ChatList> {
                     ),
                     onChanged: (value) {
                       ref
-                          .read(chatStateProvider.notifier)
+                          .read(sessionStateProvider.notifier)
                           .setSearchQuery(value);
                     },
                   ),
@@ -702,7 +709,7 @@ class _ChatList extends ConsumerState<ChatList> {
                   ),
                 ),
                 onChanged: (value) {
-                  ref.read(chatStateProvider.notifier).setSearchQuery(value);
+                  ref.read(sessionStateProvider.notifier).setSearchQuery(value);
                 },
               ),
             ),
@@ -742,17 +749,23 @@ Widget _buildNoConversations() {
         Icon(
           Ionicons.chatbubble,
           size: 64,
-          color: Colors.grey.withOpacity(0.5),
+          color: Colors.grey.withValues(alpha: 0.5),
         ),
         const SizedBox(height: 16),
         Text(
           "暂无对话",
-          style: TextStyle(color: Colors.grey.withOpacity(0.8), fontSize: 16),
+          style: TextStyle(
+            color: Colors.grey.withValues(alpha: 0.8),
+            fontSize: 16,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           "点击右上角按钮创建新对话",
-          style: TextStyle(color: Colors.grey.withOpacity(0.6), fontSize: 14),
+          style: TextStyle(
+            color: Colors.grey.withValues(alpha: 0.6),
+            fontSize: 14,
+          ),
         ),
       ],
     ),

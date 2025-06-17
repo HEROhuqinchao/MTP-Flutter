@@ -39,7 +39,9 @@ class MobileDrawer extends ConsumerWidget {
       ),
       child: CircleAvatar(
         radius: 28, // 设置为所需尺寸的一半
-        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: 0.1),
         backgroundImage:
             settings?.userAvatar.isNotEmpty == true
                 ? settings!.userAvatar.startsWith('assets/')
@@ -248,7 +250,7 @@ class MobileDrawer extends ConsumerWidget {
                           children: [
                             _buildStatItem(
                               context,
-                              '${ref.watch(chatStateProvider).sessions.length}',
+                              '${ref.watch(sessionStateProvider).sessions.length}',
                               '会话',
                               Ionicons.chatbubbles_outline,
                             ),
@@ -366,15 +368,19 @@ class MobileDrawer extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+        splashColor: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: 0.1),
+        highlightColor: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: 0.05),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -477,7 +483,7 @@ class MobileDrawer extends ConsumerWidget {
 
   // 计算总消息数
   String _calculateTotalMessages(WidgetRef ref) {
-    final sessions = ref.watch(chatStateProvider).sessions;
+    final sessions = ref.watch(sessionStateProvider).sessions;
     int total = 0;
     for (var session in sessions) {
       total += session.messages.length;
@@ -547,14 +553,13 @@ class MobileDrawer extends ConsumerWidget {
                   name: roleNameController.text.trim(),
                   prompt: rolePromptController.text.trim(),
                   avatars: avatarPath != null ? [avatarPath!] : [],
-                  lastMessage: '',
                 );
 
                 await ref.read(roleStateProvider.notifier).addRole(newRole);
 
                 // 创建会话
                 await ref
-                    .read(chatStateProvider.notifier)
+                    .read(sessionStateProvider.notifier)
                     .createSession(roleNameController.text.trim(), roleId);
 
                 GoRouter.of(context).pop();
@@ -723,7 +728,7 @@ class MobileDrawer extends ConsumerWidget {
       final savedFile = await imageFile.copy(savedImagePath);
       return savedFile.path;
     } catch (e) {
-      print('保存角色头像失败: $e');
+      localLogger.shout('保存角色头像失败: $e');
       return null;
     }
   }

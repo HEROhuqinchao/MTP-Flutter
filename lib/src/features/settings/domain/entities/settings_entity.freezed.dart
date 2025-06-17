@@ -16,7 +16,12 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SettingsEntity {
 
- String? get id; String get username; String get userAvatar; String get theme; List<ChatModelEntity> get models;
+/// 设置 ID
+ String get id;/// 用户名称
+ String get username;/// 用户头像
+ String get userAvatar;/// 主题
+ String get theme;/// 聊天模型列表
+ List<ChatModelEntity> get models;
 /// Create a copy of SettingsEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,7 +54,7 @@ abstract mixin class $SettingsEntityCopyWith<$Res>  {
   factory $SettingsEntityCopyWith(SettingsEntity value, $Res Function(SettingsEntity) _then) = _$SettingsEntityCopyWithImpl;
 @useResult
 $Res call({
- String? id, String username, String userAvatar, String theme, List<ChatModelEntity> models
+ String id, String username, String userAvatar, String theme, List<ChatModelEntity> models
 });
 
 
@@ -66,10 +71,10 @@ class _$SettingsEntityCopyWithImpl<$Res>
 
 /// Create a copy of SettingsEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? username = null,Object? userAvatar = null,Object? theme = null,Object? models = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = null,Object? userAvatar = null,Object? theme = null,Object? models = null,}) {
   return _then(_self.copyWith(
-id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,userAvatar: null == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String,theme: null == theme ? _self.theme : theme // ignore: cast_nullable_to_non_nullable
 as String,models: null == models ? _self.models : models // ignore: cast_nullable_to_non_nullable
@@ -84,14 +89,20 @@ as List<ChatModelEntity>,
 @JsonSerializable()
 
 class _SettingsEntity implements SettingsEntity {
-  const _SettingsEntity({this.id, required this.username, required this.userAvatar, required this.theme, required final  List<ChatModelEntity> models}): _models = models;
+  const _SettingsEntity({required this.id, required this.username, required this.userAvatar, required this.theme, required final  List<ChatModelEntity> models}): _models = models;
   factory _SettingsEntity.fromJson(Map<String, dynamic> json) => _$SettingsEntityFromJson(json);
 
-@override final  String? id;
+/// 设置 ID
+@override final  String id;
+/// 用户名称
 @override final  String username;
+/// 用户头像
 @override final  String userAvatar;
+/// 主题
 @override final  String theme;
+/// 聊天模型列表
  final  List<ChatModelEntity> _models;
+/// 聊天模型列表
 @override List<ChatModelEntity> get models {
   if (_models is EqualUnmodifiableListView) return _models;
   // ignore: implicit_dynamic_type
@@ -132,7 +143,7 @@ abstract mixin class _$SettingsEntityCopyWith<$Res> implements $SettingsEntityCo
   factory _$SettingsEntityCopyWith(_SettingsEntity value, $Res Function(_SettingsEntity) _then) = __$SettingsEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String username, String userAvatar, String theme, List<ChatModelEntity> models
+ String id, String username, String userAvatar, String theme, List<ChatModelEntity> models
 });
 
 
@@ -149,10 +160,10 @@ class __$SettingsEntityCopyWithImpl<$Res>
 
 /// Create a copy of SettingsEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? username = null,Object? userAvatar = null,Object? theme = null,Object? models = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? username = null,Object? userAvatar = null,Object? theme = null,Object? models = null,}) {
   return _then(_SettingsEntity(
-id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,userAvatar: null == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String,theme: null == theme ? _self.theme : theme // ignore: cast_nullable_to_non_nullable
 as String,models: null == models ? _self._models : models // ignore: cast_nullable_to_non_nullable
