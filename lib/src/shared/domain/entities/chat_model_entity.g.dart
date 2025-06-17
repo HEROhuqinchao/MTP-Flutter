@@ -9,9 +9,10 @@ part of 'chat_model_entity.dart';
 _ChatModelEntity _$ChatModelEntityFromJson(Map<String, dynamic> json) =>
     _ChatModelEntity(
       id: json['id'] as String,
-      name: json['name'] as String,
+      customName: json['customName'] as String,
+      modelName: json['modelName'] as String,
       endpoint: json['endpoint'] as String,
-      temparture: (json['temparture'] as num).toDouble(),
+      temperature: (json['temperature'] as num).toDouble(),
       apiKey: json['apiKey'] as String,
       isSelected: json['isSelected'] as bool,
     );
@@ -19,9 +20,10 @@ _ChatModelEntity _$ChatModelEntityFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ChatModelEntityToJson(_ChatModelEntity instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'name': instance.name,
+      'customName': instance.customName,
+      'modelName': instance.modelName,
       'endpoint': instance.endpoint,
-      'temparture': instance.temparture,
+      'temperature': instance.temperature,
       'apiKey': instance.apiKey,
       'isSelected': instance.isSelected,
     };

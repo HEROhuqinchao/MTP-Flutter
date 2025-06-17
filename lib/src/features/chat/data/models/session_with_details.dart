@@ -4,11 +4,15 @@ class SessionWithDetails {
   /// 会话
   final Session session;
 
-  /// 角色 ID 列表
-  final List<String> roleIds;
+  /// 会话中未读消息的数量
+  final int unreadCount;
 
   /// 会话中最后一条消息
-  final ChatMessage? lastMessage;
+  final String lastMessage;
 
-  SessionWithDetails(this.session, this.roleIds, this.lastMessage);
+  SessionWithDetails({
+    required this.session,
+    required this.unreadCount,
+    required this.lastMessage,
+  });
 }

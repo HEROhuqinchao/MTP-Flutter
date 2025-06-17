@@ -15,7 +15,20 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatState {
 
- List<SessionDetailsEntity> get sessions; int get selectedSessionIndex; SessionDetailsEntity? get currentSession; bool get isLoading; bool get isGenerating; String? get errorMessage; String get searchQuery;
+/// 所有可用的聊天会话列表。
+/// 默认为空列表。
+ List<SessionListItemEntity> get sessions;/// 当前在 [sessions] 列表中选中的会话索引。
+/// 默认为 0。
+ int get selectedSessionIndex;/// 当前活动或正在查看的聊天会话。
+/// 如果当前没有活动的会话，则可以为 `null`。
+ ActiveSessionEntity? get currentSession;/// 指示聊天数据（例如，会话列表）当前是否正在加载。
+/// 默认为 `false`。
+ bool get isLoading;/// 指示当前是否正在为消息生成AI回复。
+/// 默认为 `false`。
+ bool get isGenerating;/// 如果发生错误，则为错误信息字符串，否则为 `null`。
+ String? get errorMessage;/// 用户输入的用于筛选会话的当前搜索查询文本。
+/// 默认为空字符串。
+ String get searchQuery;
 /// Create a copy of ChatState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -46,11 +59,11 @@ abstract mixin class $ChatStateCopyWith<$Res>  {
   factory $ChatStateCopyWith(ChatState value, $Res Function(ChatState) _then) = _$ChatStateCopyWithImpl;
 @useResult
 $Res call({
- List<SessionDetailsEntity> sessions, int selectedSessionIndex, SessionDetailsEntity? currentSession, bool isLoading, bool isGenerating, String? errorMessage, String searchQuery
+ List<SessionListItemEntity> sessions, int selectedSessionIndex, ActiveSessionEntity? currentSession, bool isLoading, bool isGenerating, String? errorMessage, String searchQuery
 });
 
 
-$SessionDetailsEntityCopyWith<$Res>? get currentSession;
+$ActiveSessionEntityCopyWith<$Res>? get currentSession;
 
 }
 /// @nodoc
@@ -66,9 +79,9 @@ class _$ChatStateCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? sessions = null,Object? selectedSessionIndex = null,Object? currentSession = freezed,Object? isLoading = null,Object? isGenerating = null,Object? errorMessage = freezed,Object? searchQuery = null,}) {
   return _then(_self.copyWith(
 sessions: null == sessions ? _self.sessions : sessions // ignore: cast_nullable_to_non_nullable
-as List<SessionDetailsEntity>,selectedSessionIndex: null == selectedSessionIndex ? _self.selectedSessionIndex : selectedSessionIndex // ignore: cast_nullable_to_non_nullable
+as List<SessionListItemEntity>,selectedSessionIndex: null == selectedSessionIndex ? _self.selectedSessionIndex : selectedSessionIndex // ignore: cast_nullable_to_non_nullable
 as int,currentSession: freezed == currentSession ? _self.currentSession : currentSession // ignore: cast_nullable_to_non_nullable
-as SessionDetailsEntity?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as ActiveSessionEntity?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,isGenerating: null == isGenerating ? _self.isGenerating : isGenerating // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,searchQuery: null == searchQuery ? _self.searchQuery : searchQuery // ignore: cast_nullable_to_non_nullable
@@ -79,12 +92,12 @@ as String,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$SessionDetailsEntityCopyWith<$Res>? get currentSession {
+$ActiveSessionEntityCopyWith<$Res>? get currentSession {
     if (_self.currentSession == null) {
     return null;
   }
 
-  return $SessionDetailsEntityCopyWith<$Res>(_self.currentSession!, (value) {
+  return $ActiveSessionEntityCopyWith<$Res>(_self.currentSession!, (value) {
     return _then(_self.copyWith(currentSession: value));
   });
 }
@@ -95,21 +108,36 @@ $SessionDetailsEntityCopyWith<$Res>? get currentSession {
 
 
 class _ChatState implements ChatState {
-  const _ChatState({final  List<SessionDetailsEntity> sessions = const [], this.selectedSessionIndex = 0, this.currentSession, this.isLoading = false, this.isGenerating = false, this.errorMessage, this.searchQuery = ''}): _sessions = sessions;
+  const _ChatState({final  List<SessionListItemEntity> sessions = const [], this.selectedSessionIndex = -1, this.currentSession, this.isLoading = false, this.isGenerating = false, this.errorMessage, this.searchQuery = ''}): _sessions = sessions;
   
 
- final  List<SessionDetailsEntity> _sessions;
-@override@JsonKey() List<SessionDetailsEntity> get sessions {
+/// 所有可用的聊天会话列表。
+/// 默认为空列表。
+ final  List<SessionListItemEntity> _sessions;
+/// 所有可用的聊天会话列表。
+/// 默认为空列表。
+@override@JsonKey() List<SessionListItemEntity> get sessions {
   if (_sessions is EqualUnmodifiableListView) return _sessions;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_sessions);
 }
 
+/// 当前在 [sessions] 列表中选中的会话索引。
+/// 默认为 0。
 @override@JsonKey() final  int selectedSessionIndex;
-@override final  SessionDetailsEntity? currentSession;
+/// 当前活动或正在查看的聊天会话。
+/// 如果当前没有活动的会话，则可以为 `null`。
+@override final  ActiveSessionEntity? currentSession;
+/// 指示聊天数据（例如，会话列表）当前是否正在加载。
+/// 默认为 `false`。
 @override@JsonKey() final  bool isLoading;
+/// 指示当前是否正在为消息生成AI回复。
+/// 默认为 `false`。
 @override@JsonKey() final  bool isGenerating;
+/// 如果发生错误，则为错误信息字符串，否则为 `null`。
 @override final  String? errorMessage;
+/// 用户输入的用于筛选会话的当前搜索查询文本。
+/// 默认为空字符串。
 @override@JsonKey() final  String searchQuery;
 
 /// Create a copy of ChatState
@@ -142,11 +170,11 @@ abstract mixin class _$ChatStateCopyWith<$Res> implements $ChatStateCopyWith<$Re
   factory _$ChatStateCopyWith(_ChatState value, $Res Function(_ChatState) _then) = __$ChatStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<SessionDetailsEntity> sessions, int selectedSessionIndex, SessionDetailsEntity? currentSession, bool isLoading, bool isGenerating, String? errorMessage, String searchQuery
+ List<SessionListItemEntity> sessions, int selectedSessionIndex, ActiveSessionEntity? currentSession, bool isLoading, bool isGenerating, String? errorMessage, String searchQuery
 });
 
 
-@override $SessionDetailsEntityCopyWith<$Res>? get currentSession;
+@override $ActiveSessionEntityCopyWith<$Res>? get currentSession;
 
 }
 /// @nodoc
@@ -162,9 +190,9 @@ class __$ChatStateCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? sessions = null,Object? selectedSessionIndex = null,Object? currentSession = freezed,Object? isLoading = null,Object? isGenerating = null,Object? errorMessage = freezed,Object? searchQuery = null,}) {
   return _then(_ChatState(
 sessions: null == sessions ? _self._sessions : sessions // ignore: cast_nullable_to_non_nullable
-as List<SessionDetailsEntity>,selectedSessionIndex: null == selectedSessionIndex ? _self.selectedSessionIndex : selectedSessionIndex // ignore: cast_nullable_to_non_nullable
+as List<SessionListItemEntity>,selectedSessionIndex: null == selectedSessionIndex ? _self.selectedSessionIndex : selectedSessionIndex // ignore: cast_nullable_to_non_nullable
 as int,currentSession: freezed == currentSession ? _self.currentSession : currentSession // ignore: cast_nullable_to_non_nullable
-as SessionDetailsEntity?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as ActiveSessionEntity?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,isGenerating: null == isGenerating ? _self.isGenerating : isGenerating // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,searchQuery: null == searchQuery ? _self.searchQuery : searchQuery // ignore: cast_nullable_to_non_nullable
@@ -176,12 +204,12 @@ as String,
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
-$SessionDetailsEntityCopyWith<$Res>? get currentSession {
+$ActiveSessionEntityCopyWith<$Res>? get currentSession {
     if (_self.currentSession == null) {
     return null;
   }
 
-  return $SessionDetailsEntityCopyWith<$Res>(_self.currentSession!, (value) {
+  return $ActiveSessionEntityCopyWith<$Res>(_self.currentSession!, (value) {
     return _then(_self.copyWith(currentSession: value));
   });
 }

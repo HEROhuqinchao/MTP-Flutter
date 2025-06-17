@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:mtp/src/features/chat/data/datasources/local/dao/sessions_dao.dart';
 import 'package:mtp/src/features/chat/data/mappers/message_mapper.dart';
+import 'package:mtp/src/features/chat/domain/entities/active_session_entity.dart';
 import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
-import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
+import 'package:mtp/src/features/chat/domain/entities/session_list_item_entity.dart';
 import 'package:mtp/src/features/chat/domain/repositories/chat_repository.dart';
 import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
 import 'package:mtp/src/features/chat/data/mappers/session_mapper.dart';
@@ -32,7 +33,7 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<void> addSession(SessionDetailsEntity session) async {
+  Future<void> addSession(SessionListItemEntity session) async {
     await dao.addSession(
       SessionsCompanion(
         id: Value(session.id),
@@ -62,7 +63,7 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<List<SessionDetailsEntity>> getAllSessions() async {
+  Future<List<SessionListItemEntity>> getAllSessions() async {
     final sessions = await dao.getAllSessionsWithDetails();
     return sessions.map((session) => session.toEntity()).toList();
   }
@@ -77,13 +78,13 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<SessionDetailsEntity?> getSessionById(String id) async {
-    return (await dao.getSessionDetails(id))?.toEntity();
+  Future<ActiveSessionEntity?> getSessionById(String id) async {
+    return (await dao.getSessionWithAllInfoById(id))?.toEntity();
   }
 
   @override
-  Future<void> updateSession(SessionDetailsEntity session) async {
-    await dao.updateSessionAndRoles(
+  Future<void> updateSession(SessionListItemEntity session) async {
+    await dao.updateSession(
       session: Session(
         id: session.id,
         title: session.title,
@@ -92,7 +93,14 @@ class ChatRepositoryImpl implements ChatRepository {
         lastMessageAt: session.lastMessageAt,
         isPinned: session.isPinned,
       ),
-      roleIds: session.roleIds,
     );
+  }
+
+  @override
+  Future<void> updateSessionRoles(
+    String sessionId,
+    List<String> roleIds,
+  ) async {
+    await dao.updateSessionRoles(sessionId: sessionId, roleIds: roleIds);
   }
 }

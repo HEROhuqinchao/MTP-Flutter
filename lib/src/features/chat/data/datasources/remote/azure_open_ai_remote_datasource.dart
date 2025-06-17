@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
-import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
 import 'package:mtp/src/shared/data/models/completion/request.dart';
 import 'package:mtp/src/shared/data/models/completion/response.dart';
 import 'package:mtp/src/utils/logger.dart';
-import './llm_remote_datasource.dart';
+import 'llm_remote_datasource.dart';
 
 class AzureOpenAiRemoteDatasource implements LlmRemoteDatasource {
   final Dio dio;
@@ -16,7 +15,6 @@ class AzureOpenAiRemoteDatasource implements LlmRemoteDatasource {
   @override
   Future<CompletionResponse> generateCompletion(
     CompletionRequest request,
-    ChatModel model,
   ) async {
     try {
       _logger.info(
@@ -24,12 +22,12 @@ class AzureOpenAiRemoteDatasource implements LlmRemoteDatasource {
       );
       final headers = {
         'Content-Type': 'application/json',
-        'api-key': model.apiKey,
+        'api-key': request.apiKey,
       };
 
       // Azure OpenAI 的端点格式不同
       final uri =
-          '${model.endpoint}/openai/deployments/${request.model}/chat/completions?api-version=2023-05-15';
+          '${request.endpoint}/openai/deployments/${request.model}/chat/completions?api-version=2023-05-15';
 
       // Azure不需要model字段
       final requestData = Map<String, dynamic>.from(request.toJson());
@@ -71,7 +69,6 @@ class AzureOpenAiRemoteDatasource implements LlmRemoteDatasource {
   @override
   Future<Stream<String>> generateCompletionStream(
     CompletionRequest request,
-    ChatModel model,
   ) async {
     try {
       _logger.info(
@@ -79,7 +76,7 @@ class AzureOpenAiRemoteDatasource implements LlmRemoteDatasource {
       );
       final headers = {
         'Content-Type': 'application/json',
-        'api-key': model.apiKey,
+        'api-key': request.apiKey,
         'Accept': 'text/event-stream',
       };
 
@@ -89,7 +86,7 @@ class AzureOpenAiRemoteDatasource implements LlmRemoteDatasource {
       requestData['stream'] = true;
 
       final uri =
-          '${model.endpoint}/openai/deployments/${request.model}/chat/completions?api-version=2023-05-15';
+          '${request.endpoint}/openai/deployments/${request.model}/chat/completions?api-version=2023-05-15';
 
       // 使用Dio的响应类型为流
       final response = await dio.post(

@@ -756,7 +756,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       child: ListTile(
-        title: Text(model.name),
+        title: Text(model.customName),
         subtitle: Text(model.endpoint, style: TextStyle(fontSize: 12)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1098,10 +1098,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                     final newModel = ChatModelEntity(
                       id: Uuid().v4(),
-                      name: nameController.text.trim(),
+                      customName: '',
+                      modelName: nameController.text.trim(),
                       endpoint: endpointController.text.trim(),
                       apiKey: apiKeyController.text.trim(),
-                      temparture: temparture, // 添加缺失的参数
+                      temperature: temparture, // 添加缺失的参数
                       isSelected: false,
                     );
                     ref.read(settingsProvider.notifier).addModel(newModel);
@@ -1119,11 +1120,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     BuildContext context,
     ChatModelEntity model,
   ) async {
-    final nameController = TextEditingController(text: model.name);
+    final nameController = TextEditingController(text: model.modelName);
     final endpointController = TextEditingController(text: model.endpoint);
     final apiKeyController = TextEditingController(text: model.apiKey);
     final tempartureController = TextEditingController(
-      text: model.temparture.toString(),
+      text: model.temperature.toString(),
     );
 
     return showDialog(
@@ -1168,7 +1169,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (nameController.text.trim().isNotEmpty &&
                       endpointController.text.trim().isNotEmpty) {
                     // 解析温度值，确保在有效范围内
-                    double temparture = model.temparture;
+                    double temparture = model.temperature;
                     try {
                       temparture = double.parse(
                         tempartureController.text.trim(),
@@ -1179,10 +1180,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
 
                     final updatedModel = model.copyWith(
-                      name: nameController.text.trim(),
+                      modelName: nameController.text.trim(),
                       endpoint: endpointController.text.trim(),
                       apiKey: apiKeyController.text.trim(),
-                      temparture: temparture, // 添加此参数
+                      temperature: temparture, // 添加此参数
                     );
                     ref
                         .read(settingsProvider.notifier)

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
+import 'package:mtp/src/features/chat/domain/entities/active_session_entity.dart';
 import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
 import 'package:mtp/src/features/settings/domain/entities/settings_entity.dart';
 import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
@@ -460,7 +460,7 @@ class _DataManagementSheetState extends ConsumerState<DataManagementSheet> {
     if (data['sessions'] != null && data['sessions'] is List) {
       final chatNotifier = ref.read(sessionStateProvider.notifier);
       for (final sessionJson in data['sessions']) {
-        final session = SessionDetailsEntity.fromJson(sessionJson);
+        final session = ActiveSessionEntity.fromJson(sessionJson);
         await chatNotifier.importSession(session);
       }
     }

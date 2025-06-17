@@ -74,7 +74,6 @@ class _ChatList extends ConsumerState<ChatList> {
     // 使用Provider获取会话列表和状态
     final chatState = ref.watch(sessionStateProvider);
     final filteredSessions = ref.watch(filteredSessionsProvider);
-    final roleState = ref.watch(roleStateProvider);
     final selectedSessionIndex = chatState.selectedSessionIndex;
     print(
       '会话列表构建: 总共${chatState.sessions.length}个会话，过滤后${filteredSessions.length}个',
@@ -111,53 +110,31 @@ class _ChatList extends ConsumerState<ChatList> {
                                 session,
                               );
 
-                              // 根据 roleId 获取角色信息
-                              final role =
-                                  roleState.roles.isEmpty
-                                      ? null
-                                      : roleState.roles.firstWhere(
-                                        (role) => role.id == session.roleId,
-                                        orElse: () => roleState.roles.first,
-                                      );
-
-                              // 计算未读消息数量
-                              final unreadCount =
-                                  session.messages
-                                      .where(
-                                        (msg) => !msg.isRead && !msg.isFromUser,
-                                      )
-                                      .length;
-
                               // 确定是否活跃 (最近10分钟有新消息)
                               final isActive =
-                                  session.updatedAt != null &&
+                                  session.lastMessageAt != null &&
                                   DateTime.now()
-                                          .difference(session.updatedAt!)
+                                          .difference(session.lastMessageAt!)
                                           .inMinutes <
                                       10;
 
-                              // 获取角色头像
-                              String? avatarUrl;
-                              if (role != null && role.avatars.isNotEmpty) {
-                                avatarUrl = role.avatars.first;
-                              }
+                              // 获取会话头像
+                              final avatarUrl = session.avatar;
 
                               return Column(
                                 children: [
                                   ChatListItem(
                                     title: session.title,
-                                    lastMessage:
-                                        session.messages.isNotEmpty
-                                            ? session.messages.last.content
-                                            : "",
+                                    lastMessage: session.lastMessage,
                                     timestamp:
-                                        session.updatedAt ?? DateTime.now(),
+                                        session.lastMessageAt ?? DateTime.now(),
                                     avatarUrl: avatarUrl, // 这里可以从角色数据中获取
-                                    unreadCount: unreadCount, // 从会话数据中获取
+                                    unreadCount:
+                                        session.unreadCount, // 从会话数据中获取
                                     isActive: isActive, // 从用户状态中获取
                                     isSelected:
                                         selectedSessionIndex == originalIndex,
-                                    isPinned: session.isPinned ?? false,
+                                    isPinned: session.isPinned,
                                     onTap: () {
                                       // 使用Provider选择会话
                                       ref
@@ -288,15 +265,15 @@ class _ChatList extends ConsumerState<ChatList> {
                   name: roleNameController.text.trim(),
                   prompt: rolePromptController.text.trim(),
                   avatars: avatarPath != null ? [avatarPath!] : [],
-                  lastMessage: '',
                 );
 
                 await ref.read(roleStateProvider.notifier).addRole(newRole);
 
                 // 创建会话
-                await ref
-                    .read(sessionStateProvider.notifier)
-                    .createSession(roleNameController.text.trim(), roleId);
+                await ref.read(sessionStateProvider.notifier).createSession(
+                  roleNameController.text.trim(),
+                  [roleId],
+                );
 
                 GoRouter.of(context).pop();
               } catch (e) {

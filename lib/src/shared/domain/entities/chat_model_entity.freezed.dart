@@ -16,7 +16,17 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ChatModelEntity {
 
- String get id; String get name; String get endpoint; double get temparture; String get apiKey; bool get isSelected;
+/// 模型的唯一标识符。
+ String get id;/// 用户可读的模型名称。
+ String get customName;/// 模型名称。
+ String get modelName;/// 调用此模型的API端点URL。
+ String get endpoint;/// 模型的默认温度设置。
+///
+/// 温度控制生成文本的随机性。
+ double get temperature;// 注意：这里可能是拼写错误，应为 temperature
+/// 与此模型关联的API密钥。
+ String get apiKey;/// 指示此模型当前是否被选中或激活。
+ bool get isSelected;
 /// Create a copy of ChatModelEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +39,16 @@ $ChatModelEntityCopyWith<ChatModelEntity> get copyWith => _$ChatModelEntityCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatModelEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.endpoint, endpoint) || other.endpoint == endpoint)&&(identical(other.temparture, temparture) || other.temparture == temparture)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.isSelected, isSelected) || other.isSelected == isSelected));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChatModelEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.customName, customName) || other.customName == customName)&&(identical(other.modelName, modelName) || other.modelName == modelName)&&(identical(other.endpoint, endpoint) || other.endpoint == endpoint)&&(identical(other.temperature, temperature) || other.temperature == temperature)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.isSelected, isSelected) || other.isSelected == isSelected));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,endpoint,temparture,apiKey,isSelected);
+int get hashCode => Object.hash(runtimeType,id,customName,modelName,endpoint,temperature,apiKey,isSelected);
 
 @override
 String toString() {
-  return 'ChatModelEntity(id: $id, name: $name, endpoint: $endpoint, temparture: $temparture, apiKey: $apiKey, isSelected: $isSelected)';
+  return 'ChatModelEntity(id: $id, customName: $customName, modelName: $modelName, endpoint: $endpoint, temperature: $temperature, apiKey: $apiKey, isSelected: $isSelected)';
 }
 
 
@@ -49,7 +59,7 @@ abstract mixin class $ChatModelEntityCopyWith<$Res>  {
   factory $ChatModelEntityCopyWith(ChatModelEntity value, $Res Function(ChatModelEntity) _then) = _$ChatModelEntityCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String endpoint, double temparture, String apiKey, bool isSelected
+ String id, String customName, String modelName, String endpoint, double temperature, String apiKey, bool isSelected
 });
 
 
@@ -66,12 +76,13 @@ class _$ChatModelEntityCopyWithImpl<$Res>
 
 /// Create a copy of ChatModelEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? endpoint = null,Object? temparture = null,Object? apiKey = null,Object? isSelected = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? customName = null,Object? modelName = null,Object? endpoint = null,Object? temperature = null,Object? apiKey = null,Object? isSelected = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,customName: null == customName ? _self.customName : customName // ignore: cast_nullable_to_non_nullable
+as String,modelName: null == modelName ? _self.modelName : modelName // ignore: cast_nullable_to_non_nullable
 as String,endpoint: null == endpoint ? _self.endpoint : endpoint // ignore: cast_nullable_to_non_nullable
-as String,temparture: null == temparture ? _self.temparture : temparture // ignore: cast_nullable_to_non_nullable
+as String,temperature: null == temperature ? _self.temperature : temperature // ignore: cast_nullable_to_non_nullable
 as double,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
 as String,isSelected: null == isSelected ? _self.isSelected : isSelected // ignore: cast_nullable_to_non_nullable
 as bool,
@@ -85,14 +96,25 @@ as bool,
 @JsonSerializable()
 
 class _ChatModelEntity implements ChatModelEntity {
-  const _ChatModelEntity({required this.id, required this.name, required this.endpoint, required this.temparture, required this.apiKey, required this.isSelected});
+  const _ChatModelEntity({required this.id, required this.customName, required this.modelName, required this.endpoint, required this.temperature, required this.apiKey, required this.isSelected});
   factory _ChatModelEntity.fromJson(Map<String, dynamic> json) => _$ChatModelEntityFromJson(json);
 
+/// 模型的唯一标识符。
 @override final  String id;
-@override final  String name;
+/// 用户可读的模型名称。
+@override final  String customName;
+/// 模型名称。
+@override final  String modelName;
+/// 调用此模型的API端点URL。
 @override final  String endpoint;
-@override final  double temparture;
+/// 模型的默认温度设置。
+///
+/// 温度控制生成文本的随机性。
+@override final  double temperature;
+// 注意：这里可能是拼写错误，应为 temperature
+/// 与此模型关联的API密钥。
 @override final  String apiKey;
+/// 指示此模型当前是否被选中或激活。
 @override final  bool isSelected;
 
 /// Create a copy of ChatModelEntity
@@ -108,16 +130,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatModelEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.endpoint, endpoint) || other.endpoint == endpoint)&&(identical(other.temparture, temparture) || other.temparture == temparture)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.isSelected, isSelected) || other.isSelected == isSelected));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ChatModelEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.customName, customName) || other.customName == customName)&&(identical(other.modelName, modelName) || other.modelName == modelName)&&(identical(other.endpoint, endpoint) || other.endpoint == endpoint)&&(identical(other.temperature, temperature) || other.temperature == temperature)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.isSelected, isSelected) || other.isSelected == isSelected));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,endpoint,temparture,apiKey,isSelected);
+int get hashCode => Object.hash(runtimeType,id,customName,modelName,endpoint,temperature,apiKey,isSelected);
 
 @override
 String toString() {
-  return 'ChatModelEntity(id: $id, name: $name, endpoint: $endpoint, temparture: $temparture, apiKey: $apiKey, isSelected: $isSelected)';
+  return 'ChatModelEntity(id: $id, customName: $customName, modelName: $modelName, endpoint: $endpoint, temperature: $temperature, apiKey: $apiKey, isSelected: $isSelected)';
 }
 
 
@@ -128,7 +150,7 @@ abstract mixin class _$ChatModelEntityCopyWith<$Res> implements $ChatModelEntity
   factory _$ChatModelEntityCopyWith(_ChatModelEntity value, $Res Function(_ChatModelEntity) _then) = __$ChatModelEntityCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String endpoint, double temparture, String apiKey, bool isSelected
+ String id, String customName, String modelName, String endpoint, double temperature, String apiKey, bool isSelected
 });
 
 
@@ -145,12 +167,13 @@ class __$ChatModelEntityCopyWithImpl<$Res>
 
 /// Create a copy of ChatModelEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? endpoint = null,Object? temparture = null,Object? apiKey = null,Object? isSelected = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? customName = null,Object? modelName = null,Object? endpoint = null,Object? temperature = null,Object? apiKey = null,Object? isSelected = null,}) {
   return _then(_ChatModelEntity(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,customName: null == customName ? _self.customName : customName // ignore: cast_nullable_to_non_nullable
+as String,modelName: null == modelName ? _self.modelName : modelName // ignore: cast_nullable_to_non_nullable
 as String,endpoint: null == endpoint ? _self.endpoint : endpoint // ignore: cast_nullable_to_non_nullable
-as String,temparture: null == temparture ? _self.temparture : temparture // ignore: cast_nullable_to_non_nullable
+as String,temperature: null == temperature ? _self.temperature : temperature // ignore: cast_nullable_to_non_nullable
 as double,apiKey: null == apiKey ? _self.apiKey : apiKey // ignore: cast_nullable_to_non_nullable
 as String,isSelected: null == isSelected ? _self.isSelected : isSelected // ignore: cast_nullable_to_non_nullable
 as bool,

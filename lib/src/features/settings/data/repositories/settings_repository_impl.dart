@@ -25,16 +25,20 @@ class SettingsRepositoryImpl implements SettingsRepository {
       theme: Value(settings.theme),
     );
 
-    final modelsCompanions = settings.models.map((m) =>
-      ChatModelsCompanion(
-        settingsId: Value(settings.id),
-        name: Value(m.name),
-        endpoint: Value(m.endpoint),
-        apiKey: Value(m.apiKey),
-        temparture: Value(m.temparture),
-        isSelected: Value(m.isSelected),
-      )
-    ).toList();
+    final modelsCompanions =
+        settings.models
+            .map(
+              (m) => ChatModelsCompanion(
+                settingsId: Value(settings.id),
+                customName: Value(m.customName),
+                modelName: Value(m.modelName),
+                endpoint: Value(m.endpoint),
+                apiKey: Value(m.apiKey),
+                temperature: Value(m.temperature),
+                isSelected: Value(m.isSelected),
+              ),
+            )
+            .toList();
 
     await dao.updateSettingsWithModels(
       settingsData: settingsData,
@@ -66,10 +70,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
     await dao.addModel(
       ChatModelsCompanion.insert(
         settingsId: id,
-        name: model.name,
+        customName: model.customName,
+        modelName: model.modelName,
         endpoint: model.endpoint,
         apiKey: model.apiKey,
-        temparture: model.temparture,
+        temperature: model.temperature,
         isSelected: model.isSelected,
       ),
     );
@@ -81,10 +86,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
     await dao.updateModel(
       ChatModelsCompanion(
         settingsId: Value(id),
-        name: Value(model.name),
+        customName: Value(model.customName),
+        modelName: Value(model.modelName),
         endpoint: Value(model.endpoint),
         apiKey: Value(model.apiKey),
-        temparture: Value(model.temparture),
+        temperature: Value(model.temperature),
         isSelected: Value(model.isSelected),
       ),
     );
@@ -125,10 +131,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
   ChatModelEntity _modelDataToEntity(ChatModel m) {
     return ChatModelEntity(
       id: m.id,
-      name: m.name,
+      customName: m.customName,
+      modelName: m.modelName,
       endpoint: m.endpoint,
       apiKey: m.apiKey,
-      temparture: m.temparture,
+      temperature: m.temperature,
       isSelected: m.isSelected,
     );
   }

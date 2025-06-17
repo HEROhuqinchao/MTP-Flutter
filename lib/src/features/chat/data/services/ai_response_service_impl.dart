@@ -1,15 +1,14 @@
 import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:mtp/src/features/chat/domain/repositories/llm_repository.dart';
 import 'package:mtp/src/features/chat/domain/services/ai_response_service.dart';
-import 'package:mtp/src/shared/domain/entities/chat_model_entity.dart';
 import 'package:mtp/src/shared/domain/entities/completion_request_entity.dart';
+import 'package:mtp/src/shared/domain/entities/llm_message_entity.dart';
 
 /// 实现AI回复服务
 class AIResponseServiceImpl implements AIResponseService {
-  final LlmRepository _llmRepository;
-  final ChatModelEntity _model;
+  final LLMRepository _llmRepository;
 
-  AIResponseServiceImpl(this._llmRepository, this._model);
+  AIResponseServiceImpl(this._llmRepository);
 
   @override
   Future<Stream<String>> generateResponse({
@@ -21,10 +20,7 @@ class AIResponseServiceImpl implements AIResponseService {
         messages
             .map(
               (msg) => LLMMessageEntity(
-                role:
-                    msg.isSystem
-                        ? 'system'
-                        : (msg.isFromUser ? 'user' : 'assistant'),
+                role: msg.isFromUser ? 'user' : 'assistant',
                 content: msg.content,
               ),
             )
@@ -35,8 +31,11 @@ class AIResponseServiceImpl implements AIResponseService {
       temperature: temperature,
       maxTokens: 800,
       model: modelName,
+      // TODO: 需要根据实际情况设置 endpoint 和 apiKey
+      endpoint: '',
+      apiKey: '',
     );
 
-    return await _llmRepository.generateCompletionStream(request, _model);
+    return await _llmRepository.generateCompletionStream(request);
   }
 }

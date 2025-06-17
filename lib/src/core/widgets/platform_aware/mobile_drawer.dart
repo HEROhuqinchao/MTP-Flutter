@@ -486,12 +486,12 @@ class MobileDrawer extends ConsumerWidget {
     final sessions = ref.watch(sessionStateProvider).sessions;
     int total = 0;
     for (var session in sessions) {
-      total += session.messages.length;
+      total += session.unreadCount;
     }
 
     // 格式化大数字
-    if (total > 1000) {
-      return '${(total / 1000).toStringAsFixed(1)}k';
+    if (total > 99) {
+      return '99+';
     }
     return '$total';
   }
@@ -558,9 +558,10 @@ class MobileDrawer extends ConsumerWidget {
                 await ref.read(roleStateProvider.notifier).addRole(newRole);
 
                 // 创建会话
-                await ref
-                    .read(sessionStateProvider.notifier)
-                    .createSession(roleNameController.text.trim(), roleId);
+                await ref.read(sessionStateProvider.notifier).createSession(
+                  roleNameController.text.trim(),
+                  [roleId],
+                );
 
                 GoRouter.of(context).pop();
               } catch (e) {

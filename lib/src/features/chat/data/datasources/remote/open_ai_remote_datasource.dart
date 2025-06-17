@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
-import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
 import 'package:mtp/src/shared/data/models/completion/request.dart';
 import 'package:mtp/src/shared/data/models/completion/response.dart';
 import 'package:mtp/src/utils/logger.dart';
-import './llm_remote_datasource.dart';
+import 'llm_remote_datasource.dart';
 
 class OpenAiRemoteDatasource implements LlmRemoteDatasource {
   final Dio dio;
@@ -18,16 +17,15 @@ class OpenAiRemoteDatasource implements LlmRemoteDatasource {
   @override
   Future<CompletionResponse> generateCompletion(
     CompletionRequest request,
-    ChatModel model,
   ) async {
     try {
       _logger.info('Generating completion using model: ${request.model}');
       final headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${model.apiKey}',
+        'Authorization': 'Bearer ${request.apiKey}',
       };
 
-      final uri = '${model.endpoint}/v1/chat/completions';
+      final uri = '${request.endpoint}/v1/chat/completions';
       final requestBody = request.toJson();
 
       final response = await dio.post(
@@ -69,7 +67,6 @@ class OpenAiRemoteDatasource implements LlmRemoteDatasource {
   @override
   Future<Stream<String>> generateCompletionStream(
     CompletionRequest request,
-    ChatModel model,
   ) async {
     try {
       _logger.info(
@@ -109,7 +106,7 @@ $ragContent''';
 
       final headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${model.apiKey}',
+        'Authorization': 'Bearer ${request.apiKey}',
         'Accept': 'text/event-stream',
       };
 
@@ -117,7 +114,7 @@ $ragContent''';
       final requestWithStream = Map<String, dynamic>.from(request.toJson())
         ..['stream'] = true;
 
-      final uri = '${model.endpoint}/chat/completions';
+      final uri = '${request.endpoint}/chat/completions';
 
       // 使用Dio的响应类型为流
       final response = await dio.post(

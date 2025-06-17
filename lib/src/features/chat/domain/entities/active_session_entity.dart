@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'chat_message_entity.dart';
 
-part 'session_details_entity.freezed.dart';
-part 'session_details_entity.g.dart';
+part 'active_session_entity.freezed.dart';
+part 'active_session_entity.g.dart';
 
 @freezed
-abstract class SessionDetailsEntity with _$SessionDetailsEntity {
-  const factory SessionDetailsEntity({
+abstract class ActiveSessionEntity with _$ActiveSessionEntity {
+  const factory ActiveSessionEntity({
     /// 会话ID
     required String id,
 
@@ -25,16 +25,15 @@ abstract class SessionDetailsEntity with _$SessionDetailsEntity {
     /// 会话头像
     String? avatar,
 
-    /// 最后一次消息时间
-    DateTime? lastMessageAt,
-
-    /// 最后一条消息
-    ChatMessageEntity? lastMessage,
-
     /// 会话内的角色列表
     required List<String> roleIds,
-  }) = _SessionDetailsEntity;
 
-  factory SessionDetailsEntity.fromJson(Map<String, dynamic> json) =>
-      _$SessionDetailsEntityFromJson(json);
+    /// 会话内的所有消息
+    required List<ChatMessageEntity> messages,
+
+    // TODO:添加分页加载相关的状态
+  }) = _ActiveSessionEntity;
+
+  factory ActiveSessionEntity.fromJson(Map<String, dynamic> json) =>
+      _$ActiveSessionEntityFromJson(json);
 }

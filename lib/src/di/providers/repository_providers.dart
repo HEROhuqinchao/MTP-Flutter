@@ -18,6 +18,6 @@ final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return getIt<SettingsRepository>();
 });
 
-final llmRepositoryProvider = Provider<LlmRepository>((ref) {
-  return getIt<LlmRepository>();
+final llmRepositoryProvider = Provider<LLMRepository>((ref) {
+  return getIt<LLMRepository>();
 });

@@ -2,12 +2,11 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:mtp/src/features/role/data/datasources/local/dao/roles_dao.dart';
+import 'package:mtp/src/features/role/data/datasources/remote/role_remote_datasource.dart';
+import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
+import 'package:mtp/src/features/role/domain/repositories/role_repository.dart';
 import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
 import 'package:mtp/src/utils/logger.dart';
-
-import '../../domain/entities/role_entity.dart';
-import '../../domain/repositories/role_repository.dart';
-import '../datasources/remote/role_remote_datasource.dart';
 
 class RoleRepositoryImpl implements RoleRepository {
   final RolesDao dao;
@@ -59,7 +58,7 @@ class RoleRepositoryImpl implements RoleRepository {
           (role) => RoleEntity(
             id: role.id,
             name: role.name,
-            avatars: jsonDecode(role.avatars),
+            avatars: List<String>.from(jsonDecode(role.avatars)),
             prompt: role.prompt ?? '请你扮演${role.name}',
           ),
         )
@@ -103,7 +102,7 @@ class RoleRepositoryImpl implements RoleRepository {
           (role) => RoleEntity(
             id: role.id,
             name: role.name,
-            avatars: jsonDecode(role.avatars),
+            avatars: List<String>.from(jsonDecode(role.avatars)),
             prompt: role.prompt,
           ),
         )
@@ -123,7 +122,7 @@ class RoleRepositoryImpl implements RoleRepository {
     return RoleEntity(
       id: role.id,
       name: role.name,
-      avatars: jsonDecode(role.avatars),
+      avatars: List<String>.from(jsonDecode(role.avatars)),
       prompt: role.prompt,
     );
   }
@@ -136,7 +135,7 @@ class RoleRepositoryImpl implements RoleRepository {
           (role) => RoleEntity(
             id: role.id,
             name: role.name,
-            avatars: jsonDecode(role.avatars),
+            avatars: List<String>.from(jsonDecode(role.avatars)),
             prompt: role.prompt,
           ),
         )

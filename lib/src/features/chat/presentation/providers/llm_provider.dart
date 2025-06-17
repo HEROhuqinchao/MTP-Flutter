@@ -3,6 +3,7 @@ import 'package:mtp/src/di/providers/repository_providers.dart';
 import 'package:mtp/src/features/settings/presentation/providers/settings_provider.dart';
 import 'package:mtp/src/shared/domain/entities/completion_request_entity.dart';
 import 'package:mtp/src/shared/domain/entities/completion_response_entity.dart';
+import 'package:mtp/src/shared/domain/entities/llm_message_entity.dart';
 
 /// 消息生成提供者 - 用于发起生成请求
 final llmGenerateProvider =
@@ -18,7 +19,7 @@ final llmGenerateProvider =
       }
 
       // 执行生成请求
-      return await llmRepository.generateCompletion(request, model);
+      return await llmRepository.generateCompletion(request);
     });
 
 // 流式消息生成提供者 - 用于流式响应
@@ -35,11 +36,11 @@ final llmStreamProvider =
       }
 
       // 执行流式生成请求
-      return await llmRepository.generateCompletionStream(request, model);
+      return await llmRepository.generateCompletionStream(request);
     });
 
 // 创建会话请求辅助方法
-class LlmHelper {
+class LLMHelper {
   static CompletionRequestEntity createCompletionRequest({
     required List<LLMMessageEntity> messages,
     required String modelName,
@@ -51,6 +52,8 @@ class LlmHelper {
       temperature: temperature,
       maxTokens: maxTokens,
       model: modelName,
+      endpoint: '',
+      apiKey: '',
     );
   }
 }

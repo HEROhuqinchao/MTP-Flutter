@@ -1,9 +1,9 @@
-import '../../../../shared/domain/entities/chat_model_entity.dart';
-import '../../../../shared/domain/entities/completion_request_entity.dart';
-import '../repositories/llm_repository.dart';
+import 'package:mtp/src/features/chat/domain/repositories/llm_repository.dart';
+import 'package:mtp/src/shared/domain/entities/chat_model_entity.dart';
+import 'package:mtp/src/shared/domain/entities/completion_request_entity.dart';
 
 class GenerateCompletionStream {
-  final LlmRepository repository;
+  final LLMRepository repository;
 
   GenerateCompletionStream(this.repository);
 
@@ -11,6 +11,6 @@ class GenerateCompletionStream {
     CompletionRequestEntity request,
     ChatModelEntity model,
   ) async {
-    return await repository.generateCompletionStream(request, model);
+    return await repository.generateCompletionStream(request);
   }
 }

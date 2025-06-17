@@ -1,5 +1,6 @@
+import 'package:mtp/src/features/chat/domain/entities/active_session_entity.dart';
 import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
-import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
+import 'package:mtp/src/features/chat/domain/entities/session_list_item_entity.dart';
 
 /// 聊天仓库接口。
 ///
@@ -10,22 +11,27 @@ abstract class ChatRepository {
   ///
   /// [session] 是包含会话元数据、角色和最新消息信息的实体对象。
   /// 返回时表明会话数据已被持久化。
-  Future<void> addSession(SessionDetailsEntity session);
+  Future<void> addSession(SessionListItemEntity session);
 
   /// 获取所有会话的详情列表。
   ///
   /// 返回每个会话的完整信息，包括最新消息和角色关联。
-  Future<List<SessionDetailsEntity>> getAllSessions();
+  Future<List<SessionListItemEntity>> getAllSessions();
 
   /// 根据会话 [id] 获取会话详情。
   ///
-  /// 返回对应的 [SessionDetailsEntity]，若 ID 不存在则返回 `null`。
-  Future<SessionDetailsEntity?> getSessionById(String id);
+  /// 返回对应的 [ActiveSessionEntity]，若 ID 不存在则返回 `null`。
+  Future<ActiveSessionEntity?> getSessionById(String id);
 
   /// 更新已有会话的全部字段。
   ///
   /// [session] 包含新的字段值，必须包含有效的 `id`，若会话不存在会抛出异常。
-  Future<void> updateSession(SessionDetailsEntity session);
+  Future<void> updateSession(SessionListItemEntity session);
+
+  /// 更新会话角色列表。
+  ///
+  /// [sessionId] 指定目标会话， [roleIds] 是角色 ID 列表，
+  Future<void> updateSessionRoles(String sessionId, List<String> roleIds);
 
   /// 向指定会话添加一条新消息。
   ///

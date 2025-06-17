@@ -1975,10 +1975,23 @@ class $ChatModelsTable extends ChatModels
       'REFERENCES settings (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _customNameMeta = const VerificationMeta(
+    'customName',
+  );
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
+  late final GeneratedColumn<String> customName = GeneratedColumn<String>(
+    'custom_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modelNameMeta = const VerificationMeta(
+    'modelName',
+  );
+  @override
+  late final GeneratedColumn<String> modelName = GeneratedColumn<String>(
+    'model_name',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -2004,12 +2017,12 @@ class $ChatModelsTable extends ChatModels
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _tempartureMeta = const VerificationMeta(
-    'temparture',
+  static const VerificationMeta _temperatureMeta = const VerificationMeta(
+    'temperature',
   );
   @override
-  late final GeneratedColumn<double> temparture = GeneratedColumn<double>(
-    'temparture',
+  late final GeneratedColumn<double> temperature = GeneratedColumn<double>(
+    'temperature',
     aliasedName,
     false,
     type: DriftSqlType.double,
@@ -2033,10 +2046,11 @@ class $ChatModelsTable extends ChatModels
   List<GeneratedColumn> get $columns => [
     id,
     settingsId,
-    name,
+    customName,
+    modelName,
     endpoint,
     apiKey,
-    temparture,
+    temperature,
     isSelected,
   ];
   @override
@@ -2062,13 +2076,21 @@ class $ChatModelsTable extends ChatModels
     } else if (isInserting) {
       context.missing(_settingsIdMeta);
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('custom_name')) {
       context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+        _customNameMeta,
+        customName.isAcceptableOrUnknown(data['custom_name']!, _customNameMeta),
       );
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_customNameMeta);
+    }
+    if (data.containsKey('model_name')) {
+      context.handle(
+        _modelNameMeta,
+        modelName.isAcceptableOrUnknown(data['model_name']!, _modelNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modelNameMeta);
     }
     if (data.containsKey('endpoint')) {
       context.handle(
@@ -2086,13 +2108,16 @@ class $ChatModelsTable extends ChatModels
     } else if (isInserting) {
       context.missing(_apiKeyMeta);
     }
-    if (data.containsKey('temparture')) {
+    if (data.containsKey('temperature')) {
       context.handle(
-        _tempartureMeta,
-        temparture.isAcceptableOrUnknown(data['temparture']!, _tempartureMeta),
+        _temperatureMeta,
+        temperature.isAcceptableOrUnknown(
+          data['temperature']!,
+          _temperatureMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_tempartureMeta);
+      context.missing(_temperatureMeta);
     }
     if (data.containsKey('is_selected')) {
       context.handle(
@@ -2121,10 +2146,15 @@ class $ChatModelsTable extends ChatModels
             DriftSqlType.string,
             data['${effectivePrefix}settings_id'],
           )!,
-      name:
+      customName:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
-            data['${effectivePrefix}name'],
+            data['${effectivePrefix}custom_name'],
+          )!,
+      modelName:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}model_name'],
           )!,
       endpoint:
           attachedDatabase.typeMapping.read(
@@ -2136,10 +2166,10 @@ class $ChatModelsTable extends ChatModels
             DriftSqlType.string,
             data['${effectivePrefix}api_key'],
           )!,
-      temparture:
+      temperature:
           attachedDatabase.typeMapping.read(
             DriftSqlType.double,
-            data['${effectivePrefix}temparture'],
+            data['${effectivePrefix}temperature'],
           )!,
       isSelected:
           attachedDatabase.typeMapping.read(
@@ -2156,20 +2186,42 @@ class $ChatModelsTable extends ChatModels
 }
 
 class ChatModel extends DataClass implements Insertable<ChatModel> {
+  /// 模型的唯一标识符，使用UUID v4自动生成。
   final String id;
+
+  /// 关联的设置ID。
+  ///
+  /// 用于将此聊天模型与特定的设置项关联起来。
+  /// 当关联的设置被删除时，此模型记录也会被级联删除。
   final String settingsId;
-  final String name;
+
+  /// 用户可读的模型名称。
+  final String customName;
+
+  /// 模型名称。
+  final String modelName;
+
+  /// 调用此模型的API端点URL。
   final String endpoint;
+
+  /// 与此模型关联的API密钥。
   final String apiKey;
-  final double temparture;
+
+  /// 模型的默认温度设置。
+  ///
+  /// 温度控制生成文本的随机性。较高的值使输出更随机，较低的值使其更具确定性。
+  final double temperature;
+
+  /// 指示此模型当前是否被用户选中或激活为默认模型。
   final bool isSelected;
   const ChatModel({
     required this.id,
     required this.settingsId,
-    required this.name,
+    required this.customName,
+    required this.modelName,
     required this.endpoint,
     required this.apiKey,
-    required this.temparture,
+    required this.temperature,
     required this.isSelected,
   });
   @override
@@ -2177,10 +2229,11 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['settings_id'] = Variable<String>(settingsId);
-    map['name'] = Variable<String>(name);
+    map['custom_name'] = Variable<String>(customName);
+    map['model_name'] = Variable<String>(modelName);
     map['endpoint'] = Variable<String>(endpoint);
     map['api_key'] = Variable<String>(apiKey);
-    map['temparture'] = Variable<double>(temparture);
+    map['temperature'] = Variable<double>(temperature);
     map['is_selected'] = Variable<bool>(isSelected);
     return map;
   }
@@ -2189,10 +2242,11 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
     return ChatModelsCompanion(
       id: Value(id),
       settingsId: Value(settingsId),
-      name: Value(name),
+      customName: Value(customName),
+      modelName: Value(modelName),
       endpoint: Value(endpoint),
       apiKey: Value(apiKey),
-      temparture: Value(temparture),
+      temperature: Value(temperature),
       isSelected: Value(isSelected),
     );
   }
@@ -2205,10 +2259,11 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
     return ChatModel(
       id: serializer.fromJson<String>(json['id']),
       settingsId: serializer.fromJson<String>(json['settingsId']),
-      name: serializer.fromJson<String>(json['name']),
+      customName: serializer.fromJson<String>(json['customName']),
+      modelName: serializer.fromJson<String>(json['modelName']),
       endpoint: serializer.fromJson<String>(json['endpoint']),
       apiKey: serializer.fromJson<String>(json['apiKey']),
-      temparture: serializer.fromJson<double>(json['temparture']),
+      temperature: serializer.fromJson<double>(json['temperature']),
       isSelected: serializer.fromJson<bool>(json['isSelected']),
     );
   }
@@ -2225,10 +2280,11 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'settingsId': serializer.toJson<String>(settingsId),
-      'name': serializer.toJson<String>(name),
+      'customName': serializer.toJson<String>(customName),
+      'modelName': serializer.toJson<String>(modelName),
       'endpoint': serializer.toJson<String>(endpoint),
       'apiKey': serializer.toJson<String>(apiKey),
-      'temparture': serializer.toJson<double>(temparture),
+      'temperature': serializer.toJson<double>(temperature),
       'isSelected': serializer.toJson<bool>(isSelected),
     };
   }
@@ -2236,18 +2292,20 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   ChatModel copyWith({
     String? id,
     String? settingsId,
-    String? name,
+    String? customName,
+    String? modelName,
     String? endpoint,
     String? apiKey,
-    double? temparture,
+    double? temperature,
     bool? isSelected,
   }) => ChatModel(
     id: id ?? this.id,
     settingsId: settingsId ?? this.settingsId,
-    name: name ?? this.name,
+    customName: customName ?? this.customName,
+    modelName: modelName ?? this.modelName,
     endpoint: endpoint ?? this.endpoint,
     apiKey: apiKey ?? this.apiKey,
-    temparture: temparture ?? this.temparture,
+    temperature: temperature ?? this.temperature,
     isSelected: isSelected ?? this.isSelected,
   );
   ChatModel copyWithCompanion(ChatModelsCompanion data) {
@@ -2255,11 +2313,13 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
       id: data.id.present ? data.id.value : this.id,
       settingsId:
           data.settingsId.present ? data.settingsId.value : this.settingsId,
-      name: data.name.present ? data.name.value : this.name,
+      customName:
+          data.customName.present ? data.customName.value : this.customName,
+      modelName: data.modelName.present ? data.modelName.value : this.modelName,
       endpoint: data.endpoint.present ? data.endpoint.value : this.endpoint,
       apiKey: data.apiKey.present ? data.apiKey.value : this.apiKey,
-      temparture:
-          data.temparture.present ? data.temparture.value : this.temparture,
+      temperature:
+          data.temperature.present ? data.temperature.value : this.temperature,
       isSelected:
           data.isSelected.present ? data.isSelected.value : this.isSelected,
     );
@@ -2270,10 +2330,11 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
     return (StringBuffer('ChatModel(')
           ..write('id: $id, ')
           ..write('settingsId: $settingsId, ')
-          ..write('name: $name, ')
+          ..write('customName: $customName, ')
+          ..write('modelName: $modelName, ')
           ..write('endpoint: $endpoint, ')
           ..write('apiKey: $apiKey, ')
-          ..write('temparture: $temparture, ')
+          ..write('temperature: $temperature, ')
           ..write('isSelected: $isSelected')
           ..write(')'))
         .toString();
@@ -2283,10 +2344,11 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   int get hashCode => Object.hash(
     id,
     settingsId,
-    name,
+    customName,
+    modelName,
     endpoint,
     apiKey,
-    temparture,
+    temperature,
     isSelected,
   );
   @override
@@ -2295,64 +2357,71 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
       (other is ChatModel &&
           other.id == this.id &&
           other.settingsId == this.settingsId &&
-          other.name == this.name &&
+          other.customName == this.customName &&
+          other.modelName == this.modelName &&
           other.endpoint == this.endpoint &&
           other.apiKey == this.apiKey &&
-          other.temparture == this.temparture &&
+          other.temperature == this.temperature &&
           other.isSelected == this.isSelected);
 }
 
 class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
   final Value<String> id;
   final Value<String> settingsId;
-  final Value<String> name;
+  final Value<String> customName;
+  final Value<String> modelName;
   final Value<String> endpoint;
   final Value<String> apiKey;
-  final Value<double> temparture;
+  final Value<double> temperature;
   final Value<bool> isSelected;
   final Value<int> rowid;
   const ChatModelsCompanion({
     this.id = const Value.absent(),
     this.settingsId = const Value.absent(),
-    this.name = const Value.absent(),
+    this.customName = const Value.absent(),
+    this.modelName = const Value.absent(),
     this.endpoint = const Value.absent(),
     this.apiKey = const Value.absent(),
-    this.temparture = const Value.absent(),
+    this.temperature = const Value.absent(),
     this.isSelected = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ChatModelsCompanion.insert({
     this.id = const Value.absent(),
     required String settingsId,
-    required String name,
+    required String customName,
+    required String modelName,
     required String endpoint,
     required String apiKey,
-    required double temparture,
+    required double temperature,
     required bool isSelected,
     this.rowid = const Value.absent(),
   }) : settingsId = Value(settingsId),
-       name = Value(name),
+       customName = Value(customName),
+       modelName = Value(modelName),
        endpoint = Value(endpoint),
        apiKey = Value(apiKey),
-       temparture = Value(temparture),
+       temperature = Value(temperature),
        isSelected = Value(isSelected);
   static Insertable<ChatModel> custom({
     Expression<String>? id,
     Expression<String>? settingsId,
-    Expression<String>? name,
+    Expression<String>? customName,
+    Expression<String>? modelName,
     Expression<String>? endpoint,
     Expression<String>? apiKey,
-    Expression<double>? temparture,
+    Expression<double>? temperature,
     Expression<bool>? isSelected,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (settingsId != null) 'settings_id': settingsId,
-      if (name != null) 'name': name,
+      if (customName != null) 'custom_name': customName,
+      if (modelName != null) 'model_name': modelName,
       if (endpoint != null) 'endpoint': endpoint,
       if (apiKey != null) 'api_key': apiKey,
-      if (temparture != null) 'temparture': temparture,
+      if (temperature != null) 'temperature': temperature,
       if (isSelected != null) 'is_selected': isSelected,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2361,20 +2430,22 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
   ChatModelsCompanion copyWith({
     Value<String>? id,
     Value<String>? settingsId,
-    Value<String>? name,
+    Value<String>? customName,
+    Value<String>? modelName,
     Value<String>? endpoint,
     Value<String>? apiKey,
-    Value<double>? temparture,
+    Value<double>? temperature,
     Value<bool>? isSelected,
     Value<int>? rowid,
   }) {
     return ChatModelsCompanion(
       id: id ?? this.id,
       settingsId: settingsId ?? this.settingsId,
-      name: name ?? this.name,
+      customName: customName ?? this.customName,
+      modelName: modelName ?? this.modelName,
       endpoint: endpoint ?? this.endpoint,
       apiKey: apiKey ?? this.apiKey,
-      temparture: temparture ?? this.temparture,
+      temperature: temperature ?? this.temperature,
       isSelected: isSelected ?? this.isSelected,
       rowid: rowid ?? this.rowid,
     );
@@ -2389,8 +2460,11 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
     if (settingsId.present) {
       map['settings_id'] = Variable<String>(settingsId.value);
     }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
+    if (customName.present) {
+      map['custom_name'] = Variable<String>(customName.value);
+    }
+    if (modelName.present) {
+      map['model_name'] = Variable<String>(modelName.value);
     }
     if (endpoint.present) {
       map['endpoint'] = Variable<String>(endpoint.value);
@@ -2398,8 +2472,8 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
     if (apiKey.present) {
       map['api_key'] = Variable<String>(apiKey.value);
     }
-    if (temparture.present) {
-      map['temparture'] = Variable<double>(temparture.value);
+    if (temperature.present) {
+      map['temperature'] = Variable<double>(temperature.value);
     }
     if (isSelected.present) {
       map['is_selected'] = Variable<bool>(isSelected.value);
@@ -2415,10 +2489,11 @@ class ChatModelsCompanion extends UpdateCompanion<ChatModel> {
     return (StringBuffer('ChatModelsCompanion(')
           ..write('id: $id, ')
           ..write('settingsId: $settingsId, ')
-          ..write('name: $name, ')
+          ..write('customName: $customName, ')
+          ..write('modelName: $modelName, ')
           ..write('endpoint: $endpoint, ')
           ..write('apiKey: $apiKey, ')
-          ..write('temparture: $temparture, ')
+          ..write('temperature: $temperature, ')
           ..write('isSelected: $isSelected, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2438,6 +2513,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final SessionsDao sessionsDao = SessionsDao(this as AppDatabase);
   late final RolesDao rolesDao = RolesDao(this as AppDatabase);
   late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
+  late final ChatModelsDao chatModelsDao = ChatModelsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4246,10 +4322,11 @@ typedef $$ChatModelsTableCreateCompanionBuilder =
     ChatModelsCompanion Function({
       Value<String> id,
       required String settingsId,
-      required String name,
+      required String customName,
+      required String modelName,
       required String endpoint,
       required String apiKey,
-      required double temparture,
+      required double temperature,
       required bool isSelected,
       Value<int> rowid,
     });
@@ -4257,10 +4334,11 @@ typedef $$ChatModelsTableUpdateCompanionBuilder =
     ChatModelsCompanion Function({
       Value<String> id,
       Value<String> settingsId,
-      Value<String> name,
+      Value<String> customName,
+      Value<String> modelName,
       Value<String> endpoint,
       Value<String> apiKey,
-      Value<double> temparture,
+      Value<double> temperature,
       Value<bool> isSelected,
       Value<int> rowid,
     });
@@ -4303,8 +4381,13 @@ class $$ChatModelsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
+  ColumnFilters<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modelName => $composableBuilder(
+    column: $table.modelName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4318,8 +4401,8 @@ class $$ChatModelsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get temparture => $composableBuilder(
-    column: $table.temparture,
+  ColumnFilters<double> get temperature => $composableBuilder(
+    column: $table.temperature,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4366,8 +4449,13 @@ class $$ChatModelsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
+  ColumnOrderings<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modelName => $composableBuilder(
+    column: $table.modelName,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4381,8 +4469,8 @@ class $$ChatModelsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get temparture => $composableBuilder(
-    column: $table.temparture,
+  ColumnOrderings<double> get temperature => $composableBuilder(
+    column: $table.temperature,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4427,8 +4515,13 @@ class $$ChatModelsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
+  GeneratedColumn<String> get customName => $composableBuilder(
+    column: $table.customName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modelName =>
+      $composableBuilder(column: $table.modelName, builder: (column) => column);
 
   GeneratedColumn<String> get endpoint =>
       $composableBuilder(column: $table.endpoint, builder: (column) => column);
@@ -4436,8 +4529,8 @@ class $$ChatModelsTableAnnotationComposer
   GeneratedColumn<String> get apiKey =>
       $composableBuilder(column: $table.apiKey, builder: (column) => column);
 
-  GeneratedColumn<double> get temparture => $composableBuilder(
-    column: $table.temparture,
+  GeneratedColumn<double> get temperature => $composableBuilder(
+    column: $table.temperature,
     builder: (column) => column,
   );
 
@@ -4500,19 +4593,21 @@ class $$ChatModelsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> settingsId = const Value.absent(),
-                Value<String> name = const Value.absent(),
+                Value<String> customName = const Value.absent(),
+                Value<String> modelName = const Value.absent(),
                 Value<String> endpoint = const Value.absent(),
                 Value<String> apiKey = const Value.absent(),
-                Value<double> temparture = const Value.absent(),
+                Value<double> temperature = const Value.absent(),
                 Value<bool> isSelected = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ChatModelsCompanion(
                 id: id,
                 settingsId: settingsId,
-                name: name,
+                customName: customName,
+                modelName: modelName,
                 endpoint: endpoint,
                 apiKey: apiKey,
-                temparture: temparture,
+                temperature: temperature,
                 isSelected: isSelected,
                 rowid: rowid,
               ),
@@ -4520,19 +4615,21 @@ class $$ChatModelsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 required String settingsId,
-                required String name,
+                required String customName,
+                required String modelName,
                 required String endpoint,
                 required String apiKey,
-                required double temparture,
+                required double temperature,
                 required bool isSelected,
                 Value<int> rowid = const Value.absent(),
               }) => ChatModelsCompanion.insert(
                 id: id,
                 settingsId: settingsId,
-                name: name,
+                customName: customName,
+                modelName: modelName,
                 endpoint: endpoint,
                 apiKey: apiKey,
-                temparture: temparture,
+                temperature: temperature,
                 isSelected: isSelected,
                 rowid: rowid,
               ),

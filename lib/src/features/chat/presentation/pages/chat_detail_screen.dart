@@ -1,22 +1,18 @@
 import 'dart:io';
 
 import 'package:elegant_notification/elegant_notification.dart';
-import 'package:elegant_notification/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:mtp/src/core/utils/immersive_mode.dart';
+import 'package:mtp/src/core/widgets/message_bubble.dart';
 import 'package:mtp/src/features/chat/domain/entities/chat_message_entity.dart';
-import 'package:mtp/src/features/chat/domain/entities/session_details_entity.dart';
 import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
 import 'package:mtp/src/features/chat/presentation/providers/chat_provider.dart';
 import 'package:mtp/src/features/role/persentation/providers/role_provider.dart';
 import 'package:mtp/src/core/widgets/simple_icon_button.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
-import '../../../../core/widgets/message_bubble.dart';
+import 'package:collection/collection.dart';
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   const ChatDetailScreen({super.key});
@@ -34,7 +30,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // 设置沉浸式状态栏，延迟执行以获取正确的主题颜色
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _updateStatusBarColor();
@@ -42,7 +37,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     });
   }
 
-  // 更新状态栏颜色以匹配header背景色
   void _updateStatusBarColor() {
     final brightness = Theme.of(context).brightness;
     final headerColor = Theme.of(context).colorScheme.surface;
@@ -56,7 +50,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 主题变化时更新状态栏颜色
     _updateStatusBarColor();
   }
 
@@ -68,7 +61,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
+    if (_scrollController.hasClients &&
+        _scrollController.position.hasContentDimensions) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
@@ -80,633 +74,632 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // 使用Provider获取当前会话
-    final currentSession = ref.watch(currentSessionProvider);
+    final chatState = ref.watch(sessionStateProvider);
+    final activeSession = chatState.currentSession;
 
-    if (currentSession == null) {
+    ref.listen<String?>(
+      sessionStateProvider.select((value) => value.errorMessage),
+      (previous, next) {
+        if (next != null && next.isNotEmpty) {
+          ElegantNotification.error(
+            title: const Text('发生错误'),
+            description: Text(next),
+            icon: const Icon(Ionicons.sad_outline),
+            position: Alignment.bottomRight,
+          ).show(context);
+          ref.read(sessionStateProvider.notifier).clearErrorMessage();
+        }
+      },
+    );
+
+    if (activeSession == null) {
       return _buildEmptyConversationView();
     }
 
     final roleState = ref.watch(roleStateProvider);
-    final messages = currentSession.messages;
-    final title = currentSession.title;
-    // 确定是否活跃 (最近10分钟有新消息)
-    final isActive =
-        currentSession.updatedAt != null &&
-        DateTime.now().difference(currentSession.updatedAt!).inMinutes < 10;
-    // 根据 roleId 获取角色信息
-    final role =
-        roleState.roles.isEmpty
-            ? null
-            : roleState.roles.firstWhere(
-              (role) => role.id == currentSession.roleId,
-              orElse: () => roleState.roles.first,
-            );
-    // 获取角色头像
-    String? avatarUrl;
-    if (role != null && role.avatars.isNotEmpty) {
-      avatarUrl = role.avatars.first;
+    final messages = activeSession.messages;
+    final title = activeSession.title;
+
+    // 使用最后一条消息的创建时间来判断活跃状态
+    final DateTime? lastMessageTime =
+        activeSession.messages.lastOrNull?.createdAt;
+    final bool isActive =
+        lastMessageTime != null &&
+        DateTime.now().difference(lastMessageTime).inMinutes < 10;
+
+    // 从 roleIds 获取第一个角色用于显示
+    final String? currentDisplayRoleId = activeSession.roleIds.firstOrNull;
+    final RoleEntity? displayRole =
+        roleState.roles.isNotEmpty && currentDisplayRoleId != null
+            ? roleState.roles.firstWhereOrNull(
+              // 使用 firstWhereOrNull 避免异常
+              (role) => role.id == currentDisplayRoleId,
+            )
+            : null;
+
+    String? avatarUrl = activeSession.avatar; // 优先使用会话头像
+    if (avatarUrl == null || avatarUrl.isEmpty) {
+      // 如果会话头像为空，则尝试使用角色的头像
+      if (displayRole != null && displayRole.avatars.isNotEmpty) {
+        avatarUrl = displayRole.avatars.first;
+      }
     }
 
-    // 确保消息列表底部有足够空间，避免输入框遮挡
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
-    // 使用Scaffold来支持endDrawer
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      endDrawer: _buildRoleManagementDrawer(context, currentSession.roleId),
-      // 移除默认的抽屉按钮
+      // endDrawer:
+      //     currentDisplayRoleId != null &&
+      //             displayRole !=
+      //                 null // 确保 displayRole 也存在
+      //         ? _buildRoleManagementDrawer(
+      //           context,
+      //           displayRole,
+      //           activeSession,
+      //         ) // 传递 RoleEntity
+      //         : null,
       appBar: PreferredSize(
         preferredSize: Size.zero,
         child: AppBar(automaticallyImplyLeading: false),
       ),
       body: Column(
         children: [
-          // 对话标题栏
-          _buildHeader(context, title, isActive, avatarUrl, role),
-
-          // 消息列表
+          _buildHeader(context, title, isActive, avatarUrl, displayRole),
           Expanded(
             child:
                 messages.isEmpty
                     ? _buildEmptyConversation(context)
                     : _buildMessagesList(context, messages),
           ),
-
-          // 消息输入区域
           _buildMessageComposer(context),
         ],
       ),
     );
   }
 
-  // 角色管理抽屉
-  Widget _buildRoleManagementDrawer(
-    BuildContext context,
-    String currentRoleId,
-  ) {
-    final theme = Theme.of(context);
-    final roleState = ref.watch(roleStateProvider);
+  // Widget _buildRoleManagementDrawer(
+  //   BuildContext context,
+  //   RoleEntity currentRole, // 直接接收 RoleEntity
+  //   ActiveSessionEntity activeSession,
+  // ) {
+  //   final theme = Theme.of(context);
+  //   // final roleState = ref.watch(roleStateProvider); // currentRole 已经传入
 
-    // 获取当前角色
-    final currentRole = roleState.roles.firstWhere(
-      (r) => r.id == currentRoleId,
-      orElse: () => roleState.roles.first,
-    );
-    // currentRoleId != null && roleState.roles.isNotEmpty
-    //     ? roleState.roles.firstWhere(
-    //       (r) => r.id == currentRoleId,
-    //       orElse: () => roleState.roles.first,
-    //     )
-    //     : null;
+  //   ImageProvider<Object>? currentRoleAvatar =
+  //       currentRole.avatars.isNotEmpty
+  //           ? (currentRole.avatars.first.startsWith('http')
+  //               ? NetworkImage(currentRole.avatars.first)
+  //               : FileImage(File(currentRole.avatars.first)))
+  //           : null;
 
-    // if (currentRole == null) {
-    //   return const Drawer(child: Center(child: Text("没有找到当前角色信息")));
-    // }
+  //   final isMobile = Platform.isAndroid || Platform.isIOS;
+  //   final screenWidth = MediaQuery.of(context).size.width;
+  //   final width = isMobile ? screenWidth : 300.0;
 
-    ImageProvider<Object>? currentRoleAvatar =
-        currentRole.avatars.isNotEmpty
-            ? (currentRole.avatars.first.startsWith('http')
-                ? NetworkImage(currentRole.avatars.first)
-                : FileImage(File(currentRole.avatars.first)))
-            : null;
+  //   final String lastMessageContent =
+  //       activeSession.messages.lastOrNull?.content ?? "暂无消息记录";
 
-    final isMobile = Platform.isAndroid || Platform.isIOS;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final width = isMobile ? screenWidth : 300.0;
+  //   return Material(
+  //     borderRadius:
+  //         isMobile
+  //             ? BorderRadius.zero
+  //             : const BorderRadius.only(
+  //               topLeft: Radius.circular(8),
+  //               bottomLeft: Radius.circular(8),
+  //             ),
+  //     child: SizedBox(
+  //       width: width,
+  //       child: Container(
+  //         padding: const EdgeInsets.all(16),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Padding(
+  //               padding: const EdgeInsets.only(bottom: 16),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                 children: [
+  //                   Text("角色信息", style: theme.textTheme.titleLarge),
+  //                   if (isMobile)
+  //                     IconButton(
+  //                       icon: const Icon(Icons.close),
+  //                       onPressed: () => GoRouter.of(context).pop(),
+  //                       tooltip: "关闭",
+  //                     ),
+  //                 ],
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: SingleChildScrollView(
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                   children: [
+  //                     Center(
+  //                       child: Column(
+  //                         children: [
+  //                           CircleAvatar(
+  //                             radius: 48,
+  //                             backgroundImage: currentRoleAvatar,
+  //                             child:
+  //                                 currentRole.avatars.isEmpty
+  //                                     ? Text(
+  //                                       currentRole.name.isNotEmpty
+  //                                           ? currentRole.name[0].toUpperCase()
+  //                                           : '?',
+  //                                       style: theme.textTheme.headlineMedium,
+  //                                     )
+  //                                     : null,
+  //                           ),
+  //                           const SizedBox(height: 16),
+  //                           Text(
+  //                             currentRole.name,
+  //                             style: theme.textTheme.titleLarge,
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 24),
+  //                     const Divider(),
+  //                     const SizedBox(height: 16),
+  //                     Text("角色详细信息", style: theme.textTheme.titleMedium),
+  //                     const SizedBox(height: 8),
+  //                     Container(
+  //                       padding: const EdgeInsets.all(12),
+  //                       decoration: BoxDecoration(
+  //                         color: theme.colorScheme.surfaceContainerHighest,
+  //                         borderRadius: BorderRadius.circular(8),
+  //                       ),
+  //                       child: Column(
+  //                         crossAxisAlignment: CrossAxisAlignment.start,
+  //                         children: [
+  //                           Text(
+  //                             "提示词",
+  //                             style: theme.textTheme.labelLarge?.copyWith(
+  //                               color: theme.colorScheme.primary,
+  //                             ),
+  //                           ),
+  //                           const SizedBox(height: 4),
+  //                           Text(
+  //                             currentRole.prompt == null ||
+  //                                     currentRole.prompt!.isEmpty
+  //                                 ? "未设置提示词"
+  //                                 : currentRole.prompt!,
+  //                             style: theme.textTheme.bodyMedium,
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 16),
+  //                     Container(
+  //                       padding: const EdgeInsets.all(12),
+  //                       decoration: BoxDecoration(
+  //                         color: theme.colorScheme.surfaceContainerHighest,
+  //                         borderRadius: BorderRadius.circular(8),
+  //                       ),
+  //                       child: Column(
+  //                         crossAxisAlignment: CrossAxisAlignment.start,
+  //                         children: [
+  //                           Text(
+  //                             "最近消息",
+  //                             style: theme.textTheme.labelLarge?.copyWith(
+  //                               color: theme.colorScheme.primary,
+  //                             ),
+  //                           ),
+  //                           const SizedBox(height: 4),
+  //                           Text(
+  //                             lastMessageContent,
+  //                             style: theme.textTheme.bodyMedium,
+  //                             maxLines: 2,
+  //                             overflow: TextOverflow.ellipsis,
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 20),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             Padding(
+  //               padding: const EdgeInsets.only(top: 16),
+  //               child: Column(
+  //                 children: [
+  //                   SizedBox(
+  //                     width: double.infinity,
+  //                     child: OutlinedButton.icon(
+  //                       icon: const Icon(Ionicons.trash_outline),
+  //                       label: const Text("清除历史记录"),
+  //                       onPressed: () {
+  //                         GoRouter.of(context).pop();
+  //                         _showClearHistoryConfirmation(context, activeSession);
+  //                       },
+  //                       style: OutlinedButton.styleFrom(
+  //                         foregroundColor: theme.colorScheme.error,
+  //                         side: BorderSide(
+  //                           color: theme.colorScheme.error.withAlpha(120),
+  //                         ),
+  //                         padding: const EdgeInsets.symmetric(vertical: 10),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 16),
+  //                   Row(
+  //                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //                     children: [
+  //                       ElevatedButton.icon(
+  //                         icon: const Icon(Icons.edit_outlined),
+  //                         label: const Text("编辑角色"),
+  //                         onPressed: () {
+  //                           GoRouter.of(context).pop();
+  //                           _showEditRoleDialog(context, currentRole);
+  //                         },
+  //                         style: ElevatedButton.styleFrom(
+  //                           backgroundColor: theme.colorScheme.primary,
+  //                           foregroundColor: theme.colorScheme.onPrimary,
+  //                         ),
+  //                       ),
+  //                       ElevatedButton.icon(
+  //                         icon: const Icon(Icons.delete_outline),
+  //                         label: const Text("删除角色"),
+  //                         onPressed: () {
+  //                           if (activeSession.id.isNotEmpty &&
+  //                               currentRole.id != null) {
+  //                             _showDeleteRoleConfirmation(
+  //                               context,
+  //                               currentRole.id!,
+  //                               activeSession.id,
+  //                             );
+  //                           } else {
+  //                             ElegantNotification.error(
+  //                               title: const Text('发生错误'),
+  //                               description: const Text('无法删除：缺少角色或会话信息'),
+  //                               icon: const Icon(Ionicons.sad_outline),
+  //                               position:
+  //                                   isMobile
+  //                                       ? Alignment.topCenter
+  //                                       : Alignment.bottomRight,
+  //                               animation:
+  //                                   isMobile
+  //                                       ? AnimationType.fromTop
+  //                                       : AnimationType.fromRight,
+  //                             ).show(context);
+  //                           }
+  //                         },
+  //                         style: ElevatedButton.styleFrom(
+  //                           backgroundColor: theme.colorScheme.errorContainer,
+  //                           foregroundColor: theme.colorScheme.onErrorContainer,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-    return Material(
-      borderRadius:
-          isMobile
-              ? BorderRadius.zero
-              : BorderRadius.only(
-                topLeft: Radius.circular(8),
-                bottomLeft: Radius.circular(8),
-              ),
-      child: SizedBox(
-        width: width,
-        // 设置抽屉高度为屏幕高度减去标题栏高度
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 抽屉标题
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("角色信息", style: theme.textTheme.titleLarge),
-                    if (isMobile)
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => GoRouter.of(context).pop(),
-                        tooltip: "关闭",
-                      ),
-                  ],
-                ),
-              ),
+  // void _showEditRoleDialog(BuildContext context, RoleEntity role) {
+  //   final roleNameController = TextEditingController(text: role.name);
+  //   final rolePromptController = TextEditingController(text: role.prompt);
+  //   File? selectedAvatarFile;
+  //   bool isUpdating = false;
 
-              // 使用Expanded和SingleChildScrollView包裹主要内容，使其可滚动
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 角色头像区域
-                      Center(
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 48,
-                              backgroundImage: currentRoleAvatar,
-                              child:
-                                  currentRole.avatars.isEmpty
-                                      ? Text(
-                                        currentRole.name.isNotEmpty
-                                            ? currentRole.name[0].toUpperCase()
-                                            : '?',
-                                        style: theme.textTheme.headlineMedium,
-                                      )
-                                      : null,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              currentRole.name,
-                              style: theme.textTheme.titleLarge,
-                            ),
-                          ],
-                        ),
-                      ),
+  //   if (!mounted) return;
 
-                      const SizedBox(height: 24),
-                      const Divider(),
-                      const SizedBox(height: 16),
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return StatefulBuilder(
+  //         builder: (context, setStateDialog) {
+  //           Future<void> pickImage() async {
+  //             final ImagePicker picker = ImagePicker();
+  //             final XFile? image = await picker.pickImage(
+  //               source: ImageSource.gallery,
+  //             );
+  //             if (image != null) {
+  //               setStateDialog(() {
+  //                 selectedAvatarFile = File(image.path);
+  //               });
+  //             }
+  //           }
 
-                      // 角色详细信息
-                      Text("角色信息", style: theme.textTheme.titleMedium),
-                      const SizedBox(height: 8),
+  //           return Dialog(
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(8),
+  //             ),
+  //             child: Container(
+  //               width: 400,
+  //               padding: const EdgeInsets.all(24),
+  //               child: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 crossAxisAlignment: CrossAxisAlignment.stretch,
+  //                 children: [
+  //                   Text(
+  //                     '编辑角色',
+  //                     style: Theme.of(context).textTheme.titleLarge,
+  //                     textAlign: TextAlign.center,
+  //                   ),
+  //                   const SizedBox(height: 24),
+  //                   Center(
+  //                     child: GestureDetector(
+  //                       onTap: pickImage,
+  //                       child: Container(
+  //                         width: 100,
+  //                         height: 100,
+  //                         decoration: BoxDecoration(
+  //                           color:
+  //                               Theme.of(
+  //                                 context,
+  //                               ).colorScheme.surfaceContainerHighest,
+  //                           shape: BoxShape.circle,
+  //                           image:
+  //                               selectedAvatarFile != null
+  //                                   ? DecorationImage(
+  //                                     image: FileImage(selectedAvatarFile!),
+  //                                     fit: BoxFit.cover,
+  //                                   )
+  //                                   : (role.avatars.isNotEmpty &&
+  //                                           role.avatars.first.isNotEmpty
+  //                                       ? DecorationImage(
+  //                                         image:
+  //                                             role.avatars.first.startsWith(
+  //                                                   'http',
+  //                                                 )
+  //                                                 ? NetworkImage(
+  //                                                   role.avatars.first,
+  //                                                 )
+  //                                                 : FileImage(
+  //                                                       File(
+  //                                                         role.avatars.first,
+  //                                                       ),
+  //                                                     )
+  //                                                     as ImageProvider,
+  //                                         fit: BoxFit.cover,
+  //                                       )
+  //                                       : null),
+  //                         ),
+  //                         child:
+  //                             selectedAvatarFile == null &&
+  //                                     (role.avatars.isEmpty ||
+  //                                         role.avatars.first.isEmpty)
+  //                                 ? Icon(
+  //                                   Icons.add_a_photo_outlined,
+  //                                   size: 40,
+  //                                   color:
+  //                                       Theme.of(context).colorScheme.primary,
+  //                                 )
+  //                                 : null,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 16),
+  //                   TextField(
+  //                     controller: roleNameController,
+  //                     decoration: const InputDecoration(
+  //                       labelText: '角色名称',
+  //                       hintText: '请输入角色名称',
+  //                       border: OutlineInputBorder(),
+  //                       prefixIcon: Icon(Icons.person_outline),
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 12),
+  //                   TextField(
+  //                     controller: rolePromptController,
+  //                     decoration: const InputDecoration(
+  //                       labelText: '角色提示词',
+  //                       hintText: '请输入角色提示词（可选）',
+  //                       border: OutlineInputBorder(),
+  //                       prefixIcon: Icon(Icons.psychology_outlined),
+  //                     ),
+  //                     maxLines: 3,
+  //                   ),
+  //                   const SizedBox(height: 24),
+  //                   Row(
+  //                     mainAxisAlignment: MainAxisAlignment.end,
+  //                     children: [
+  //                       TextButton(
+  //                         onPressed:
+  //                             isUpdating
+  //                                 ? null
+  //                                 : () => GoRouter.of(context).pop(),
+  //                         child: const Text('取消'),
+  //                       ),
+  //                       const SizedBox(width: 16),
+  //                       ElevatedButton(
+  //                         onPressed:
+  //                             isUpdating
+  //                                 ? null
+  //                                 : () async {
+  //                                   if (roleNameController.text
+  //                                       .trim()
+  //                                       .isEmpty) {
+  //                                     ElegantNotification.error(
+  //                                       title: const Text('提示'),
+  //                                       description: const Text('角色名称不能为空'),
+  //                                     ).show(context);
+  //                                     return;
+  //                                   }
+  //                                   setStateDialog(() {
+  //                                     isUpdating = true;
+  //                                   });
+  //                                   try {
+  //                                     String? finalAvatarPath;
+  //                                     if (selectedAvatarFile != null) {
+  //                                       finalAvatarPath = await _saveRoleAvatar(
+  //                                         selectedAvatarFile!,
+  //                                       );
+  //                                     }
+  //                                     final updatedRole = RoleEntity(
+  //                                       id: role.id, // 确保 RoleEntity 有 id
+  //                                       name: roleNameController.text.trim(),
+  //                                       prompt:
+  //                                           rolePromptController.text.trim(),
+  //                                       avatars:
+  //                                           finalAvatarPath != null
+  //                                               ? [finalAvatarPath]
+  //                                               : role.avatars,
+  //                                       lastMessage: role.lastMessage,
+  //                                     );
+  //                                     await ref
+  //                                         .read(roleStateProvider.notifier)
+  //                                         .updateRole(updatedRole);
+  //                                     if (mounted) GoRouter.of(context).pop();
+  //                                   } catch (e) {
+  //                                     ElegantNotification.error(
+  //                                       title: const Text('发生错误'),
+  //                                       description: Text('更新失败: $e'),
+  //                                       icon: const Icon(Ionicons.sad_outline),
+  //                                       position: Alignment.bottomRight,
+  //                                     ).show(context);
+  //                                   } finally {
+  //                                     if (mounted) {
+  //                                       setStateDialog(() {
+  //                                         isUpdating = false;
+  //                                       });
+  //                                     }
+  //                                   }
+  //                                 },
+  //                         style: ElevatedButton.styleFrom(
+  //                           backgroundColor:
+  //                               Theme.of(context).colorScheme.primary,
+  //                           foregroundColor:
+  //                               Theme.of(context).colorScheme.onPrimary,
+  //                         ),
+  //                         child:
+  //                             isUpdating
+  //                                 ? const SizedBox(
+  //                                   width: 20,
+  //                                   height: 20,
+  //                                   child: CircularProgressIndicator(
+  //                                     strokeWidth: 2,
+  //                                     color: Colors.white,
+  //                                   ),
+  //                                 )
+  //                                 : const Text('保存'),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
-                      // 提示词区域
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "提示词",
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              currentRole.prompt == null
-                                  ? "未设置提示词"
-                                  : currentRole.prompt!,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
+  // void _showDeleteRoleConfirmation(
+  //   BuildContext context,
+  //   String roleId,
+  //   String sessionId,
+  // ) {
+  //   showDialog(
+  //     context: context,
+  //     builder:
+  //         (context) => AlertDialog(
+  //           title: const Text("删除角色"),
+  //           content: const Text(
+  //             "确定要删除这个角色吗？这将会从当前会话中移除该角色，但不会删除会话本身。如果该角色未被其他会话使用，它将被彻底删除。",
+  //           ), // 更新提示信息
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () => GoRouter.of(context).pop(),
+  //               child: const Text("取消"),
+  //             ),
+  //             TextButton(
+  //               onPressed: () async {
+  //                 GoRouter.of(context).pop();
 
-                      const SizedBox(height: 16),
+  //                 // 从会话中移除角色ID
+  //                 await ref
+  //                     .read(sessionStateProvider.notifier)
+  //                     .removeRoleFromSession(sessionId, roleId);
+  //                 // 尝试删除角色（如果不再被任何会话引用，角色仓库的实现应处理实际删除）
+  //                 await ref.read(roleStateProvider.notifier).deleteRole(roleId);
 
-                      // 最后一条消息
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "最近消息",
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              currentSession.lastMessage.isEmpty
-                                  ? "暂无消息记录"
-                                  : currentRole.lastMessage,
-                              style: theme.textTheme.bodyMedium,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
+  //                 // 刷新当前会话视图或导航
+  //                 final chatNotifier = ref.read(sessionStateProvider.notifier);
+  //                 final currentChatState = ref.read(sessionStateProvider);
+  //                 if (currentChatState.currentSession?.id == sessionId) {
+  //                   // 如果当前会话仍然是这个，重新加载它以反映角色变化
+  //                   final selectedIndex = currentChatState.selectedSessionIndex;
+  //                   if (selectedIndex != -1) {
+  //                     await chatNotifier.selectSession(selectedIndex);
+  //                   }
+  //                 } else if (currentChatState.sessions.isEmpty ||
+  //                     currentChatState.currentSession == null) {
+  //                   if (mounted) GoRouter.of(context).go('/chat');
+  //                 }
+  //               },
+  //               child: const Text(
+  //                 "确认移除",
+  //                 style: TextStyle(color: Colors.red),
+  //               ), // 更改按钮文本
+  //             ),
+  //           ],
+  //         ),
+  //   );
+  // }
 
-                      // 添加足够的底部空间，防止底部按钮遮挡
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              ),
+  // void _showClearHistoryConfirmation(
+  //   BuildContext context,
+  //   ActiveSessionEntity activeSession,
+  // ) {
+  //   if (activeSession.id.isEmpty) return;
 
-              // 操作按钮区域 - 保持在滚动区域外
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Column(
-                  children: [
-                    // 清除历史记录按钮
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Ionicons.trash),
-                        label: const Text("清除历史记录"),
-                        onPressed: () {
-                          GoRouter.of(context).pop();
-                          _showClearHistoryConfirmation(context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: theme.colorScheme.error,
-                          side: BorderSide(
-                            color: theme.colorScheme.error.withAlpha(
-                              alpha: 0.5,
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // 编辑与删除按钮行
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.edit),
-                          label: const Text("编辑角色"),
-                          onPressed: () {
-                            GoRouter.of(context).pop();
-                            _showEditRoleDialog(context, currentRole);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.delete_outline),
-                          label: const Text("删除角色"),
-                          onPressed: () {
-                            final currentSession = ref.watch(
-                              currentSessionProvider,
-                            );
-                            if (currentSession != null) {
-                              _showDeleteRoleConfirmation(
-                                context,
-                                currentRole.id!,
-                                currentSession.id!,
-                              );
-                            } else {
-                              ElegantNotification.error(
-                                title: Text('发生错误'),
-                                description: Text('无法删除：找不到当前会话'),
-                                icon: Icon(Ionicons.sad),
-                                position:
-                                    isMobile
-                                        ? Alignment.topCenter
-                                        : Alignment.bottomRight,
-                                animation:
-                                    isMobile
-                                        ? AnimationType.fromTop
-                                        : AnimationType.fromRight,
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.errorContainer,
-                            foregroundColor: theme.colorScheme.onErrorContainer,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //   showDialog(
+  //     context: context,
+  //     builder:
+  //         (context) => AlertDialog(
+  //           title: const Text("清除历史记录"),
+  //           content: const Text("确定要清除当前会话的所有聊天记录吗？此操作不可撤销，但会保留会话本身。"),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () => GoRouter.of(context).pop(),
+  //               child: const Text("取消"),
+  //             ),
+  //             TextButton(
+  //               onPressed: () {
+  //                 GoRouter.of(context).pop();
+  //                 _clearChatHistory(activeSession.id);
+  //               },
+  //               style: TextButton.styleFrom(
+  //                 foregroundColor: Theme.of(context).colorScheme.error,
+  //               ),
+  //               child: const Text("清除"),
+  //             ),
+  //           ],
+  //         ),
+  //   );
+  // }
 
-  // 显示编辑角色对话框
-  void _showEditRoleDialog(BuildContext context, RoleEntity role) {
-    final roleNameController = TextEditingController(text: role.name);
-    final rolePromptController = TextEditingController(text: role.prompt);
-    File? selectedAvatar;
-    String? avatarPath;
-    bool isUpdating = false;
-
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            // 选择头像方法
-            Future<void> pickImage() async {
-              final ImagePicker picker = ImagePicker();
-              final XFile? image = await picker.pickImage(
-                source: ImageSource.gallery,
-              );
-
-              if (image != null) {
-                setState(() {
-                  selectedAvatar = File(image.path);
-                });
-              }
-            }
-
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Container(
-                width: 400,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 标题
-                    Text(
-                      '编辑角色',
-                      style: Theme.of(context).textTheme.titleLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 角色头像
-                    Center(
-                      child: GestureDetector(
-                        onTap: pickImage,
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color:
-                                Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                            shape: BoxShape.circle,
-                            image:
-                                selectedAvatar != null
-                                    ? DecorationImage(
-                                      image: FileImage(selectedAvatar!),
-                                      fit: BoxFit.cover,
-                                    )
-                                    : role.avatars.isNotEmpty
-                                    ? DecorationImage(
-                                      image: FileImage(
-                                        File(role.avatars.first),
-                                      ),
-                                      fit: BoxFit.cover,
-                                    )
-                                    : null,
-                          ),
-                          child:
-                              selectedAvatar == null && role.avatars.isEmpty
-                                  ? Icon(
-                                    Icons.add_a_photo,
-                                    size: 40,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  )
-                                  : null,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // 角色名称
-                    TextField(
-                      controller: roleNameController,
-                      decoration: const InputDecoration(
-                        labelText: '角色名称',
-                        hintText: '请输入角色名称',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // 角色提示词
-                    TextField(
-                      controller: rolePromptController,
-                      decoration: const InputDecoration(
-                        labelText: '角色提示词',
-                        hintText: '请输入角色提示词（可选）',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.psychology),
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // 按钮
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed:
-                              isUpdating
-                                  ? null
-                                  : () => GoRouter.of(context).pop(),
-                          child: const Text('取消'),
-                        ),
-                        const SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed:
-                              isUpdating
-                                  ? null
-                                  : () async {
-                                    if (roleNameController.text
-                                        .trim()
-                                        .isEmpty) {
-                                      return;
-                                    }
-
-                                    setState(() {
-                                      isUpdating = true;
-                                    });
-
-                                    try {
-                                      // 保存头像（如果有新选择的）
-                                      if (selectedAvatar != null) {
-                                        avatarPath = await _saveRoleAvatar(
-                                          selectedAvatar!,
-                                        );
-                                      }
-
-                                      // 更新角色
-                                      final updatedRole = RoleEntity(
-                                        id: role.id,
-                                        name: roleNameController.text.trim(),
-                                        prompt:
-                                            rolePromptController.text.trim(),
-                                        avatars:
-                                            avatarPath != null
-                                                ? [avatarPath!]
-                                                : role.avatars,
-                                        lastMessage: role.lastMessage,
-                                      );
-
-                                      await ref
-                                          .read(roleStateProvider.notifier)
-                                          .updateRole(updatedRole);
-                                      GoRouter.of(context).pop();
-                                    } catch (e) {
-                                      ElegantNotification.error(
-                                        title: Text('发生错误'),
-                                        description: Text('更新失败: $e'),
-                                        icon: Icon(Ionicons.sad),
-                                        position: Alignment.bottomRight,
-                                      ).show(context);
-                                    } finally {
-                                      if (mounted) {
-                                        setState(() {
-                                          isUpdating = false;
-                                        });
-                                      }
-                                    }
-                                  },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onPrimary,
-                          ),
-                          child:
-                              isUpdating
-                                  ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                  : const Text('保存'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // 显示删除角色确认对话框
-  void _showDeleteRoleConfirmation(
-    BuildContext context,
-    String roleId,
-    String sessionId,
-  ) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("删除角色"),
-            content: const Text("确定要删除这个角色吗？与该角色的所有对话也会被删除。"),
-            actions: [
-              TextButton(
-                onPressed: () => GoRouter.of(context).pop(),
-                child: const Text("取消"),
-              ),
-              TextButton(
-                onPressed: () {
-                  GoRouter.of(context).pop(); // 关闭确认对话框
-                  GoRouter.of(context).pop(); // 关闭角色管理抽屉
-                  ref.read(roleStateProvider.notifier).deleteRole(roleId);
-                  ref
-                      .read(sessionStateProvider.notifier)
-                      .deleteSession(sessionId);
-                },
-                child: const Text("删除", style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-    );
-  }
-
-  // 显示清除历史记录确认对话框
-  void _showClearHistoryConfirmation(BuildContext context) {
-    final currentSession = ref.read(currentSessionProvider);
-    if (currentSession == null) return;
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("清除历史记录"),
-            content: const Text("确定要清除所有聊天记录吗？此操作不可撤销，但会保留会话本身。"),
-            actions: [
-              TextButton(
-                onPressed: () => GoRouter.of(context).pop(),
-                child: const Text("取消"),
-              ),
-              TextButton(
-                onPressed: () {
-                  GoRouter.of(context).pop();
-                  _clearChatHistory(currentSession);
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                ),
-                child: const Text("清除"),
-              ),
-            ],
-          ),
-    );
-  }
-
-  // 清除聊天历史记录的方法
-  void _clearChatHistory(SessionDetailsEntity session) {
-    // 创建一个新会话，保留原有信息但清空消息
-    final clearedSession = session.copyWith(roleIds: [], lastMessageAt: null);
-
-    // 更新会话
-    ref.read(sessionStateProvider.notifier).importSession(clearedSession);
-
-    // 显示提示
-    ElegantNotification.success(
-      description: Text('聊天记录已清除'),
-      icon: Icon(Ionicons.checkmark_done_circle),
-      position: Alignment.bottomRight,
-    ).show(context);
-  }
+  // void _clearChatHistory(String sessionId) {
+  //   ref.read(sessionStateProvider.notifier).clearMessagesForSession(sessionId);
+  //   ElegantNotification.success(
+  //     description: const Text('聊天记录已清除'),
+  //     icon: const Icon(Ionicons.checkmark_done_circle_outline),
+  //     position: Alignment.bottomRight,
+  //   ).show(context);
+  // }
 
   Widget _buildHeader(
     BuildContext context,
     String title,
     bool isActive,
-    String? avatarUrl,
-    RoleEntity? role,
+    String? avatarUrl, // 这个 avatarUrl 已经考虑了会话头像和角色头像
+    RoleEntity? displayRole,
   ) {
     final theme = Theme.of(context);
     final isMobile = Platform.isAndroid || Platform.isIOS;
     final statusBarHeight = ImmersiveMode.getStatusBarHeight(context);
     final headerColor = theme.colorScheme.surface;
 
-    // 确保状态栏颜色与header背景一致
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ImmersiveMode.set(
@@ -717,10 +710,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     });
 
     return Container(
-      key: _headerKey, // 添加key以测量高度
+      key: _headerKey,
       padding: EdgeInsets.only(
-        // 添加状态栏高度到顶部内边距
-        top: statusBarHeight + (isMobile ? 8 : 20),
+        top: statusBarHeight + (isMobile ? 8 : 12),
         left: isMobile ? 8 : 16,
         right: isMobile ? 8 : 16,
         bottom: 12,
@@ -729,7 +721,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         color: headerColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             offset: const Offset(0, 1),
             blurRadius: 3,
           ),
@@ -743,9 +735,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 ref.read(sessionStateProvider.notifier).selectSession(-1);
                 GoRouter.of(context).go('/chat');
               },
-              icon: Icon(Ionicons.chevron_back),
+              icon: const Icon(Ionicons.chevron_back),
+              tooltip: "返回列表",
             ),
-          // 头像
           Container(
             width: 40,
             height: 40,
@@ -753,18 +745,18 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               shape: BoxShape.circle,
               color: theme.colorScheme.surfaceContainerHighest,
               image:
-                  avatarUrl != null
+                  avatarUrl != null && avatarUrl.isNotEmpty
                       ? DecorationImage(
                         image:
                             avatarUrl.startsWith('http')
                                 ? NetworkImage(avatarUrl)
-                                : FileImage(File(avatarUrl)),
+                                : FileImage(File(avatarUrl)) as ImageProvider,
                         fit: BoxFit.cover,
                       )
                       : null,
             ),
             child:
-                avatarUrl == null
+                avatarUrl == null || avatarUrl.isEmpty
                     ? Center(
                       child: Text(
                         title.isNotEmpty ? title[0].toUpperCase() : '?',
@@ -775,10 +767,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     )
                     : null,
           ),
-
           const SizedBox(width: 12),
-
-          // 标题和状态
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -790,31 +779,33 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (role != null)
+                if (displayRole != null) // 使用 displayRole
                   Text(
-                    role.name,
+                    displayRole.name, // 使用 displayRole.name
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.primary,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
               ],
             ),
           ),
-
-          // 操作按钮 - 修改为打开抽屉
-          Builder(
-            builder:
-                (context) => IconButton(
-                  iconSize: 16,
-                  constraints: BoxConstraints(maxHeight: 32, maxWidth: 32),
-                  icon: const Icon(Ionicons.ellipsis_horizontal),
-                  onPressed: () {
-                    // 打开右侧抽屉
-                    Scaffold.of(context).openEndDrawer();
-                  },
-                  tooltip: '角色管理',
-                ),
-          ),
+          if (displayRole != null) // 只有当有关联角色时才显示抽屉按钮
+            Builder(
+              builder:
+                  (context) => IconButton(
+                    iconSize: 20,
+                    constraints: const BoxConstraints(
+                      maxHeight: 32,
+                      maxWidth: 32,
+                    ),
+                    icon: const Icon(Ionicons.ellipsis_horizontal),
+                    onPressed: () {
+                      Scaffold.of(context).openEndDrawer();
+                    },
+                    tooltip: '角色管理',
+                  ),
+            ),
         ],
       ),
     );
@@ -826,25 +817,23 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Ionicons.chatbubble,
+            Ionicons.chatbubble_ellipses_outline,
             size: 80,
-            color: Colors.grey.withValues(alpha: 0.5),
+            color: Theme.of(context).disabledColor,
           ),
           const SizedBox(height: 16),
           Text(
             '没有消息',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey.withValues(alpha: 0.8),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Theme.of(context).disabledColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             '发送一条消息开始对话',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.withValues(alpha: 0.6),
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Theme.of(context).hintColor),
           ),
         ],
       ),
@@ -856,33 +845,36 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     List<ChatMessageEntity> messages,
   ) {
     final isMobile = Platform.isAndroid || Platform.isIOS;
-    // 计算消息区域实际宽度
     final messageAreaWidth =
-        MediaQuery.of(context).size.width - (isMobile ? 0 : 252);
+        MediaQuery.of(context).size.width -
+        (isMobile
+            ? 0
+            : (Scaffold.of(context).hasEndDrawer &&
+                    Scaffold.of(context).isEndDrawerOpen
+                ? 300 + 32
+                : 32));
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];
         final isMe = message.isFromUser;
-
-        // 显示日期分隔
         final showDate =
             index == 0 ||
             _shouldShowDateSeparator(
-              messages[index - 1].timestamp,
-              message.timestamp,
+              messages[index - 1].createdAt,
+              message.createdAt,
             );
 
         return Column(
           children: [
-            if (showDate) _buildDateSeparator(message.timestamp),
+            if (showDate) _buildDateSeparator(message.createdAt),
             MessageBubble(
               message: message,
               isMe: isMe,
-              maxWidth: messageAreaWidth * 0.7,
+              maxWidth: messageAreaWidth * 0.75,
             ),
           ],
         );
@@ -917,14 +909,15 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.7),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
             dateText,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.withValues(alpha: 0.8),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -937,32 +930,33 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: theme.primaryColor.withAlpha(5),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(top: BorderSide(color: theme.dividerColor, width: 0.5)),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end, // 关键：底部对齐
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // 附件按钮
           Container(
-            height: 32, // 固定高度
-            alignment: Alignment.bottomCenter,
+            height: 40,
+            alignment: Alignment.center,
             child: IconButton(
-              iconSize: 16,
+              iconSize: 22,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              icon: const Icon(Icons.attach_file),
+              icon: const Icon(Ionicons.attach_outline),
               onPressed: () {
-                // 处理附件
+                ElegantNotification.info(
+                  description: const Text('附件功能暂未实现'),
+                ).show(context);
               },
               tooltip: '添加附件(暂不支持)',
             ),
           ),
-
           const SizedBox(width: 8),
-
-          // 消息输入框 - 允许扩展但有最大高度限制
           Expanded(
             child: Container(
-              constraints: const BoxConstraints(maxHeight: 120), // 限制最大高度
+              constraints: const BoxConstraints(maxHeight: 120),
               child: TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
@@ -972,28 +966,27 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
+                  fillColor: theme.colorScheme.surfaceContainerHighest,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,
                   ),
-                  // 在输入框内部右侧添加表情按钮
                   suffixIcon: SimpleIconButton(
-                    size: 16,
+                    size: 22,
                     icon: Icons.emoji_emotions_outlined,
-                    onPressed: () {},
+                    onPressed: () {
+                      ElegantNotification.info(
+                        description: const Text('表情功能暂未实现'),
+                      ).show(context);
+                    },
+                    // tooltip: "表情(暂不支持)",
                   ),
-                  isDense: true, // 使输入框更紧凑
+                  isDense: true,
                 ),
                 maxLines: null,
-                // 允许多行
                 minLines: 1,
-                // 最少一行
                 textInputAction: TextInputAction.newline,
-                // 允许换行
                 keyboardType: TextInputType.multiline,
-                // 多行输入
                 onChanged: (text) {
                   setState(() {
                     _isComposing = text.trim().isNotEmpty;
@@ -1002,19 +995,18 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               ),
             ),
           ),
-
           const SizedBox(width: 8),
-
-          // 语音/发送按钮
           Container(
-            height: 32, // 固定高度
-            alignment: Alignment.bottomCenter,
+            height: 40,
+            alignment: Alignment.center,
             child: IconButton(
-              iconSize: 16,
+              iconSize: 22,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               icon:
-                  _isComposing ? const Icon(Icons.send) : const Icon(Icons.mic),
+                  _isComposing
+                      ? const Icon(Ionicons.send)
+                      : const Icon(Ionicons.mic_outline),
               color:
                   _isComposing
                       ? theme.colorScheme.primary
@@ -1023,8 +1015,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   _isComposing
                       ? () => _handleSubmitted(_messageController.text)
                       : () {
-                        // 处理语音输入
-                        print('开始语音输入');
+                        ElegantNotification.info(
+                          description: const Text('语音输入功能暂未实现'),
+                        ).show(context);
                       },
               tooltip: _isComposing ? '发送' : '语音输入(暂不支持)',
             ),
@@ -1036,28 +1029,31 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
   Widget _buildEmptyConversationView() {
     final theme = Theme.of(context);
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Ionicons.chatbox,
+            Ionicons.chatbubbles_outline,
             size: 100,
-            color: Colors.grey.withValues(alpha: 0.5),
+            color: theme.disabledColor,
           ),
           const SizedBox(height: 24),
           Text(
-            "请选择一个会话或创建新的会话",
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: Colors.grey.withValues(alpha: 0.8),
+            "请选择或创建会话",
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: theme.hintColor,
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            "在左侧列表选择一个会话，或点击 + 按钮创建新会话",
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey.withValues(alpha: 0.6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+            child: Text(
+              "在左侧列表选择一个已有会话，或点击上方的 '+' 按钮创建新的聊天。",
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.hintColor.withOpacity(0.8),
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -1068,41 +1064,35 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   void _handleSubmitted(String text) {
     if (text.trim().isEmpty) return;
 
+    final currentText = text.trim();
     _messageController.clear();
     setState(() {
       _isComposing = false;
     });
 
-    // 使用Provider发送消息
-    ref.read(sessionStateProvider.notifier).sendMessage(text);
+    ref.read(sessionStateProvider.notifier).sendMessage(currentText);
 
-    // 滚动到底部查看新消息
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
 
-  // 保存角色头像到本地
-  Future<String?> _saveRoleAvatar(File imageFile) async {
-    try {
-      // 获取应用文档目录
-      final appDir = await getApplicationDocumentsDirectory();
-
-      // 创建角色头像目录
-      final avatarDir = Directory('${appDir.path}/role_avatars');
-      if (!await avatarDir.exists()) {
-        await avatarDir.create(recursive: true);
-      }
-
-      // 创建唯一的文件名
-      final fileName =
-          'role_avatar_${DateTime.now().millisecondsSinceEpoch}${path.extension(imageFile.path)}';
-      final savedImagePath = '${avatarDir.path}/$fileName';
-
-      // 复制图片到应用目录
-      final savedFile = await imageFile.copy(savedImagePath);
-      return savedFile.path;
-    } catch (e) {
-      print('保存角色头像失败: $e');
-      return null;
-    }
-  }
+  // Future<String?> _saveRoleAvatar(File imageFile) async {
+  //   try {
+  //     final appDir = await getApplicationDocumentsDirectory();
+  //     final avatarDir = Directory(path.join(appDir.path, 'role_avatars'));
+  //     if (!await avatarDir.exists()) {
+  //       await avatarDir.create(recursive: true);
+  //     }
+  //     final fileName =
+  //         'role_avatar_${DateTime.now().millisecondsSinceEpoch}${path.extension(imageFile.path)}';
+  //     final savedImagePath = path.join(avatarDir.path, fileName);
+  //     final savedFile = await imageFile.copy(savedImagePath);
+  //     return savedFile.path;
+  //   } catch (e) {
+  //     ElegantNotification.error(
+  //       title: const Text("错误"),
+  //       description: Text("保存角色头像失败: $e"),
+  //     ).show(context);
+  //     return null;
+  //   }
+  // }
 }

@@ -122,7 +122,7 @@ void _registerDataSources(AppDatabase db) {
 
 void _registerRepositories() {
   // LLM仓库
-  getIt.registerFactory<LlmRepository>(
+  getIt.registerFactory<LLMRepository>(
     () => LlmRepositoryImpl(dio: getIt<Dio>()),
   );
 
@@ -145,11 +145,11 @@ void _registerRepositories() {
 void _registerUseCases() {
   // 文本生成相关用例
   getIt.registerFactory<GenerateCompletion>(
-    () => GenerateCompletion(getIt<LlmRepository>()),
+    () => GenerateCompletion(getIt<LLMRepository>()),
   );
 
   getIt.registerFactory<GenerateCompletionStream>(
-    () => GenerateCompletionStream(getIt<LlmRepository>()),
+    () => GenerateCompletionStream(getIt<LLMRepository>()),
   );
 }
 

@@ -3,40 +3,44 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'chat_message_entity.freezed.dart';
 part 'chat_message_entity.g.dart';
 
+/// 表示一条聊天消息。
 @freezed
 abstract class ChatMessageEntity with _$ChatMessageEntity {
+  /// 创建一个 [ChatMessageEntity] 实例。
   const factory ChatMessageEntity({
-    /// 消息ID
+    /// 消息的唯一标识符。
     required int id,
 
-    /// 消息内容
+    /// 消息的文本内容。
     required String content,
 
-    /// 消息创建时间
+    /// 消息的创建或发送时间。
     required DateTime createdAt,
 
-    /// 是否为用户自身消息
+    /// 指示此消息是否由当前用户发送。
     required bool isFromUser,
 
-    /// 是否为系统消息
-    required bool isSystem,
-
-    /// 发送者 ID
+    /// 消息发送者的唯一标识符。
     required String senderId,
 
-    /// 发送者名称
+    /// 消息发送者的显示名称。
     required String senderName,
 
-    /// 发送者头像
+    /// 消息发送者的头像URL或本地路径。
     required String senderAvatar,
 
-    /// 是否已读
+    /// 指示消息是否已被接收方阅读。
+    ///
+    /// 默认为 `false`。
     @Default(false) bool isRead,
 
-    /// 是否正在生成回复
+    /// 指示是否正在为此消息（通常是用户消息）生成AI回复。
+    ///
+    /// 默认为 `false`。
     @Default(false) bool isGenerating,
   }) = _ChatMessageEntity;
 
+  /// 从JSON映射创建一个 [ChatMessageEntity] 实例。
   factory ChatMessageEntity.fromJson(Map<String, dynamic> json) =>
       _$ChatMessageEntityFromJson(json);
 }

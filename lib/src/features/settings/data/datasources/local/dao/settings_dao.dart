@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:mtp/src/features/settings/data/datasources/local/tables/chat_model_table.dart';
+import 'package:mtp/src/shared/data/datasources/local/tables/chat_model_table.dart';
 import 'package:mtp/src/features/settings/data/datasources/local/tables/settings_table.dart';
 import 'package:mtp/src/features/settings/domain/entities/settings_entity.dart';
 import 'package:mtp/src/shared/data/datasources/local/app_database.dart';
@@ -145,9 +145,10 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
             .map(
               (model) => ChatModelEntity(
                 id: model.id,
-                name: model.name,
+                customName: model.customName,
+                modelName: model.modelName,
                 endpoint: model.endpoint,
-                temparture: model.temparture,
+                temperature: model.temperature,
                 apiKey: model.apiKey,
                 isSelected: model.isSelected,
               ),

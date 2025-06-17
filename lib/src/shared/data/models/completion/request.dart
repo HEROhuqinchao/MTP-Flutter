@@ -3,12 +3,16 @@ class CompletionRequest {
   final double temperature;
   final int maxTokens;
   final String model;
+  final String endpoint;
+  final String apiKey;
 
   CompletionRequest({
     required this.messages,
+    required this.model,
+    required this.endpoint,
+    required this.apiKey,
     this.temperature = 0.7,
     this.maxTokens = 2000,
-    this.model = 'gpt-3.5-turbo',
   });
 
   Map<String, dynamic> toJson() {
@@ -17,6 +21,8 @@ class CompletionRequest {
       'temperature': temperature,
       'max_tokens': maxTokens,
       'model': model,
+      'endpoint': endpoint,
+      'api_key': apiKey,
     };
   }
 }
