@@ -16,10 +16,9 @@ _SessionListItemEntity _$SessionListItemEntityFromJson(
   isPinned: json['isPinned'] as bool,
   avatar: json['avatar'] as String?,
   unreadCount: (json['unreadCount'] as num).toInt(),
-  lastMessageAt:
-      json['lastMessageAt'] == null
-          ? null
-          : DateTime.parse(json['lastMessageAt'] as String),
+  lastMessageAt: json['lastMessageAt'] == null
+      ? null
+      : DateTime.parse(json['lastMessageAt'] as String),
   lastMessage: json['lastMessage'] as String,
 );
 

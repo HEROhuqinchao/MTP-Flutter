@@ -1,6 +1,6 @@
 import Cocoa
 import FlutterMacOS
-import window_manager_plus
+import window_manager
 
 @main
 class AppDelegate: FlutterAppDelegate {

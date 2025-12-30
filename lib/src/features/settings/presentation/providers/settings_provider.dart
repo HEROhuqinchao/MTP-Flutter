@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../../domain/entities/settings_entity.dart';
 import '../../../../shared/domain/entities/chat_model_entity.dart';
 import '../../domain/repositories/settings_repository.dart';

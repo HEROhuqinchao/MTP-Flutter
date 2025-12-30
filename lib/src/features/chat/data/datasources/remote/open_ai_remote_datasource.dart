@@ -113,7 +113,6 @@ $ragContent''';
       // 添加stream参数
       final requestWithStream = Map<String, dynamic>.from(request.toJson())
         ..['stream'] = true;
-
       final uri = '${request.endpoint}/chat/completions';
 
       // 使用Dio的响应类型为流
@@ -142,7 +141,15 @@ $ragContent''';
             )
             .map((line) {
               try {
-                final jsonData = jsonDecode(line.substring(6));
+                // line
+                // line=data:{"id":"chat","object":"chat.completion.chunk","created":1767019085,"extend_fields":{"traceId":"2141676817670190852211701e0c6f","requestId":"36e6683bd27d4e9f80f388e3b0ef18bd"},"choices":[{"index":0,"delta":{"role":"assistant","content":""}}],"model":"qwen3-coder-plus"}
+                // 去掉 data:
+                // 去掉前缀 "data:" 并修剪空白
+                var payload = line.trim();
+                if (payload.startsWith('data:')) {
+                  payload = payload.substring('data:'.length).trim();
+                }
+                final jsonData = jsonDecode(payload);
                 if (jsonData['choices'] != null &&
                     jsonData['choices'].isNotEmpty &&
                     jsonData['choices'][0]['delta'] != null &&

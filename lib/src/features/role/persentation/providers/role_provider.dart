@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mtp/src/di/providers/repository_providers.dart';
 import 'package:mtp/src/features/role/domain/entities/role_entity.dart';
 import 'package:mtp/src/features/role/domain/repositories/role_repository.dart';

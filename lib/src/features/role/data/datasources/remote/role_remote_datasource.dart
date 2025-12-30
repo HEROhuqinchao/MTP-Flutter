@@ -11,7 +11,8 @@ class RoleRemoteDatasource {
 
   RoleRemoteDatasource({Dio? dio}) : _dio = dio ?? Dio();
 
-  Future<List<RolesCompanion>> fetchDefaultRoles() async {
+  Future<List<RolesCompanion>> fetchDefaultRoles() async
+  {
     try {
       final response = await _dio.get(
         'https://aronacdn.hanasaki.tech/mtp/student.json',

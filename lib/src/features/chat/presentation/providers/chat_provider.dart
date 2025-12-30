@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mtp/src/di/providers/repository_providers.dart';
 import 'package:mtp/src/features/chat/data/services/ai_response_service_impl.dart';
 import 'package:mtp/src/features/chat/domain/entities/active_session_entity.dart';

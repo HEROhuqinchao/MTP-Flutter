@@ -29,11 +29,11 @@ class AIResponseServiceImpl implements AIResponseService {
     final request = CompletionRequestEntity(
       messages: requestMessages,
       temperature: temperature,
-      maxTokens: 800,
+      maxTokens: 2000,
       model: modelName,
       // TODO: 需要根据实际情况设置 endpoint 和 apiKey
-      endpoint: '',
-      apiKey: '',
+      endpoint: 'https://apis.iflow.cn/v1',
+      apiKey: 'sk-c84388db8701adf6a7ba8eaeb39ab683',
     );
 
     return await _llmRepository.generateCompletionStream(request);

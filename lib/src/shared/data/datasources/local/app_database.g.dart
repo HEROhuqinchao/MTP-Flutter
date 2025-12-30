@@ -163,39 +163,34 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   Session map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Session(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}id'],
-          )!,
-      title:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}title'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
       avatar: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}avatar'],
       ),
-      type:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}type'],
-          )!,
-      createdAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}created_at'],
-          )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}type'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
       lastMessageAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_message_at'],
       ),
-      isPinned:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_pinned'],
-          )!,
+      isPinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pinned'],
+      )!,
     );
   }
 
@@ -256,14 +251,14 @@ class Session extends DataClass implements Insertable<Session> {
     return SessionsCompanion(
       id: Value(id),
       title: Value(title),
-      avatar:
-          avatar == null && nullToAbsent ? const Value.absent() : Value(avatar),
+      avatar: avatar == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avatar),
       type: Value(type),
       createdAt: Value(createdAt),
-      lastMessageAt:
-          lastMessageAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(lastMessageAt),
+      lastMessageAt: lastMessageAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastMessageAt),
       isPinned: Value(isPinned),
     );
   }
@@ -318,8 +313,9 @@ class Session extends DataClass implements Insertable<Session> {
     avatar: avatar.present ? avatar.value : this.avatar,
     type: type ?? this.type,
     createdAt: createdAt ?? this.createdAt,
-    lastMessageAt:
-        lastMessageAt.present ? lastMessageAt.value : this.lastMessageAt,
+    lastMessageAt: lastMessageAt.present
+        ? lastMessageAt.value
+        : this.lastMessageAt,
     isPinned: isPinned ?? this.isPinned,
   );
   Session copyWithCompanion(SessionsCompanion data) {
@@ -329,10 +325,9 @@ class Session extends DataClass implements Insertable<Session> {
       avatar: data.avatar.present ? data.avatar.value : this.avatar,
       type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      lastMessageAt:
-          data.lastMessageAt.present
-              ? data.lastMessageAt.value
-              : this.lastMessageAt,
+      lastMessageAt: data.lastMessageAt.present
+          ? data.lastMessageAt.value
+          : this.lastMessageAt,
       isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
     );
   }
@@ -654,36 +649,30 @@ class $ChatMessagesTable extends ChatMessages
   ChatMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ChatMessage(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}id'],
-          )!,
-      sessionId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}session_id'],
-          )!,
-      type:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}type'],
-          )!,
-      sender:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}sender'],
-          )!,
-      createdAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}created_at'],
-          )!,
-      content:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}content'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      sender: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sender'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
       isRead: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_read'],
@@ -750,8 +739,9 @@ class ChatMessage extends DataClass implements Insertable<ChatMessage> {
       sender: Value(sender),
       createdAt: Value(createdAt),
       content: Value(content),
-      isRead:
-          isRead == null && nullToAbsent ? const Value.absent() : Value(isRead),
+      isRead: isRead == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isRead),
     );
   }
 
@@ -1080,21 +1070,18 @@ class $RolesTable extends Roles with TableInfo<$RolesTable, Role> {
   Role map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Role(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}id'],
-          )!,
-      name:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}name'],
-          )!,
-      avatars:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}avatars'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      avatars: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatars'],
+      )!,
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
@@ -1154,12 +1141,12 @@ class Role extends DataClass implements Insertable<Role> {
       id: Value(id),
       name: Value(name),
       avatars: Value(avatars),
-      description:
-          description == null && nullToAbsent
-              ? const Value.absent()
-              : Value(description),
-      prompt:
-          prompt == null && nullToAbsent ? const Value.absent() : Value(prompt),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      prompt: prompt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(prompt),
     );
   }
 
@@ -1213,8 +1200,9 @@ class Role extends DataClass implements Insertable<Role> {
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       avatars: data.avatars.present ? data.avatars.value : this.avatars,
-      description:
-          data.description.present ? data.description.value : this.description,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       prompt: data.prompt.present ? data.prompt.value : this.prompt,
     );
   }
@@ -1431,21 +1419,18 @@ class $SessionRolesTable extends SessionRoles
   SessionRole map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return SessionRole(
-      sessionId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}session_id'],
-          )!,
-      roleId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}role_id'],
-          )!,
-      createdAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}created_at'],
-          )!,
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      )!,
+      roleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
     );
   }
 
@@ -1724,26 +1709,22 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
   Setting map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Setting(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}id'],
-          )!,
-      username:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}username'],
-          )!,
-      userAvatar:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}user_avatar'],
-          )!,
-      theme:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}theme'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      username: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}username'],
+      )!,
+      userAvatar: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_avatar'],
+      )!,
+      theme: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}theme'],
+      )!,
     );
   }
 
@@ -1828,8 +1809,9 @@ class Setting extends DataClass implements Insertable<Setting> {
     return Setting(
       id: data.id.present ? data.id.value : this.id,
       username: data.username.present ? data.username.value : this.username,
-      userAvatar:
-          data.userAvatar.present ? data.userAvatar.value : this.userAvatar,
+      userAvatar: data.userAvatar.present
+          ? data.userAvatar.value
+          : this.userAvatar,
       theme: data.theme.present ? data.theme.value : this.theme,
     );
   }
@@ -2136,46 +2118,38 @@ class $ChatModelsTable extends ChatModels
   ChatModel map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ChatModel(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}id'],
-          )!,
-      settingsId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}settings_id'],
-          )!,
-      customName:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}custom_name'],
-          )!,
-      modelName:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}model_name'],
-          )!,
-      endpoint:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}endpoint'],
-          )!,
-      apiKey:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}api_key'],
-          )!,
-      temperature:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}temperature'],
-          )!,
-      isSelected:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_selected'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      settingsId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}settings_id'],
+      )!,
+      customName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_name'],
+      )!,
+      modelName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model_name'],
+      )!,
+      endpoint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}endpoint'],
+      )!,
+      apiKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}api_key'],
+      )!,
+      temperature: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}temperature'],
+      )!,
+      isSelected: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_selected'],
+      )!,
     );
   }
 
@@ -2311,17 +2285,21 @@ class ChatModel extends DataClass implements Insertable<ChatModel> {
   ChatModel copyWithCompanion(ChatModelsCompanion data) {
     return ChatModel(
       id: data.id.present ? data.id.value : this.id,
-      settingsId:
-          data.settingsId.present ? data.settingsId.value : this.settingsId,
-      customName:
-          data.customName.present ? data.customName.value : this.customName,
+      settingsId: data.settingsId.present
+          ? data.settingsId.value
+          : this.settingsId,
+      customName: data.customName.present
+          ? data.customName.value
+          : this.customName,
       modelName: data.modelName.present ? data.modelName.value : this.modelName,
       endpoint: data.endpoint.present ? data.endpoint.value : this.endpoint,
       apiKey: data.apiKey.present ? data.apiKey.value : this.apiKey,
-      temperature:
-          data.temperature.present ? data.temperature.value : this.temperature,
-      isSelected:
-          data.isSelected.present ? data.isSelected.value : this.isSelected,
+      temperature: data.temperature.present
+          ? data.temperature.value
+          : this.temperature,
+      isSelected: data.isSelected.present
+          ? data.isSelected.value
+          : this.isSelected,
     );
   }
 
@@ -2866,12 +2844,12 @@ class $$SessionsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$SessionsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$SessionsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$SessionsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$SessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SessionsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -2912,77 +2890,71 @@ class $$SessionsTableTableManager
                 isPinned: isPinned,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$SessionsTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
-          prefetchHooksCallback: ({
-            chatMessagesRefs = false,
-            sessionRolesRefs = false,
-          }) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (chatMessagesRefs) db.chatMessages,
-                if (sessionRolesRefs) db.sessionRoles,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (chatMessagesRefs)
-                    await $_getPrefetchedData<
-                      Session,
-                      $SessionsTable,
-                      ChatMessage
-                    >(
-                      currentTable: table,
-                      referencedTable: $$SessionsTableReferences
-                          ._chatMessagesRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SessionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({chatMessagesRefs = false, sessionRolesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (chatMessagesRefs) db.chatMessages,
+                    if (sessionRolesRefs) db.sessionRoles,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (chatMessagesRefs)
+                        await $_getPrefetchedData<
+                          Session,
+                          $SessionsTable,
+                          ChatMessage
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SessionsTableReferences
+                              ._chatMessagesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
                               $$SessionsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).chatMessagesRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) => referencedItems.where(
-                            (e) => e.sessionId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                  if (sessionRolesRefs)
-                    await $_getPrefetchedData<
-                      Session,
-                      $SessionsTable,
-                      SessionRole
-                    >(
-                      currentTable: table,
-                      referencedTable: $$SessionsTableReferences
-                          ._sessionRolesRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.sessionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (sessionRolesRefs)
+                        await $_getPrefetchedData<
+                          Session,
+                          $SessionsTable,
+                          SessionRole
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SessionsTableReferences
+                              ._sessionRolesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
                               $$SessionsTableReferences(
                                 db,
                                 table,
                                 p0,
                               ).sessionRolesRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) => referencedItems.where(
-                            (e) => e.sessionId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.sessionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3243,13 +3215,12 @@ class $$ChatMessagesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$ChatMessagesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$ChatMessagesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () =>
-                  $$ChatMessagesTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$ChatMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChatMessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChatMessagesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -3286,52 +3257,50 @@ class $$ChatMessagesTableTableManager
                 content: content,
                 isRead: isRead,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$ChatMessagesTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ChatMessagesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({sessionId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                T extends TableManagerState<
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic
-                >
-              >(state) {
-                if (sessionId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.sessionId,
-                            referencedTable: $$ChatMessagesTableReferences
-                                ._sessionIdTable(db),
-                            referencedColumn:
-                                $$ChatMessagesTableReferences
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (sessionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.sessionId,
+                                referencedTable: $$ChatMessagesTableReferences
+                                    ._sessionIdTable(db),
+                                referencedColumn: $$ChatMessagesTableReferences
                                     ._sessionIdTable(db)
                                     .id,
-                          )
-                          as T;
-                }
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },
@@ -3563,12 +3532,12 @@ class $$RolesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$RolesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$RolesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$RolesTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$RolesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RolesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RolesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -3601,16 +3570,12 @@ class $$RolesTableTableManager
                 prompt: prompt,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$RolesTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$RolesTableReferences(db, table, e)),
+              )
+              .toList(),
           prefetchHooksCallback: ({sessionRolesRefs = false}) {
             return PrefetchHooks(
               db: db,
@@ -3623,16 +3588,13 @@ class $$RolesTableTableManager
                       currentTable: table,
                       referencedTable: $$RolesTableReferences
                           ._sessionRolesRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
-                              $$RolesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).sessionRolesRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) =>
-                              referencedItems.where((e) => e.roleId == item.id),
+                      managerFromTypedResult: (p0) => $$RolesTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).sessionRolesRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.roleId == item.id),
                       typedResults: items,
                     ),
                 ];
@@ -3915,13 +3877,12 @@ class $$SessionRolesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$SessionRolesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$SessionRolesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () =>
-                  $$SessionRolesTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$SessionRolesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SessionRolesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SessionRolesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> sessionId = const Value.absent(),
@@ -3946,66 +3907,63 @@ class $$SessionRolesTableTableManager
                 createdAt: createdAt,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$SessionRolesTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SessionRolesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({sessionId = false, roleId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                T extends TableManagerState<
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic
-                >
-              >(state) {
-                if (sessionId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.sessionId,
-                            referencedTable: $$SessionRolesTableReferences
-                                ._sessionIdTable(db),
-                            referencedColumn:
-                                $$SessionRolesTableReferences
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (sessionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.sessionId,
+                                referencedTable: $$SessionRolesTableReferences
+                                    ._sessionIdTable(db),
+                                referencedColumn: $$SessionRolesTableReferences
                                     ._sessionIdTable(db)
                                     .id,
-                          )
-                          as T;
-                }
-                if (roleId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.roleId,
-                            referencedTable: $$SessionRolesTableReferences
-                                ._roleIdTable(db),
-                            referencedColumn:
-                                $$SessionRolesTableReferences
+                              )
+                              as T;
+                    }
+                    if (roleId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.roleId,
+                                referencedTable: $$SessionRolesTableReferences
+                                    ._roleIdTable(db),
+                                referencedColumn: $$SessionRolesTableReferences
                                     ._roleIdTable(db)
                                     .id,
-                          )
-                          as T;
-                }
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },
@@ -4223,12 +4181,12 @@ class $$SettingsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$SettingsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$SettingsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$SettingsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -4257,16 +4215,14 @@ class $$SettingsTableTableManager
                 theme: theme,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$SettingsTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SettingsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({chatModelsRefs = false}) {
             return PrefetchHooks(
               db: db,
@@ -4283,17 +4239,13 @@ class $$SettingsTableTableManager
                       currentTable: table,
                       referencedTable: $$SettingsTableReferences
                           ._chatModelsRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
-                              $$SettingsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).chatModelsRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) => referencedItems.where(
-                            (e) => e.settingsId == item.id,
-                          ),
+                      managerFromTypedResult: (p0) => $$SettingsTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).chatModelsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.settingsId == item.id),
                       typedResults: items,
                     ),
                 ];
@@ -4583,12 +4535,12 @@ class $$ChatModelsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$ChatModelsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$ChatModelsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$ChatModelsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$ChatModelsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChatModelsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChatModelsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -4633,52 +4585,50 @@ class $$ChatModelsTableTableManager
                 isSelected: isSelected,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$ChatModelsTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ChatModelsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({settingsId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                T extends TableManagerState<
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic
-                >
-              >(state) {
-                if (settingsId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.settingsId,
-                            referencedTable: $$ChatModelsTableReferences
-                                ._settingsIdTable(db),
-                            referencedColumn:
-                                $$ChatModelsTableReferences
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (settingsId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.settingsId,
+                                referencedTable: $$ChatModelsTableReferences
+                                    ._settingsIdTable(db),
+                                referencedColumn: $$ChatModelsTableReferences
                                     ._settingsIdTable(db)
                                     .id,
-                          )
-                          as T;
-                }
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },

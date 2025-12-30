@@ -22,6 +22,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final companion = ChatMessagesCompanion(
         sessionId: Value(sessionId),
         sender: Value(message.senderId),
+        type: Value(message.senderId),
         content: Value(message.content),
         createdAt: Value(message.createdAt),
       );

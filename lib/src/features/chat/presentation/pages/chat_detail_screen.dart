@@ -741,20 +741,20 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: theme.colorScheme.surfaceContainerHighest,
-              image:
-                  avatarUrl != null && avatarUrl.isNotEmpty
-                      ? DecorationImage(
-                        image:
-                            avatarUrl.startsWith('http')
-                                ? NetworkImage(avatarUrl)
-                                : FileImage(File(avatarUrl)) as ImageProvider,
-                        fit: BoxFit.cover,
-                      )
-                      : null,
-            ),
+            // decoration: BoxDecoration(
+            //   shape: BoxShape.circle,
+            //   color: theme.colorScheme.surfaceContainerHighest,
+            //   image:
+            //       avatarUrl != null && avatarUrl.isNotEmpty
+            //           ? DecorationImage(
+            //             image:
+            //                 avatarUrl.startsWith('http')
+            //                     ? NetworkImage(avatarUrl)
+            //                     : FileImage(File(avatarUrl)) as ImageProvider,
+            //             fit: BoxFit.cover,
+            //           )
+            //           : null,
+            // ),
             child:
                 avatarUrl == null || avatarUrl.isEmpty
                     ? Center(

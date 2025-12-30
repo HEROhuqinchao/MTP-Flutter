@@ -14,12 +14,12 @@ _ActiveSessionEntity _$ActiveSessionEntityFromJson(Map<String, dynamic> json) =>
       createdAt: DateTime.parse(json['createdAt'] as String),
       isPinned: json['isPinned'] as bool,
       avatar: json['avatar'] as String?,
-      roleIds:
-          (json['roleIds'] as List<dynamic>).map((e) => e as String).toList(),
-      messages:
-          (json['messages'] as List<dynamic>)
-              .map((e) => ChatMessageEntity.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      roleIds: (json['roleIds'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      messages: (json['messages'] as List<dynamic>)
+          .map((e) => ChatMessageEntity.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$ActiveSessionEntityToJson(

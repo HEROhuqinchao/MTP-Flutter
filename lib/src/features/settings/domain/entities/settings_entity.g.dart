@@ -12,10 +12,9 @@ _SettingsEntity _$SettingsEntityFromJson(Map<String, dynamic> json) =>
       username: json['username'] as String,
       userAvatar: json['userAvatar'] as String,
       theme: json['theme'] as String,
-      models:
-          (json['models'] as List<dynamic>)
-              .map((e) => ChatModelEntity.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      models: (json['models'] as List<dynamic>)
+          .map((e) => ChatModelEntity.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$SettingsEntityToJson(_SettingsEntity instance) =>
